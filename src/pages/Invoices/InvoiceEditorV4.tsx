@@ -227,9 +227,9 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange }) => {
               </button>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
+            <div className="overflow-x-auto overflow-y-auto max-h-[280px]">
+              <table className="w-full relative">
+                <thead className="sticky top-0 bg-white z-10 shadow-sm">
                   <tr className="text-[9px] font-black uppercase tracking-[0.2em] border-b" style={{ color: brand.dark, borderColor: brand.dark + '08' }}>
                     <th className="px-6 py-3.5 text-left">Description</th>
                     <th className="px-4 py-3.5 text-center w-24">Qty</th>
