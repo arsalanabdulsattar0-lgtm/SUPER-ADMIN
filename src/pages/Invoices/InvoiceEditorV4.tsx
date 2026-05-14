@@ -202,7 +202,7 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange }) => {
               {/* Row 3: Subject, Payment Method */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
                 <div className="lg:col-span-2">
-                  <Input label="Subject Specification" placeholder="Define invoice objective..." value={data.subject}
+                  <Input label="Product Code / Barcode" placeholder="Scan or enter product code..." value={data.subject}
                     onChange={(e) => onChange({ ...data, subject: e.target.value })} />
                 </div>
                 <Select
