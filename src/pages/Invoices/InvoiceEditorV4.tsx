@@ -106,7 +106,7 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange }) => {
   );
 
   return (
-    <div className="min-h-screen p-4 lg:px-8 lg:py-8 font-sans" style={{ backgroundColor: brand.surface }}>
+    <div className="min-h-screen p-4 lg:px-8 lg:py-8 font-sans [&_input]:shadow-none [&_select]:shadow-none [&_textarea]:shadow-none" style={{ backgroundColor: brand.surface }}>
       <div className="max-w-7xl mx-auto space-y-6">
 
         {/* ── Header ── */}
@@ -193,8 +193,7 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange }) => {
                   <select
                     value={currency}
                     onChange={(e) => setCurrency(e.target.value)}
-                    className="w-full bg-white border border-slate-200 rounded-xl py-3 px-4 text-sm font-bold text-slate-900 appearance-none cursor-pointer focus:ring-4 focus:border-indigo-500 outline-none transition-all shadow-sm"
-                    style={{ focusBorderColor: brand.primary } as React.CSSProperties}
+                    className="w-full bg-white border border-slate-200 rounded-xl py-3 px-4 text-sm font-bold text-slate-900 appearance-none cursor-pointer focus:ring-4 focus:border-indigo-500 outline-none transition-all"
                   >
                     {currencies.map((c) => (
                       <option key={c.value} value={c.value}>{c.label}</option>
@@ -216,7 +215,7 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange }) => {
                   <select
                     value={paymentMethod}
                     onChange={(e) => setPaymentMethod(e.target.value)}
-                    className="w-full bg-white border border-slate-200 rounded-xl py-3 px-4 text-sm font-bold text-slate-900 appearance-none cursor-pointer focus:ring-4 focus:border-indigo-500 outline-none transition-all shadow-sm"
+                    className="w-full bg-white border border-slate-200 rounded-xl py-3 px-4 text-sm font-bold text-slate-900 appearance-none cursor-pointer focus:ring-4 focus:border-indigo-500 outline-none transition-all"
                   >
                     {paymentMethods.map((m) => (
                       <option key={m.value} value={m.value}>{m.label}</option>
