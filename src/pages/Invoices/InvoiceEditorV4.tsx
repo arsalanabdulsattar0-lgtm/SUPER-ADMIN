@@ -66,6 +66,7 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange }) => {
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>('pending');
   const [currency, setCurrency] = useState('USD');
   const [paymentMethod, setPaymentMethod] = useState('bank_transfer');
+  const [itemSearchQuery, setItemSearchQuery] = useState('');
 
   const [files, setFiles] = useState([
     { name: 'project_brief.pdf', size: '1.2 MB' },
@@ -96,6 +97,10 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange }) => {
 
   const status = statusConfig[paymentStatus];
   const StatusIcon = status.icon;
+
+  const filteredItems = data.items.filter(item => 
+    item.description.toLowerCase().includes(itemSearchQuery.toLowerCase())
+  );
 
   // Section header helper
   const SectionHeader = ({ title, badge }: { title: string; badge?: string }) => (
@@ -217,14 +222,26 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange }) => {
                 <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
                 <h3 className="text-[10px] font-black uppercase tracking-[0.2em]">Transaction Entries</h3>
                 <span className="ml-2 px-2 py-0.5 rounded-full text-[8px] font-bold" style={{ backgroundColor: brand.soft, color: brand.dark }}>
-                  {data.items.length} items
+                  {filteredItems.length} items
                 </span>
               </div>
-              <button onClick={addItem}
-                className="flex items-center gap-1.5 px-4 py-1.5 bg-white font-black rounded-lg hover:bg-slate-50 transition-all uppercase tracking-widest text-[8px]"
-                style={{ color: brand.primary }}>
-                <Plus className="w-3 h-3" /> Add Item
-              </button>
+              <div className="flex items-center gap-3">
+                <div className="relative hidden sm:block">
+                  <Search className="w-3 h-3 absolute left-2.5 top-1/2 -translate-y-1/2 text-white/60" />
+                  <input 
+                    type="text" 
+                    placeholder="Search products..." 
+                    value={itemSearchQuery}
+                    onChange={(e) => setItemSearchQuery(e.target.value)}
+                    className="w-48 bg-white/10 border border-white/20 rounded-lg py-1.5 pl-7 pr-3 text-[10px] font-bold text-white placeholder:text-white/60 outline-none focus:bg-white/20 focus:border-white/40 transition-all"
+                  />
+                </div>
+                <button onClick={addItem}
+                  className="flex items-center gap-1.5 px-4 py-1.5 bg-white font-black rounded-lg hover:bg-slate-50 transition-all uppercase tracking-widest text-[8px] shrink-0"
+                  style={{ color: brand.primary }}>
+                  <Plus className="w-3 h-3" /> Add Item
+                </button>
+              </div>
             </div>
 
             <div className="overflow-x-auto overflow-y-auto max-h-[280px]">
@@ -240,7 +257,7 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange }) => {
                   </tr>
                 </thead>
                 <tbody className="divide-y" style={{ borderColor: brand.dark + '05' }}>
-                  {data.items.map((item, idx) => (
+                  {filteredItems.map((item, idx) => (
                     <tr key={item.id} className="group hover:bg-slate-50/40 transition-colors">
                       <td className="px-6 py-3">
                         <div className="flex items-center gap-3">
@@ -291,10 +308,10 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange }) => {
                       </td>
                     </tr>
                   ))}
-                  {data.items.length === 0 && (
+                  {filteredItems.length === 0 && (
                     <tr>
                       <td colSpan={6} className="px-6 py-12 text-center text-[11px] font-bold text-slate-300 uppercase tracking-widest">
-                        No items yet — click "Add Item" to begin
+                        {data.items.length === 0 ? 'No items yet — click "Add Item" to begin' : 'No items match your search'}
                       </td>
                     </tr>
                   )}
