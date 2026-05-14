@@ -106,7 +106,7 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange }) => {
   );
 
   return (
-    <div className="min-h-screen p-4 lg:px-8 lg:py-8 font-sans [&_input]:shadow-none [&_select]:shadow-none [&_textarea]:shadow-none" style={{ backgroundColor: brand.surface }}>
+    <div className="min-h-screen p-4 lg:px-8 lg:py-8 font-sans [&_input]:!shadow-none [&_select]:!shadow-none [&_textarea]:!shadow-none" style={{ backgroundColor: brand.surface }}>
       <div className="max-w-7xl mx-auto space-y-6">
 
         {/* ── Header ── */}
