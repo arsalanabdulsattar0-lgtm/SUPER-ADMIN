@@ -3,21 +3,13 @@ import type { InvoiceData, InvoiceItem } from '../../types';
 import {
   Plus,
   Trash2,
-  Printer,
   History,
   Save,
   Zap,
-  Calendar,
-  MessageSquare,
   Paperclip,
   Upload,
   Search,
-  RefreshCw,
-  CreditCard,
   Check,
-  ArrowRight,
-  Clock,
-  Landmark,
   FileText,
   X
 } from 'lucide-react';
