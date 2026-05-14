@@ -390,8 +390,8 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange }) => {
                       <div key={field.key} className="space-y-1.5">
                         <span className="text-[8px] font-black uppercase tracking-widest text-slate-400">{field.label}</span>
                         <input type="number"
-                          className="w-full border rounded-lg py-2 px-3 text-[13px] font-bold outline-none focus:border-[#2759CD] transition-all"
-                          style={{ color: brand.dark, borderColor: brand.dark + '12', backgroundColor: brand.surface }}
+                          className="w-full bg-[#EFF5FC] border border-[#304166]/10 rounded-lg py-2 px-3 text-[13px] font-bold outline-none focus:border-[#2759CD] transition-all"
+                          style={{ color: brand.dark }}
                           value={data[field.key as keyof InvoiceData] as number}
                           onChange={(e) => onChange({ ...data, [field.key as any]: parseFloat(e.target.value) || 0 })} />
                       </div>
