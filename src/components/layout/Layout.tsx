@@ -18,6 +18,7 @@ const Layout: React.FC<Props> = ({ children, activeView, onViewChange }) => {
         activeView={activeView} 
         onViewChange={onViewChange} 
         isCollapsed={isCollapsed}
+        onToggleSidebar={() => setIsCollapsed(!isCollapsed)}
       />
       <div className="flex-grow flex flex-col min-w-0">
         <Header onToggleSidebar={() => setIsCollapsed(!isCollapsed)} isSidebarOpen={!isCollapsed} />

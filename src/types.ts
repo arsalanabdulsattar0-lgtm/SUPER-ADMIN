@@ -21,6 +21,9 @@ export interface InvoiceData {
   clientAddress: string;
   subject: string;
   reference: string;
+  productCode: string;
+  remarks: string;
+  type: string;
   items: InvoiceItem[];
   taxRate: number;
   discountPercentage: number;

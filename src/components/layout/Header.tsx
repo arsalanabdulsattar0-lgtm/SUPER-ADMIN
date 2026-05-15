@@ -9,16 +9,6 @@ interface Props {
 const Header: React.FC<Props> = ({ onToggleSidebar, isSidebarOpen }) => {
   return (
     <header className="h-20 bg-white border-b border-slate-200 px-8 flex items-center gap-6 sticky top-0 z-40">
-      <div className="group relative">
-        <button 
-          onClick={onToggleSidebar}
-          className={`p-2.5 text-slate-500 hover:bg-slate-50 rounded-xl transition-all ${
-            !isSidebarOpen ? 'opacity-0 group-hover:opacity-100' : 'opacity-100'
-          }`}
-        >
-          <Menu className="w-5 h-5" />
-        </button>
-      </div>
 
       <div className="flex-grow max-w-xl">
         <div className="relative group">
