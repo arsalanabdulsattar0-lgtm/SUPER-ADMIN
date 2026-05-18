@@ -9,6 +9,7 @@ import {
 import { ScrollArea } from '../../components/ui/FormControls';
 import { Button } from '../../components/ui/Button';
 import { useTheme } from '../../context/ThemeContext';
+import type { InvoiceData, InvoiceItem } from '../../types';
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 export type InvoiceStatus = 'Paid' | 'Pending' | 'Overdue' | 'Draft';
@@ -71,7 +72,57 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ onViewChange, invoiceItems, s
   const [sortDir, setSortDir]           = useState<SortDir>('desc');
   const [showFilterPanel, setShowFilterPanel] = useState(false);
   const [showSortPanel, setShowSortPanel]     = useState(false);
+  const [previewInvoice, setPreviewInvoice]   = useState<InvoiceData | null>(null);
   const perPage = 6;
+
+  const handleOpenPreview = (inv: Invoice) => {
+    try {
+      const stored = localStorage.getItem(`invoice_detail_${inv.id}`);
+      if (stored) {
+        setPreviewInvoice(JSON.parse(stored) as InvoiceData);
+      } else {
+        const fallback: InvoiceData = {
+          invoiceNumber: inv.id,
+          date: inv.issueDate,
+          dueDate: inv.dueDate,
+          senderName: 'Antigravity Creative Studio',
+          senderAddress: '452 Innovation Blvd, San Francisco, CA 94107',
+          clientName: inv.client,
+          clientAddress: 'Enterprise Client Account',
+          subject: 'Services Rendered',
+          reference: '',
+          productCode: '',
+          remarks: '',
+          type: inv.type || 'Standard',
+          items: [
+            {
+              id: '1',
+              productCode: 'BC-001',
+              description: `${inv.type || 'Standard'} Services & Deliverables`,
+              unit: 'Job',
+              unitDetails: '',
+              quantity: 1,
+              price: inv.rawAmount || 0,
+              discount: 0,
+              tax: 0,
+              furtherTax: 0
+            }
+          ],
+          taxRate: 0,
+          discountPercentage: 0,
+          discountAmount: 0,
+          shippingCharges: 0,
+          roundOff: 0,
+          receivedAmount: 0,
+          bankAccount: '',
+          notes: `Please include the invoice number ${inv.id} in your wire transfer reference.`
+        };
+        setPreviewInvoice(fallback);
+      }
+    } catch {
+      alert('Failed to load invoice preview!');
+    }
+  };
 
   const typeOptions = ['All', ...Array.from(new Set(invoiceItems.map(i => i.type)))];
 
@@ -423,7 +474,7 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ onViewChange, invoiceItems, s
                         {/* Actions */}
                         <td className="px-4 py-3 border-l border-slate-50">
                           <div className="flex items-center gap-1">
-                            <Button onClick={() => onViewChange?.('add-invoice-v4')}
+                            <Button onClick={() => handleOpenPreview(inv)}
                               variant="ghost" size="xs" icon={Eye} title="View"
                               className="px-2 text-blue-600 hover:bg-blue-50" />
                             <Button onClick={() => onEditInvoice?.(inv.id)}
@@ -453,7 +504,7 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ onViewChange, invoiceItems, s
                                       <Button key={item.label}
                                         onClick={(e) => {
                                           e.stopPropagation();
-                                          if (item.label === 'View Details') onViewChange?.('add-invoice-v4');
+                                          if (item.label === 'View Details') handleOpenPreview(inv);
                                           if (item.label === 'Download PDF') onPrintInvoice?.(inv);
                                           if (item.label === 'Delete') {
                                             setInvoiceItems(prev => prev.filter(x => x.id !== inv.id));
@@ -525,6 +576,223 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ onViewChange, invoiceItems, s
       {openAction && (
         <div className="fixed inset-0 z-10" onClick={() => setOpenAction(null)} />
       )}
+
+      {/* Stunning Glassmorphism Invoice Preview Modal */}
+      <AnimatePresence>
+        {previewInvoice && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md overflow-y-auto">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 30 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 30 }}
+              transition={{ type: 'spring', duration: 0.5 }}
+              className="bg-white max-w-4xl w-full rounded-3xl shadow-2xl border overflow-hidden flex flex-col max-h-[90vh]"
+              style={{ borderColor: brand.dark + '10' }}
+            >
+              {/* Modal Header */}
+              <div className="flex justify-between items-center px-6 py-4 border-b bg-slate-50" style={{ borderColor: brand.dark + '08' }}>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-black uppercase tracking-wider text-slate-400">Invoice Review</span>
+                    <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider text-white" style={{ backgroundColor: brand.primary }}>
+                      {previewInvoice.type}
+                    </span>
+                  </div>
+                  <h3 className="text-sm font-black text-slate-900 mt-1">Invoice ID: {previewInvoice.invoiceNumber}</h3>
+                </div>
+                <button
+                  onClick={() => setPreviewInvoice(null)}
+                  className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200 text-slate-400 hover:text-slate-600 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Scrollable Modal Content */}
+              <ScrollArea className="flex-1 p-8 overflow-y-auto" maxHeight="calc(90vh - 140px)">
+                <div className="space-y-8">
+                  {/* Biller & Client info in two columns */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pb-6 border-b" style={{ borderColor: brand.dark + '08' }}>
+                    <div>
+                      <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">From</h4>
+                      <p className="text-xs font-black text-slate-900">{previewInvoice.senderName || 'Antigravity Creative Studio'}</p>
+                      <p className="text-[11px] text-slate-500 mt-1 leading-relaxed whitespace-pre-line">
+                        {previewInvoice.senderAddress || '452 Innovation Blvd, San Francisco, CA 94107'}
+                      </p>
+                    </div>
+                    <div>
+                      <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Bill To</h4>
+                      <p className="text-xs font-black text-slate-900">{previewInvoice.clientName}</p>
+                      <p className="text-[11px] text-slate-500 mt-1 leading-relaxed whitespace-pre-line">
+                        {previewInvoice.clientAddress || 'Enterprise Client'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Date, Subject, Reference Info */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pb-6 border-b" style={{ borderColor: brand.dark + '08' }}>
+                    <div>
+                      <h4 className="text-[9px] font-black text-slate-400 uppercase tracking-wider">Issue Date</h4>
+                      <p className="text-xs font-bold text-slate-800 mt-1">{previewInvoice.date}</p>
+                    </div>
+                    <div>
+                      <h4 className="text-[9px] font-black text-slate-400 uppercase tracking-wider">Due Date</h4>
+                      <p className="text-xs font-bold text-slate-800 mt-1">{previewInvoice.dueDate}</p>
+                    </div>
+                    <div>
+                      <h4 className="text-[9px] font-black text-slate-400 uppercase tracking-wider">Subject</h4>
+                      <p className="text-xs font-bold text-slate-800 mt-1 truncate">{previewInvoice.subject || 'Services Rendered'}</p>
+                    </div>
+                    <div>
+                      <h4 className="text-[9px] font-black text-slate-400 uppercase tracking-wider">Reference</h4>
+                      <p className="text-xs font-bold text-slate-800 mt-1">{previewInvoice.reference || 'N/A'}</p>
+                    </div>
+                  </div>
+
+                  {/* Items List Table */}
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                      <thead>
+                        <tr className="bg-slate-50 text-[9px] font-black text-slate-400 uppercase tracking-wider border-b" style={{ borderColor: brand.dark + '10' }}>
+                          <th className="py-3 px-4">Code</th>
+                          <th className="py-3 px-4 w-[40%]">Description</th>
+                          <th className="py-3 px-4 text-right">Unit</th>
+                          <th className="py-3 px-4 text-right">Qty</th>
+                          <th className="py-3 px-4 text-right">Rate</th>
+                          <th className="py-3 px-4 text-right">Tax</th>
+                          <th className="py-3 px-4 text-right">Discount</th>
+                          <th className="py-3 px-4 text-right">Total</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {previewInvoice.items.map((item: InvoiceItem, idx: number) => {
+                          const itemTotal = (item.quantity * item.price) - item.discount + item.tax + (item.furtherTax || 0);
+                          return (
+                            <tr key={idx} className="border-b text-xs text-slate-700" style={{ borderColor: brand.dark + '06' }}>
+                              <td className="py-3.5 px-4 font-bold text-slate-900">{item.productCode || 'BC-001'}</td>
+                              <td className="py-3.5 px-4 font-medium leading-relaxed">{item.description}</td>
+                              <td className="py-3.5 px-4 text-right font-medium text-slate-500">{item.unit || 'Job'}</td>
+                              <td className="py-3.5 px-4 text-right font-bold text-slate-900">{item.quantity}</td>
+                              <td className="py-3.5 px-4 text-right font-medium text-slate-500">${item.price.toFixed(2)}</td>
+                              <td className="py-3.5 px-4 text-right font-medium text-green-600">+${(item.tax + (item.furtherTax || 0)).toFixed(2)}</td>
+                              <td className="py-3.5 px-4 text-right font-medium text-red-500">-${item.discount.toFixed(2)}</td>
+                              <td className="py-3.5 px-4 text-right font-bold text-slate-900">${itemTotal.toFixed(2)}</td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Financial Totals Breakdown & Notes */}
+                  <div className="grid grid-cols-1 md:grid-cols-12 gap-8 pt-4">
+                    {/* Left: Notes & Bank Info */}
+                    <div className="md:col-span-7 space-y-4">
+                      {previewInvoice.notes && (
+                        <div className="p-4 bg-slate-50 rounded-2xl border" style={{ borderColor: brand.dark + '08' }}>
+                          <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1.5">Terms & Remarks</h5>
+                          <p className="text-[11px] text-slate-500 leading-relaxed whitespace-pre-line">{previewInvoice.notes}</p>
+                        </div>
+                      )}
+                      {previewInvoice.bankAccount && (
+                        <div className="p-4 bg-slate-50 rounded-2xl border" style={{ borderColor: brand.dark + '08' }}>
+                          <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">Bank Payment Account</h5>
+                          <p className="text-[11px] font-bold text-slate-700">{previewInvoice.bankAccount}</p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Right: Calculated Totals */}
+                    <div className="md:col-span-5 space-y-2 text-xs">
+                      {(() => {
+                        const subtotal = previewInvoice.items.reduce((sum: number, item: InvoiceItem) => sum + (item.quantity * item.price) - item.discount + item.tax + (item.furtherTax || 0), 0);
+                        const taxAmount = (subtotal * (previewInvoice.taxRate || 0)) / 100;
+                        const discountVal = previewInvoice.discountAmount || (subtotal * (previewInvoice.discountPercentage || 0)) / 100;
+                        const netPayable = subtotal + taxAmount - discountVal + (previewInvoice.shippingCharges || 0) + (previewInvoice.roundOff || 0);
+                        const balanceDue = netPayable - (previewInvoice.receivedAmount || 0);
+
+                        return (
+                          <>
+                            <div className="flex justify-between text-slate-500 font-medium">
+                              <span>Subtotal</span>
+                              <span>${subtotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                            </div>
+                            {taxAmount > 0 && (
+                              <div className="flex justify-between text-slate-500 font-medium">
+                                <span>Global Tax ({previewInvoice.taxRate}%)</span>
+                                <span className="text-green-600">+${taxAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                              </div>
+                            )}
+                            {discountVal > 0 && (
+                              <div className="flex justify-between text-slate-500 font-medium">
+                                <span>Global Discount</span>
+                                <span className="text-red-500">-${discountVal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                              </div>
+                            )}
+                            {(previewInvoice.shippingCharges || 0) > 0 && (
+                              <div className="flex justify-between text-slate-500 font-medium">
+                                <span>Shipping Charges</span>
+                                <span>+${previewInvoice.shippingCharges.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                              </div>
+                            )}
+                            <div className="h-px bg-slate-100 my-1" />
+                            <div className="flex justify-between font-black text-sm" style={{ color: brand.dark }}>
+                              <span>Net Payable</span>
+                              <span>${netPayable.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                            </div>
+                            <div className="flex justify-between text-green-600 font-bold">
+                              <span>Amount Received</span>
+                              <span>-${(previewInvoice.receivedAmount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                            </div>
+                            <div className="p-3 bg-red-50 rounded-2xl flex justify-between font-black text-sm text-red-600 mt-2">
+                              <span>Balance Due</span>
+                              <span>${balanceDue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                            </div>
+                          </>
+                        );
+                      })()}
+                    </div>
+                  </div>
+                </div>
+              </ScrollArea>
+
+              {/* Modal Footer */}
+              <div className="px-6 py-4 bg-slate-50 border-t flex justify-end gap-3" style={{ borderColor: brand.dark + '08' }}>
+                <Button
+                  onClick={() => setPreviewInvoice(null)}
+                  variant="white"
+                  size="md"
+                >
+                  Close Preview
+                </Button>
+                <Button
+                  onClick={() => {
+                    const mapped: Invoice = {
+                      id: previewInvoice.invoiceNumber,
+                      client: previewInvoice.clientName,
+                      clientInitials: previewInvoice.clientName.slice(0, 2).toUpperCase(),
+                      clientColor: brand.primary,
+                      issueDate: previewInvoice.date,
+                      dueDate: previewInvoice.dueDate,
+                      amount: `$${(previewInvoice.items.reduce((sum: number, item: InvoiceItem) => sum + (item.quantity * item.price), 0)).toLocaleString()}`,
+                      rawAmount: previewInvoice.items.reduce((sum: number, item: InvoiceItem) => sum + (item.quantity * item.price), 0),
+                      status: 'Pending',
+                      payment: 'Net 30',
+                      type: previewInvoice.type
+                    };
+                    onPrintInvoice?.(mapped);
+                  }}
+                  variant="primary"
+                  size="md"
+                  icon={Printer}
+                >
+                  Print / PDF
+                </Button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
