@@ -7,7 +7,7 @@ import Dashboard1 from './pages/Dashboard/Dashboard1';
 import InvoiceEditorV4 from './pages/Invoices/InvoiceEditorV4';
 import InvoiceList, { initialInvoices } from './pages/Invoices/InvoiceList';
 import type { Invoice } from './pages/Invoices/InvoiceList';
-import ClientList from './pages/Clients/ClientList';
+import CustomerManagement from './pages/Clients/CustomerManagement';
 import Settings from './pages/Settings/Settings';
 import Help from './pages/Help/Help';
 import Login from './pages/Auth/Login';
@@ -242,7 +242,7 @@ function App() {
       case 'invoices':
         return <InvoiceList invoiceItems={invoiceList} setInvoiceItems={setInvoiceList} onViewChange={(v) => setActiveView(v as View)} onPrintInvoice={handlePrintInvoice} onEditInvoice={handleEditInvoice} />;
       case 'clients':
-        return <ClientList />;
+          return <CustomerManagement />;
       case 'products':
         return <ProductList onAddProductClick={() => {
           setProductFormInitialData(undefined);

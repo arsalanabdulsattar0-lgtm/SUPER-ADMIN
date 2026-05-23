@@ -35,7 +35,7 @@ const Sidebar: React.FC<Props> = ({ activeView, onViewChange, isCollapsed, onTog
     { id: 'dashboard1', label: 'Dashboard 1', icon: Sparkles },
     { id: 'invoices', label: 'Invoices', icon: FileText },
     { id: 'add-invoice-v4', label: 'Create V4', icon: Zap },
-    { id: 'clients', label: 'Clients', icon: Users },
+    { id: 'clients', label: 'Customer', icon: Users },
     { id: 'products', label: 'Products', icon: Box },
   ];
 

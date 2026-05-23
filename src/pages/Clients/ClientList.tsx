@@ -11,17 +11,45 @@ interface Client {
   totalInvoiced: string;
 }
 
+const DEFAULT_CLIENTS: Client[] = [
+  { name: 'BlueRitt Technologies', email: 'billing@blueritt.com', phone: '+1 234 567 890', location: 'Austin, TX', totalInvoiced: '$45,200' },
+  { name: 'Acme Corp', email: 'finance@acme.com', phone: '+1 987 654 321', location: 'New York, NY', totalInvoiced: '$12,800' },
+  { name: 'Global Solutions', email: 'hello@globalsol.com', phone: '+1 555 123 456', location: 'San Francisco, CA', totalInvoiced: '$8,900' },
+  { name: 'Starlight Media', email: 'accounts@starlight.io', phone: '+1 444 777 888', location: 'London, UK', totalInvoiced: '$2,450' },
+  { name: 'Ahmed', email: 'ahmed@example.com', phone: '+92 300 1234567', location: 'Lahore, Pakistan', totalInvoiced: '$0.00' },
+  { name: 'Client Six', email: 'client6@example.com', phone: '+1 111 111 111', location: 'Chicago, IL', totalInvoiced: '$5,000' },
+  { name: 'Client Seven', email: 'client7@example.com', phone: '+1 222 222 222', location: 'Miami, FL', totalInvoiced: '$3,200' },
+  { name: 'Client Eight', email: 'client8@example.com', phone: '+1 333 333 333', location: 'Seattle, WA', totalInvoiced: '$7,800' },
+  { name: 'Client Nine', email: 'client9@example.com', phone: '+1 444 444 444', location: 'Denver, CO', totalInvoiced: '$2,300' },
+  { name: 'Client Ten', email: 'client10@example.com', phone: '+1 555 555 555', location: 'Boston, MA', totalInvoiced: '$6,500' },
+  { name: 'Client Eleven', email: 'client11@example.com', phone: '+1 666 666 666', location: 'Houston, TX', totalInvoiced: '$4,400' },
+  { name: 'Client Twelve', email: 'client12@example.com', phone: '+1 777 777 777', location: 'Phoenix, AZ', totalInvoiced: '$3,600' },
+  { name: 'Client Thirteen', email: 'client13@example.com', phone: '+1 888 888 888', location: 'Philadelphia, PA', totalInvoiced: '$5,900' },
+  { name: 'Client Fourteen', email: 'client14@example.com', phone: '+1 999 999 999', location: 'San Antonio, TX', totalInvoiced: '$2,800' },
+  { name: 'Client Fifteen', email: 'client15@example.com', phone: '+1 101 010 1010', location: 'Dallas, TX', totalInvoiced: '$4,700' },
+  { name: 'Client Sixteen', email: 'client16@example.com', phone: '+1 202 020 2020', location: 'San Jose, CA', totalInvoiced: '$3,100' },
+  { name: 'Client Seventeen', email: 'client17@example.com', phone: '+1 303 030 3030', location: 'Austin, TX', totalInvoiced: '$6,200' },
+  { name: 'Client Eighteen', email: 'client18@example.com', phone: '+1 404 040 4040', location: 'Jacksonville, FL', totalInvoiced: '$2,900' },
+  { name: 'Client Nineteen', email: 'client19@example.com', phone: '+1 505 050 5050', location: 'Fort Worth, TX', totalInvoiced: '$5,300' },
+  { name: 'Client Twenty', email: 'client20@example.com', phone: '+1 606 060 6060', location: 'Columbus, OH', totalInvoiced: '$4,100' },
+  { name: 'Client Twenty-One', email: 'client21@example.com', phone: '+1 707 070 7070', location: 'Charlotte, NC', totalInvoiced: '$3,700' },
+  { name: 'Client Twenty-Two', email: 'client22@example.com', phone: '+1 808 080 8080', location: 'San Francisco, CA', totalInvoiced: '$6,800' },
+  { name: 'Client Twenty-Three', email: 'client23@example.com', phone: '+1 909 090 9090', location: 'Indianapolis, IN', totalInvoiced: '$2,500' },
+  { name: 'Client Twenty-Four', email: 'client24@example.com', phone: '+1 111 222 3333', location: 'Seattle, WA', totalInvoiced: '$7,200' },
+  { name: 'Client Twenty-Five', email: 'client25@example.com', phone: '+1 222 333 4444', location: 'Denver, CO', totalInvoiced: '$3,900' },
+  { name: 'Client Twenty-Six', email: 'client26@example.com', phone: '+1 333 444 5555', location: 'Boston, MA', totalInvoiced: '$5,500' },
+  { name: 'Client Twenty-Seven', email: 'client27@example.com', phone: '+1 444 555 6666', location: 'Chicago, IL', totalInvoiced: '$4,300' },
+  { name: 'Client Twenty-Eight', email: 'client28@example.com', phone: '+1 555 666 7777', location: 'Miami, FL', totalInvoiced: '$2,600' },
+  { name: 'Client Twenty-Nine', email: 'client29@example.com', phone: '+1 666 777 8888', location: 'Houston, TX', totalInvoiced: '$6,100' },
+  { name: 'Client Thirty', email: 'client30@example.com', phone: '+1 777 888 9999', location: 'Phoenix, AZ', totalInvoiced: '$4,800' },
+];
+
 const ClientList: React.FC = () => {
   const [clients] = useState<Client[]>(() => {
     try {
       const stored = localStorage.getItem('client_list');
-      return stored ? JSON.parse(stored) : [
-        { name: 'BlueRitt Technologies', email: 'billing@blueritt.com', phone: '+1 234 567 890', location: 'Austin, TX', totalInvoiced: '$45,200' },
-        { name: 'Acme Corp', email: 'finance@acme.com', phone: '+1 987 654 321', location: 'New York, NY', totalInvoiced: '$12,800' },
-        { name: 'Global Solutions', email: 'hello@globalsol.com', phone: '+1 555 123 456', location: 'San Francisco, CA', totalInvoiced: '$8,900' },
-        { name: 'Starlight Media', email: 'accounts@starlight.io', phone: '+1 444 777 888', location: 'London, UK', totalInvoiced: '$2,450' },
-        { name: 'Ahmed', email: 'ahmed@example.com', phone: '+92 300 1234567', location: 'Lahore, Pakistan', totalInvoiced: '$0.00' },
-      ];
+      const parsed = stored ? JSON.parse(stored) : DEFAULT_CLIENTS;
+      return parsed;
     } catch {
       return [
         { name: 'BlueRitt Technologies', email: 'billing@blueritt.com', phone: '+1 234 567 890', location: 'Austin, TX', totalInvoiced: '$45,200' },
@@ -30,6 +58,7 @@ const ClientList: React.FC = () => {
         { name: 'Starlight Media', email: 'accounts@starlight.io', phone: '+1 444 777 888', location: 'London, UK', totalInvoiced: '$2,450' },
         { name: 'Ahmed', email: 'ahmed@example.com', phone: '+92 300 1234567', location: 'Lahore, Pakistan', totalInvoiced: '$0.00' },
       ];
+      return DEFAULT_CLIENTS;
     }
   });
 
@@ -44,7 +73,7 @@ const ClientList: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
         <div>
-          <h2 className="text-xl font-bold text-slate-900">Clients</h2>
+          <h2 className="text-xl font-bold text-slate-900">Customers</h2>
           <p className="text-slate-400 text-xs mt-1">Manage your customer database and relationships.</p>
         </div>
         <div className="flex gap-2 w-full sm:w-auto">
