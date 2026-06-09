@@ -433,7 +433,7 @@ const ProductList: React.FC<Props> = ({ onAddProductClick }) => {
               variant="primary"
               size="md"
               icon={Plus}
-              className="bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/20"
+              className="bg-emerald-500 hover:bg-emerald-600 shadow-none"
             >
               Add Product
             </Button>
@@ -447,28 +447,31 @@ const ProductList: React.FC<Props> = ({ onAddProductClick }) => {
           <motion.div key={stat.label}
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.07 }}
-            className="bg-white rounded-2xl p-4 border shadow-sm hover:shadow-md transition-all group cursor-default"
-            style={{ borderColor: brand.dark + '10' }}
           >
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-[11px] font-bold text-black tracking-wide">{stat.label}</p>
-                <p className="text-2xl font-black mt-1 tracking-tight" style={{ color: brand.dark }}>{stat.value}</p>
-                <p className="text-[10px] font-medium text-slate-400 mt-1">{stat.sub}</p>
+            <Card
+              className="p-4 transition-all group cursor-default"
+              style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}
+            >
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-[11px] font-bold text-black tracking-wide">{stat.label}</p>
+                  <p className="text-2xl font-black mt-1 tracking-tight" style={{ color: brand.dark }}>{stat.value}</p>
+                  <p className="text-[10px] font-medium text-slate-400 mt-1">{stat.sub}</p>
+                </div>
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center transition-all group-hover:scale-110"
+                  style={{ background: stat.bg }}>
+                  <stat.icon className="w-5 h-5" style={{ color: stat.color }} />
+                </div>
               </div>
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center transition-all group-hover:scale-110"
-                style={{ background: stat.bg }}>
-                <stat.icon className="w-5 h-5" style={{ color: stat.color }} />
-              </div>
-            </div>
+            </Card>
           </motion.div>
         ))}
       </div>
 
       {/* ── Table Card (InvoiceList Style) ── */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-        className="bg-white rounded-2xl border shadow-sm overflow-hidden"
-        style={{ borderColor: brand.dark + '10' }}>
+        className="bg-white rounded-2xl border overflow-hidden"
+        style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}>
 
         {/* ── Solid Header Bar (InvoiceList Style) ── */}
         <div className="px-4 py-2.5 flex items-center justify-between text-white"
@@ -505,8 +508,8 @@ const ProductList: React.FC<Props> = ({ onAddProductClick }) => {
                     initial={{ opacity: 0, scale: 0.95, y: -4 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: -4 }}
-                    className="absolute right-0 top-9 z-30 bg-white rounded-xl shadow-xl border overflow-hidden w-44"
-                    style={{ borderColor: brand.dark + '15' }}>
+                    className="absolute right-0 top-9 z-30 bg-white rounded-xl border overflow-hidden w-44"
+                    style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}>
                     {sortOptions.map(opt => (
                       <button key={opt.key} onClick={() => handleSort(opt.key)}
                         className="w-full flex items-center justify-between px-3 py-2 text-[11px] font-bold hover:bg-slate-50 transition-all"
@@ -609,8 +612,8 @@ const ProductList: React.FC<Props> = ({ onAddProductClick }) => {
                   <ScrollArea className="w-full max-w-full" maxHeight="450px" style={{ overscrollBehavior: 'contain' }}>
                     <table className="w-full">
                       <thead className="sticky top-0 z-10 bg-white">
-                        <tr className="border-b" style={{ borderColor: brand.dark + '10' }}>
-                          <th className="px-4 py-3 text-center w-12 border-b">
+                        <tr className="border-b border-[#E2E8F0]">
+                          <th className="px-4 py-2.5 text-center w-12 border-b border-[#E2E8F0]">
                             <input
                               type="checkbox"
                               checked={filteredProducts.length > 0 && selectedProductIds.length === filteredProducts.length}
@@ -619,12 +622,12 @@ const ProductList: React.FC<Props> = ({ onAddProductClick }) => {
                             />
                           </th>
                           {([
-                            { label: 'Product details', key: 'name', width: 'w-[43%]' },
+                            { label: 'Product Details', key: 'name', width: 'w-[43%]' },
                             { label: 'Category', key: 'category_id', width: 'w-[13%]' },
-                            { label: 'In stock', key: 'qty', width: 'w-[10%]' },
+                            { label: 'In Stock', key: 'qty', width: 'w-[10%]' },
                             { label: 'Price (Rs.)', key: 'price', width: 'w-[12%]' },
                             { label: 'Status', key: 'status', width: 'w-[10%]' },
-                            { label: 'Last updated', key: null, width: 'w-[12%]' },
+                            { label: 'Last Updated', key: null, width: 'w-[12%]' },
                             { label: 'Actions', key: null, width: 'w-20' },
                           ] as { label: string; key: SortKey | null; width: string }[]).map((h, idx) => (
                             <TableHeader
@@ -635,7 +638,7 @@ const ProductList: React.FC<Props> = ({ onAddProductClick }) => {
                               sortDir={sortDir}
                               onSort={(key) => handleSort(key)}
                               width={h.width}
-                              borderLeft={idx !== 0}
+                              borderLeft={false}
                             />
                           ))}
                         </tr>
@@ -649,11 +652,10 @@ const ProductList: React.FC<Props> = ({ onAddProductClick }) => {
                               initial={{ opacity: 0, y: 8 }}
                               animate={{ opacity: 1, y: 0 }}
                               transition={{ type: 'spring', stiffness: 350, damping: 30, delay: i * 0.03 }}
-                              className={`group border-b transition-colors hover:bg-slate-50/60 cursor-pointer last:border-0 ${isSelected ? 'bg-blue-50/15' : ''}`}
-                              style={{ borderColor: brand.dark + '08' }}
+                              className={`group border-b border-[#E2E8F0] transition-colors hover:bg-slate-50/60 cursor-pointer last:border-0 ${isSelected ? 'bg-blue-50/15' : ''}`}
                             >
                               {/* Checkbox */}
-                              <td className="px-4 py-3 text-center border-l border-slate-50 first:border-0 w-12">
+                              <td className="px-4 py-3 text-center w-12">
                                 <input
                                   type="checkbox"
                                   checked={isSelected}
@@ -663,7 +665,7 @@ const ProductList: React.FC<Props> = ({ onAddProductClick }) => {
                               </td>
 
                               {/* Product Details (Name + UOM + Code) */}
-                              <td className="px-4 py-3 border-l border-slate-50">
+                              <td className="px-4 py-3">
                                 <div className="min-w-0">
                                   <h4 className="text-[12px] font-normal truncate max-w-[200px]" style={{ color: brand.dark }}>{product.name}</h4>
                                   <div className="flex items-center gap-1.5 mt-0.5">
@@ -678,22 +680,22 @@ const ProductList: React.FC<Props> = ({ onAddProductClick }) => {
                               </td>
 
                               {/* Category */}
-                              <td className="px-4 py-3 border-l border-slate-50 text-[12px] font-normal text-slate-600">
+                              <td className="px-4 py-3 text-[12px] font-normal text-slate-600">
                                 {getCategoryName(product.category_id)}
                               </td>
 
                               {/* Stocks */}
-                              <td className="px-4 py-3 border-l border-slate-50 text-[12px] font-normal text-slate-600">
+                              <td className="px-4 py-3 text-[12px] font-normal text-slate-600">
                                 {product.opening_qty}
                               </td>
 
                               {/* Price */}
-                              <td className="px-4 py-3 border-l border-slate-50 text-[12px] font-normal text-slate-600">
+                              <td className="px-4 py-3 text-[12px] font-normal text-slate-600">
                                 {(product.sale_price || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                               </td>
 
                               {/* Status */}
-                              <td className="px-4 py-3 border-l border-slate-50">
+                              <td className="px-4 py-3">
                                 {product.is_active
                                   ? <ActiveChip label="Active" size="md" onClick={() => handleToggleActive(product.id)} />
                                   : <InactiveChip label="Inactive" size="md" onClick={() => handleToggleActive(product.id)} />
@@ -701,12 +703,12 @@ const ProductList: React.FC<Props> = ({ onAddProductClick }) => {
                               </td>
 
                               {/* Last Updated */}
-                              <td className="px-4 py-3 border-l border-slate-50 text-[12px] font-normal text-slate-500">
+                              <td className="px-4 py-3 text-[12px] font-normal text-slate-500">
                                 {product.created_at || '2026-05-30'}
                               </td>
 
                               {/* Actions */}
-                              <td className="px-1 py-3 border-l border-slate-50 w-16 whitespace-nowrap">
+                              <td className="px-1 py-3 w-16 whitespace-nowrap">
                                 <div className="flex items-center gap-0">
                                   <Button onClick={() => setViewingProduct(product)}
                                     variant="ghost" size="xs" icon={Eye} title="View"
@@ -755,7 +757,7 @@ const ProductList: React.FC<Props> = ({ onAddProductClick }) => {
                           exit={{ opacity: 0, scale: 0.95 }}
                           transition={{ duration: 0.2 }}
                         >
-                          <Card className="h-full flex flex-col hover:-translate-y-1 hover:shadow-lg transition-all cursor-pointer group border-slate-100 p-4" onClick={() => setViewingProduct(product)}>
+                          <Card className="h-full flex flex-col hover:-translate-y-1 transition-all cursor-pointer group p-4" style={{ borderColor: '#E2E8F0', boxShadow: 'none' }} onClick={() => setViewingProduct(product)}>
                             <div className="flex justify-between items-start mb-3">
                               <div className="flex items-center gap-2 mb-1.5">
                                 <span className="text-[9px] font-medium px-2 py-0.5 rounded bg-slate-100 text-slate-500 tracking-wider">{product.code}</span>
@@ -801,7 +803,7 @@ const ProductList: React.FC<Props> = ({ onAddProductClick }) => {
         {/* Pagination (InvoiceList Style) */}
         {totalPages > 1 && (
           <div className="px-4 py-3 border-t flex items-center justify-between"
-            style={{ borderColor: brand.dark + '08', background: brand.surface + '60' }}>
+            style={{ borderColor: '#E2E8F0', background: brand.surface + '60' }}>
             <p className="text-[11px] font-medium text-black">
               Showing {(currentPage - 1) * perPage + 1}–{Math.min(currentPage * perPage, filteredProducts.length)} of {filteredProducts.length}
             </p>
@@ -835,7 +837,8 @@ const ProductList: React.FC<Props> = ({ onAddProductClick }) => {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-white rounded-3xl max-w-2xl w-full max-h-[85vh] flex flex-col overflow-hidden shadow-xl"
+              className="bg-white rounded-3xl max-w-2xl w-full max-h-[85vh] flex flex-col overflow-hidden border"
+              style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}
             >
               {/* Modal Header */}
               <ModalHeader
@@ -849,7 +852,7 @@ const ProductList: React.FC<Props> = ({ onAddProductClick }) => {
                 {/* SECTION 1: Product Information */}
                 <div className="space-y-1.5">
                   <SectionHeader title="Product Information" icon={Box} />
-                  <Card className="p-4 shadow-sm" style={{ borderColor: brand.dark + '10' }}>
+                  <Card className="p-4" style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}>
                     <div className="grid grid-cols-2 gap-4">
                       <Input variant="compact" label="Category" readOnly value={getCategoryName(viewingProduct.category_id)} />
                       <Input variant="compact" label="Brand" readOnly value={getBrandName(viewingProduct.brand_id)} />
@@ -867,7 +870,7 @@ const ProductList: React.FC<Props> = ({ onAddProductClick }) => {
                 {/* SECTION 2: Pricing & Inventory */}
                 <div className="space-y-1.5">
                   <SectionHeader title="Pricing & Inventory" icon={CreditCard} />
-                  <Card className="p-4 shadow-sm" style={{ borderColor: brand.dark + '10' }}>
+                  <Card className="p-4" style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}>
                     <div className="grid grid-cols-2 gap-4">
                       <Input variant="compact" label="Sale Price (Rs.)" readOnly value={viewingProduct.sale_price.toLocaleString(undefined, { minimumFractionDigits: 2 })} />
                       <Input variant="compact" label="Cost Price (Rs.)" readOnly value={viewingProduct.cost.toLocaleString(undefined, { minimumFractionDigits: 2 })} />
@@ -881,7 +884,7 @@ const ProductList: React.FC<Props> = ({ onAddProductClick }) => {
                 {/* SECTION 3: Tax Compliance & Codes */}
                 <div className="space-y-1.5">
                   <SectionHeader title="Tax Compliance & Codes" icon={ShieldCheck} />
-                  <Card className="p-4 shadow-sm" style={{ borderColor: brand.dark + '10' }}>
+                  <Card className="p-4" style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}>
                     <div className="grid grid-cols-3 gap-4">
                       <Input variant="compact" label="GST Rate (%)" readOnly value={`${viewingProduct.gst_rate}%`} />
                       <Input variant="compact" label="Non-Filer Rate (%)" readOnly value={`${viewingProduct.non_filer_gst_rate}%`} />
@@ -892,7 +895,7 @@ const ProductList: React.FC<Props> = ({ onAddProductClick }) => {
               </div>
 
               {/* Modal Footer */}
-              <div className="flex justify-end gap-2 px-6 py-4 border-t bg-slate-50 flex-shrink-0" style={{ borderColor: brand.dark + '10' }}>
+              <div className="flex justify-end gap-2 px-6 py-4 border-t bg-slate-50 flex-shrink-0" style={{ borderColor: '#E2E8F0' }}>
                 <Button
                   variant="white"
                   size="md"

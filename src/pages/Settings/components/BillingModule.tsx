@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Card from '../../../components/ui/Card';
 import { Button } from '../../../components/ui/Button';
 import { Input, ScrollArea } from '../../../components/ui/FormControls';
 import { useTheme } from '../../../context/ThemeContext';
@@ -99,7 +100,7 @@ export const BillingModule: React.FC<BillingModuleProps> = ({ brand }) => {
   return (
     <div className="space-y-6">
       {/* Subscription Overview Card */}
-      <div className="bg-white rounded-2xl border shadow-sm overflow-hidden" style={{ borderColor: brand.dark + '10' }}>
+      <Card className="rounded-2xl overflow-hidden p-0" style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}>
         {/* Card header bar */}
         <div className="px-4 py-2.5 flex items-center justify-between text-white" style={{ backgroundColor: brand.primary }}>
           <div className="flex items-center gap-2">
@@ -110,7 +111,7 @@ export const BillingModule: React.FC<BillingModuleProps> = ({ brand }) => {
 
         <div className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="p-5 rounded-2xl border bg-slate-50/50" style={{ borderColor: brand.dark + '10' }}>
+            <div className="p-5 rounded-2xl border bg-slate-50/50" style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}>
               <span className="text-[10px] font-bold text-slate-400">Active Plan</span>
               <h3 className="text-base font-black text-slate-800 mt-1">{planName}</h3>
               <p className="text-xs text-slate-500 mt-1">
@@ -130,7 +131,7 @@ export const BillingModule: React.FC<BillingModuleProps> = ({ brand }) => {
               </div>
             </div>
 
-            <div className="p-5 rounded-2xl border bg-slate-50/50" style={{ borderColor: brand.dark + '10' }}>
+            <div className="p-5 rounded-2xl border bg-slate-50/50" style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}>
               <span className="text-[10px] font-bold text-slate-400">Payment Method</span>
               <h3 className="text-base font-black text-slate-800 mt-1 flex items-center gap-2">
                 <span className="px-2 py-0.5 bg-blue-900 rounded text-white text-[9px] font-bold flex items-center justify-center">
@@ -145,10 +146,10 @@ export const BillingModule: React.FC<BillingModuleProps> = ({ brand }) => {
             </div>
           </div>
         </div>
-      </div>
+      </Card>
 
       {/* Payment History Table Card */}
-      <div className="bg-white rounded-2xl border shadow-sm overflow-hidden" style={{ borderColor: brand.dark + '10' }}>
+      <Card className="rounded-2xl overflow-hidden p-0" style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}>
         {/* Table header bar */}
         <div className="px-4 py-2.5 flex items-center justify-between text-white" style={{ backgroundColor: brand.primary }}>
           <div className="flex items-center gap-2">
@@ -163,33 +164,33 @@ export const BillingModule: React.FC<BillingModuleProps> = ({ brand }) => {
         <ScrollArea maxHeight="220px">
           <table className="w-full border-collapse">
             <thead className="sticky top-0 z-10 bg-white">
-              <tr className="border-b" style={{ borderColor: brand.dark + '10' }}>
-                {['Transaction ID', 'Date', 'Amount (Rs.)', 'Status'].map((h, idx) => (
+              <tr className="border-b border-[#E2E8F0]">
+                {['Transaction ID', 'Date', 'Amount (Rs.)', 'Status'].map((h) => (
                   <TableHeader
                     key={h}
                     label={h}
                     padding="px-4"
-                    borderLeft={idx !== 0}
+                    borderLeft={false}
                   />
                 ))}
               </tr>
             </thead>
             <tbody>
               {receipts.map(r => (
-                <tr key={r.id} className="border-b transition-colors hover:bg-slate-50/60 last:border-0" style={{ borderColor: brand.dark + '08' }}>
-                  <td className="px-4 py-3 border-l border-slate-50 text-[12px] font-mono font-medium text-slate-600">{r.id}</td>
-                  <td className="px-4 py-3 border-l border-slate-50 text-[12px] font-normal text-slate-500">{r.date}</td>
+                <tr key={r.id} className="border-b border-[#E2E8F0] transition-colors hover:bg-slate-50/60 last:border-0">
+                  <td className="px-4 py-3 text-[12px] font-mono font-medium text-slate-600">{r.id}</td>
+                  <td className="px-4 py-3 text-[12px] font-normal text-slate-500">{r.date}</td>
                   {/* Standard prefix-free numeric values in body rows */}
-                  <td className="px-4 py-3 border-l border-slate-50 text-[12px] font-bold text-slate-800">
+                  <td className="px-4 py-3 text-[12px] font-bold text-slate-800">
                     {r.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </td>
-                  <td className="px-4 py-3 border-l border-slate-50 text-[12px] font-bold text-emerald-600">{r.status}</td>
+                  <td className="px-4 py-3 text-[12px] font-bold text-emerald-600">{r.status}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </ScrollArea>
-      </div>
+      </Card>
 
       {/* Upgrade Plan Modal */}
       <Modal

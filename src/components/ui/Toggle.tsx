@@ -20,7 +20,7 @@ export const Toggle: React.FC<ToggleProps> = ({ checked, onChange, label, classN
         onClick={() => onChange(!checked)}
       >
         <span
-          className={`pointer-events-none block h-5 w-5 rounded-full bg-white shadow transform ring-0 transition duration-200 ease-in-out ${thumb}`}
+          className={`pointer-events-none block h-5 w-5 rounded-full bg-white border border-slate-200 shadow-none transform ring-0 transition duration-200 ease-in-out ${thumb}`}
         />
       </button>
       {label && <span className="text-xs font-bold text-slate-600">{label}</span>}

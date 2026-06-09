@@ -49,12 +49,13 @@ export const Modal: React.FC<ModalProps> = ({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ type: 'spring', duration: 0.4, bounce: 0.15 }}
-            className={`bg-white rounded-3xl w-full max-h-[88vh] flex flex-col overflow-hidden shadow-2xl relative border border-slate-100 font-sans ${sizeClasses[size]}`}
+            className={`bg-white rounded-3xl w-full max-h-[88vh] flex flex-col overflow-hidden relative border border-[#E2E8F0] font-sans ${sizeClasses[size]}`}
+            style={{ boxShadow: 'none' }}
           >
             {/* Header */}
             <div
               className="flex items-center justify-between px-6 py-4 border-b flex-shrink-0"
-              style={{ borderColor: brand.dark + '08', background: `linear-gradient(135deg, ${brand.surface}40, #ffffff)` }}
+              style={{ borderColor: '#E2E8F0', background: `linear-gradient(135deg, ${brand.surface}40, #ffffff)` }}
             >
               <div className="flex items-center gap-2">
                 {Icon && (
@@ -76,7 +77,7 @@ export const Modal: React.FC<ModalProps> = ({
 
             {/* Stepper (optional) */}
             {stepper && (
-              <div className="px-6 py-4 border-b bg-slate-50/30 flex-shrink-0" style={{ borderColor: brand.dark + '05' }}>
+              <div className="px-6 py-4 border-b bg-slate-50/30 flex-shrink-0" style={{ borderColor: '#E2E8F0' }}>
                 {stepper}
               </div>
             )}
@@ -90,7 +91,7 @@ export const Modal: React.FC<ModalProps> = ({
             {footer && (
               <div
                 className="px-6 py-4 border-t flex justify-end gap-2.5 flex-shrink-0"
-                style={{ borderColor: brand.dark + '08', backgroundColor: brand.surface + '20' }}
+                style={{ borderColor: '#E2E8F0', backgroundColor: brand.surface + '20' }}
               >
                 {footer}
               </div>

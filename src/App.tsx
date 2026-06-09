@@ -1,29 +1,42 @@
-import { useState, useEffect, lazy, Suspense } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { InvoiceData } from './types';
 import Layout from './components/layout/Layout';
 
-// Lazy-loaded pages — each becomes its own async chunk
-const Dashboard = lazy(() => import('./pages/Invoices/Dashboard/Dashboard'));
-const Dashboard1 = lazy(() => import('./pages/Invoices/Dashboard/Dashboard1'));
-const InvoiceEditorV4 = lazy(() => import('./pages/Invoices/InvoiceEditorV4'));
-const InvoiceListModule = lazy(() => import('./pages/Invoices/InvoiceList'));
-const CustomerManagement = lazy(() => import('./pages/Customers/CustomerManagement'));
-const Settings = lazy(() => import('./pages/Settings/Settings'));
-const Help = lazy(() => import('./pages/Help/Help'));
-const Login = lazy(() => import('./pages/Auth/Login'));
-const ProductList = lazy(() => import('./pages/Products/ProductList'));
-const InlineProductForm = lazy(() => import('./components/ui/InlineProductForm'));
+// Static page imports for instantaneous and smooth transitions
+import Dashboard from './pages/Invoices/Dashboard/Dashboard';
+import Dashboard1 from './pages/Invoices/Dashboard/Dashboard1';
+import Dashboard2 from './pages/Invoices/Dashboard/Dashboard2';
+import InvoiceEditorV4 from './pages/Invoices/InvoiceEditorV4';
+import InvoiceListModule from './pages/Invoices/InvoiceList';
+import CustomerManagement from './pages/Customers/CustomerManagement';
+import Settings from './pages/Settings/Settings';
+import Help from './pages/Help/Help';
+import Login from './pages/Auth/Login';
+import ProductList from './pages/Products/ProductList';
+import InlineProductForm from './components/ui/InlineProductForm';
 
 // Static imports for types / initial data only
 import { initialInvoices } from './pages/Invoices/invoiceTypes';
 import type { Invoice } from './pages/Invoices/invoiceTypes';
 
-type View = 'dashboard' | 'dashboard1' | 'invoices' | 'add-invoice' | 'add-invoice-v2' | 'add-invoice-v3' | 'add-invoice-v4' | 'customers' | 'products' | 'settings' | 'help';
+type View = 'dashboard' | 'dashboard1' | 'dashboard2' | 'invoices' | 'add-invoice' | 'add-invoice-v2' | 'add-invoice-v3' | 'add-invoice-v4' | 'customers' | 'products' | 'settings' | 'help';
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [activeView, setActiveView] = useState<View>('dashboard');
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('is_logged_in') === 'true';
+    } catch {
+      return false;
+    }
+  });
+  const [activeView, setActiveView] = useState<View>(() => {
+    try {
+      const stored = localStorage.getItem('active_view');
+      if (stored) return stored as View;
+    } catch {}
+    return 'dashboard';
+  });
   const [isProductFormOpen, setIsProductFormOpen] = useState(false);
   const [productFormInitialData, setProductFormInitialData] = useState<any>(undefined);
   const [invoiceList, setInvoiceList] = useState<Invoice[]>(() => {
@@ -52,6 +65,11 @@ function App() {
   useEffect(() => {
     try { localStorage.setItem('invoice_list', JSON.stringify(invoiceList)); } catch { /* ignore */ }
   }, [invoiceList]);
+
+  // Sync active view to localStorage
+  useEffect(() => {
+    try { localStorage.setItem('active_view', activeView); } catch { /* ignore */ }
+  }, [activeView]);
 
   useEffect(() => {
     const handleOpenProductForm = (e: any) => {
@@ -115,7 +133,10 @@ function App() {
   if (!isLoggedIn) {
     return (
       <Suspense fallback={<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: '#0f172a', color: '#94a3b8', fontFamily: 'Inter, sans-serif' }}>Loading…</div>}>
-        <Login onLogin={() => setIsLoggedIn(true)} />
+        <Login onLogin={() => {
+          try { localStorage.setItem('is_logged_in', 'true'); } catch {}
+          setIsLoggedIn(true);
+        }} />
       </Suspense>
     );
   }
@@ -240,9 +261,11 @@ function App() {
   const renderView = () => {
     switch (activeView) {
       case 'dashboard':
-        return <Dashboard invoiceItems={invoiceList} />;
+        return <Dashboard invoiceItems={invoiceList} onViewChange={(v) => setActiveView(v as View)} />;
       case 'dashboard1':
         return <Dashboard1 invoiceItems={invoiceList} onViewChange={(v) => setActiveView(v as View)} />;
+      case 'dashboard2':
+        return <Dashboard2 invoiceItems={invoiceList} onViewChange={(v) => setActiveView(v as View)} />;
       case 'add-invoice':
         return <div>Invoice creation is handled via AI Inline Panel.</div>;
       case 'add-invoice-v2':
@@ -275,7 +298,14 @@ function App() {
 
   return (
     <Suspense fallback={loadingFallback}>
-      <Layout activeView={activeView} onViewChange={(v) => setActiveView(v as View)} onLogout={() => setIsLoggedIn(false)}>
+      <Layout activeView={activeView} onViewChange={(v) => setActiveView(v as View)} onLogout={() => {
+        try {
+          localStorage.removeItem('is_logged_in');
+          localStorage.removeItem('active_view');
+        } catch {}
+        setIsLoggedIn(false);
+        setActiveView('dashboard');
+      }}>
         <Suspense fallback={loadingFallback}>
           <AnimatePresence mode="wait">
             <motion.div

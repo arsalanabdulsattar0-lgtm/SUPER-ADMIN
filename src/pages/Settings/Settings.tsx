@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  User, CreditCard, Palette, Receipt, Users, Building2,
+  User, CreditCard, Palette, Receipt, Users, Building2, Shield,
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -12,6 +12,7 @@ import { AppearanceModule } from './components/AppearanceModule';
 import { TaxSetupModule } from './components/TaxSetupModule';
 import { SalesPersonModule } from './components/SalesPersonModule';
 import { CompanyModule } from './components/CompanyModule';
+import { UserManagementModule } from './components/UserManagementModule';
 
 // Re-export types imported from separate modules (for settingsData.ts and other consumers)
 export type { TaxSetup } from './components/TaxSetupModule';
@@ -31,6 +32,7 @@ const Settings: React.FC = () => {
     { id: 'tax', title: 'Tax Setup', desc: 'Manage tax codes, types, rates, and provinces.', icon: Receipt },
     { id: 'sales', title: 'Salesperson', desc: 'Manage salespersons, targets, and commissions.', icon: Users },
     { id: 'company', title: 'Company', desc: 'Manage company profiles, NTN, STN, PRAL tokens and contacts.', icon: Building2 },
+    { id: 'users', title: 'User Management', desc: 'Manage user access, roles, allowed IPs, and company assignments.', icon: Shield },
   ];
 
   const toggle = (id: string) =>
@@ -66,27 +68,27 @@ const Settings: React.FC = () => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: i * 0.05 }}
               onClick={() => toggle(section.id)}
-              className="flex items-center gap-6 p-6 rounded-3xl border shadow-sm hover:shadow-md transition-all cursor-pointer group"
+              className="flex items-center gap-6 p-6 rounded-xl transition-all cursor-pointer group"
               style={{
                 backgroundColor: brand.cardBg,
-                borderColor: isActive ? brand.primary : brand.border,
-                boxShadow: isActive ? `0 0 0 2px ${brand.primary}20` : undefined,
+                border: `1px solid ${isActive ? brand.primary : '#E2E8F0'}`,
+                boxShadow: 'none',
               }}
             >
               <div
                 className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 transition-all"
                 style={{
                   backgroundColor: isActive ? brand.primary : brand.surface,
-                  color: isActive ? '#FFFFFF' : brand.textSecondary,
+                  color: isActive ? '#FFFFFF' : '#000000',
                 }}
               >
                 <section.icon className="w-6 h-6" />
               </div>
               <div className="flex-grow">
-                <h3 className="text-sm font-bold transition-colors" style={{ color: isActive ? brand.primary : brand.textPrimary }}>
+                <h3 className="text-sm font-bold transition-colors" style={{ color: isActive ? brand.primary : '#000000' }}>
                   {section.title}
                 </h3>
-                <p className="text-xs mt-1" style={{ color: brand.textSecondary }}>{section.desc}</p>
+                <p className="text-xs mt-1" style={{ color: '#475569' }}>{section.desc}</p>
               </div>
             </motion.div>
           );
@@ -102,8 +104,8 @@ const Settings: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 15 }}
             transition={{ duration: 0.2 }}
-            className="rounded-3xl border shadow-sm overflow-hidden transition-colors duration-300"
-            style={{ backgroundColor: brand.cardBg, borderColor: brand.border }}
+            className="rounded-xl overflow-hidden transition-colors duration-300"
+            style={{ backgroundColor: brand.cardBg, border: '1px solid #E2E8F0', boxShadow: 'none' }}
           >
             {/* Header portion dynamically based on active section */}
             {(() => {
@@ -144,6 +146,7 @@ const Settings: React.FC = () => {
               {activeSection === 'tax' && <TaxSetupModule brand={brand} />}
               {activeSection === 'sales' && <SalesPersonModule brand={brand} />}
               {activeSection === 'company' && <CompanyModule brand={brand} />}
+              {activeSection === 'users' && <UserManagementModule brand={brand} />}
             </div>
           </motion.div>
         )}

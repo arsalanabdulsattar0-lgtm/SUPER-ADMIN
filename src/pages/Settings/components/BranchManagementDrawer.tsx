@@ -129,11 +129,11 @@ export const BranchManagementDrawer: React.FC<BranchManagementDrawerProps> = ({
               animate={{ x: 0 }}
               exit={{ x: '105%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed right-0 top-0 bottom-0 z-[1000] w-full sm:w-[480px] bg-white border-l shadow-2xl flex flex-col overflow-hidden"
-              style={{ borderColor: brand.dark + '10' }}
+              className="fixed right-0 top-0 bottom-0 z-[1000] w-full sm:w-[480px] bg-white border-l flex flex-col overflow-hidden"
+              style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}
             >
               {/* Header */}
-              <div className="flex items-center justify-between px-5 py-4 bg-white border-b flex-shrink-0" style={{ borderColor: brand.dark + '10' }}>
+              <div className="flex items-center justify-between px-5 py-4 bg-white border-b flex-shrink-0" style={{ borderColor: '#E2E8F0' }}>
                 <div className="flex items-center gap-2">
                   <Home className="w-5 h-5" style={{ color: brand.primary }} />
                   <h2 className="text-sm font-black text-slate-800">
@@ -180,8 +180,8 @@ export const BranchManagementDrawer: React.FC<BranchManagementDrawerProps> = ({
                           branches.map((b) => (
                             <Card
                               key={b.id}
-                              className="p-4 border rounded-xl bg-white flex flex-col gap-2 hover:border-slate-300 transition-all group"
-                              style={{ borderColor: brand.dark + '10' }}
+                              className="p-4 border rounded-xl bg-white flex flex-col gap-2 transition-all group"
+                              style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}
                             >
                               <div className="flex items-start justify-between gap-2">
                                 <div className="space-y-1">
@@ -230,7 +230,7 @@ export const BranchManagementDrawer: React.FC<BranchManagementDrawerProps> = ({
 
                     <div className="space-y-1.5">
                       <SectionHeader title="Branch Details" icon={Building} />
-                      <Card className="p-4 space-y-4 shadow-sm" style={{ borderColor: brand.dark + '10' }}>
+                      <Card className="p-4 space-y-4" style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}>
                         <Select
                           label="Company *"
                           variant="compact"
@@ -270,7 +270,7 @@ export const BranchManagementDrawer: React.FC<BranchManagementDrawerProps> = ({
 
               {/* Footer */}
               {view === 'form' && (
-                <div className="p-4 border-t border-slate-100 flex items-center gap-2 bg-slate-50/50 flex-shrink-0">
+                <div className="p-4 border-t border-[#E2E8F0] flex items-center gap-2 bg-slate-50/50 flex-shrink-0">
                   <Button
                     onClick={() => setView('list')}
                     variant="white"

@@ -65,7 +65,10 @@ const CustomerList: React.FC = () => {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: i * 0.05 }}
           >
-            <Card className="h-full flex flex-col hover:-translate-y-1 hover:shadow-md transition-all cursor-pointer group p-6">
+            <Card
+              className="h-full flex flex-col hover:-translate-y-1 transition-all cursor-pointer group p-6"
+              style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}
+            >
               <div className="flex justify-between items-start mb-4">
                 <div className="text-[12px] font-bold text-brand-primary" style={{ color: brand.primary }}>
                   {customer.name}

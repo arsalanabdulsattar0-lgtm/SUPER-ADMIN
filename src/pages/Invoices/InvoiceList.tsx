@@ -55,6 +55,8 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ onViewChange, invoiceItems, s
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<InvoiceStatus | 'All'>('All');
   const [typeFilter, setTypeFilter] = useState<string>('All');
+  const [tempStatusFilter, setTempStatusFilter] = useState<InvoiceStatus | 'All'>('All');
+  const [tempTypeFilter, setTempTypeFilter] = useState<string>('All');
   const [openAction, setOpenAction] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [sortKey, setSortKey] = useState<SortKey>('issueDate');
@@ -86,8 +88,11 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ onViewChange, invoiceItems, s
   const handleResetFilters = () => {
     setStatusFilter('All');
     setTypeFilter('All');
+    setTempStatusFilter('All');
+    setTempTypeFilter('All');
     setSearch('');
     setCurrentPage(1);
+    setShowFilterDrawer(false);
   };
 
   const handleExport = () => {
@@ -242,11 +247,15 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ onViewChange, invoiceItems, s
           >
             Export
           </Button>
-          <Button
+           <Button
             variant="white"
             size="md"
             icon={SlidersHorizontal}
-            onClick={() => setShowFilterDrawer(true)}
+            onClick={() => {
+              setTempStatusFilter(statusFilter);
+              setTempTypeFilter(typeFilter);
+              setShowFilterDrawer(true);
+            }}
             className="relative"
           >
             Filter
@@ -273,28 +282,31 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ onViewChange, invoiceItems, s
           <motion.div key={stat.label}
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.07 }}
-            className="bg-white rounded-2xl p-4 border shadow-sm hover:shadow-md transition-all group cursor-default"
-            style={{ borderColor: brand.dark + '10' }}
           >
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-[11px] font-bold text-black tracking-wide">{stat.label}</p>
-                <p className="text-2xl font-black mt-1 tracking-tight" style={{ color: brand.dark }}>{stat.value}</p>
-                <p className="text-[10px] font-medium text-slate-400 mt-1">{stat.sub}</p>
+            <Card
+              className="p-4 transition-all group cursor-default"
+              style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}
+            >
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-[11px] font-bold text-black tracking-wide">{stat.label}</p>
+                  <p className="text-2xl font-black mt-1 tracking-tight" style={{ color: brand.dark }}>{stat.value}</p>
+                  <p className="text-[10px] font-medium text-slate-400 mt-1">{stat.sub}</p>
+                </div>
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center transition-all group-hover:scale-110"
+                  style={{ background: stat.bg }}>
+                  <stat.icon className="w-5 h-5" style={{ color: stat.color }} />
+                </div>
               </div>
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center transition-all group-hover:scale-110"
-                style={{ background: stat.bg }}>
-                <stat.icon className="w-5 h-5" style={{ color: stat.color }} />
-              </div>
-            </div>
+            </Card>
           </motion.div>
         ))}
       </div>
 
       {/* ── Table Card ── */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-        className="bg-white rounded-2xl border shadow-sm overflow-hidden"
-        style={{ borderColor: brand.dark + '10' }}>
+        className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-none"
+        style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}>
 
         {/* ── Solid Header Bar (reference image style) ── */}
         <div className="px-4 py-2.5 flex items-center justify-between text-white"
@@ -399,7 +411,7 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ onViewChange, invoiceItems, s
             <ScrollArea className="w-full max-w-full" maxHeight="340px" style={{ overscrollBehavior: 'contain' }}>
               <table className="w-full">
                 <thead className="sticky top-0 z-10 bg-white">
-                  <tr className="border-b" style={{ borderColor: brand.dark + '10' }}>
+                  <tr className="border-b border-[#E2E8F0]">
                     {([
                       { label: 'Invoice ID', key: 'id', width: 'w-[15%]' },
                       { label: 'Customer', key: 'customer', width: 'w-[25%]' },
@@ -411,7 +423,7 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ onViewChange, invoiceItems, s
                       { label: 'Actions', key: null, width: 'w-28' },
                     ] as { label: string; key: SortKey | null; width: string }[]).map((h, idx) => (
                       <th key={h.label}
-                        className={`${h.label === 'Actions' ? 'px-2' : 'px-4'} py-3 text-left border-b ${h.key ? 'cursor-pointer hover:bg-blue-50/40 select-none' : ''} transition-colors ${idx !== 0 ? 'border-l border-slate-100' : ''} ${h.width}`}
+                        className={`${h.label === 'Actions' ? 'px-2' : 'px-4'} py-3 text-left border-b ${h.key ? 'cursor-pointer hover:bg-blue-50/40 select-none' : ''} transition-colors ${h.width}`}
                         style={{ borderColor: brand.dark + '10' }}
                         onClick={() => h.key && handleSort(h.key)}>
                         <span className="text-[10px] font-black tracking-widest inline-flex items-center gap-0.5 whitespace-nowrap"
@@ -432,28 +444,27 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ onViewChange, invoiceItems, s
                         initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ type: 'spring', stiffness: 350, damping: 30, delay: i * 0.04 }}
-                        className="group border-b transition-colors hover:bg-slate-50/60 cursor-pointer last:border-0"
-                        style={{ borderColor: brand.dark + '08' }}
+                        className="group border-b border-[#E2E8F0] transition-colors hover:bg-slate-50/60 cursor-pointer last:border-0"
                       >
                         {/* Invoice ID */}
-                        <td className="px-4 py-3 border-l border-slate-50 first:border-0">
+                        <td className="px-4 py-3">
                           <span className="text-[12px] font-normal font-mono" style={{ color: brand.dark }}>{inv.id}</span>
                         </td>
 
                         {/* Customer */}
-                        <td className="px-4 py-3 border-l border-slate-50">
+                        <td className="px-4 py-3">
                           <span className="text-[12px] font-normal truncate max-w-[200px]" style={{ color: brand.dark }}>
                             {inv.customer}
                           </span>
                         </td>
 
                         {/* Issue Date */}
-                        <td className="px-4 py-3 border-l border-slate-50">
+                        <td className="px-4 py-3">
                           <span className="text-[12px] font-normal text-slate-500">{inv.issueDate}</span>
                         </td>
 
                         {/* Due Date */}
-                        <td className="px-4 py-3 border-l border-slate-50">
+                        <td className="px-4 py-3">
                           <span className="text-[12px] font-normal"
                             style={{ color: inv.status === 'Overdue' ? '#BE123C' : 'rgb(100 116 139)' }}>
                             {inv.dueDate}
@@ -461,17 +472,17 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ onViewChange, invoiceItems, s
                         </td>
 
                         {/* Amount */}
-                        <td className="px-4 py-3 border-l border-slate-50 text-[12px] font-normal text-slate-600">
+                        <td className="px-4 py-3 text-[12px] font-normal text-slate-600">
                           <span>{inv.amount.replace(/^(Rs\.|PKR|\$)\s*/i, '')}</span>
                         </td>
 
                         {/* Type */}
-                        <td className="px-4 py-3 border-l border-slate-50">
+                        <td className="px-4 py-3">
                           <span className="text-[12px] font-normal" style={{ color: brand.dark }}>{inv.type}</span>
                         </td>
 
                         {/* Status */}
-                        <td className="px-4 py-3 border-l border-slate-50">
+                        <td className="px-4 py-3">
                           <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full w-fit border whitespace-nowrap"
                             style={{ background: cfg.bg, borderColor: cfg.border }}>
                             <StatusIcon className="w-3.5 h-3.5" style={{ color: cfg.text }} />
@@ -482,7 +493,7 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ onViewChange, invoiceItems, s
                         </td>
 
                         {/* Actions */}
-                        <td className="px-2 py-3 border-l border-slate-50 w-28">
+                        <td className="px-2 py-3 w-28">
                           <div className="flex items-center gap-1">
                             <Button onClick={() => handleOpenPreview(inv)}
                               variant="ghost" size="xs" icon={Eye} title="View"
@@ -560,8 +571,8 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ onViewChange, invoiceItems, s
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 30 }}
               transition={{ type: 'spring', duration: 0.5 }}
-              className="bg-white max-w-4xl w-full rounded-3xl shadow-2xl border overflow-hidden flex flex-col max-h-[90vh] relative border-slate-100 font-sans"
-              style={{ borderColor: brand.dark + '10' }}
+              className="bg-white max-w-4xl w-full rounded-3xl border overflow-hidden flex flex-col max-h-[90vh] relative border-slate-100 font-sans shadow-none"
+              style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}
             >
               {/* Modal Header */}
               <div className="flex items-center justify-between px-6 py-4 bg-white border-b flex-shrink-0" style={{ borderColor: brand.dark + '10' }}>
@@ -601,7 +612,7 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ onViewChange, invoiceItems, s
                       <FileText className="w-3.5 h-3.5" style={{ color: brand.primary }} />
                       General Information
                     </h4>
-                    <Card className="p-4 shadow-sm" style={{ borderColor: brand.dark + '10' }}>
+                    <Card className="p-4" style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Customer details */}
                         <div className="space-y-3">
@@ -632,7 +643,7 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ onViewChange, invoiceItems, s
                       <Package className="w-3.5 h-3.5" style={{ color: brand.primary }} />
                       Transaction Entries
                     </h4>
-                    <Card className="p-0 shadow-sm overflow-hidden" style={{ borderColor: brand.dark + '10' }}>
+                    <Card className="p-0 overflow-hidden" style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}>
                       <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                           <thead>
@@ -683,12 +694,12 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ onViewChange, invoiceItems, s
                       {/* Left: Notes & Bank Info */}
                       <div className="md:col-span-7 space-y-4">
                         {previewInvoice.notes && (
-                          <Card className="p-4 shadow-sm" style={{ borderColor: brand.dark + '10' }}>
+                          <Card className="p-4" style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}>
                             <TextArea label="Notes & Special Terms" readOnly value={previewInvoice.notes} className="!rounded-lg text-[11px] py-1.5 px-3 h-20" />
                           </Card>
                         )}
                         {previewInvoice.bankAccount && (
-                          <Card className="p-4 shadow-sm" style={{ borderColor: brand.dark + '10' }}>
+                          <Card className="p-4" style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}>
                             <Input variant="compact" label="Bank Payment Account" readOnly value={previewInvoice.bankAccount} />
                           </Card>
                         )}
@@ -696,7 +707,7 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ onViewChange, invoiceItems, s
 
                       {/* Right: Calculated Totals */}
                       <div className="md:col-span-5">
-                        <Card className="p-4 shadow-sm space-y-2 text-[12px]" style={{ borderColor: brand.dark + '10' }}>
+                        <Card className="p-4 space-y-2 text-[12px]" style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}>
                           {(() => {
                             const subtotal = previewInvoice.items.reduce((sum: number, item: InvoiceItem) => sum + (item.quantity * item.price) - item.discount + item.tax + (item.furtherTax || 0), 0);
                             const taxAmount = (subtotal * (previewInvoice.taxRate || 0)) / 100;
@@ -805,18 +816,23 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ onViewChange, invoiceItems, s
         )}
       </AnimatePresence>
 
-      {/* Filter Drawer */}
       <FilterDrawer
         isOpen={showFilterDrawer}
         onClose={() => setShowFilterDrawer(false)}
         title="Filter Invoices"
         onReset={handleResetFilters}
+        onApply={() => {
+          setStatusFilter(tempStatusFilter);
+          setTypeFilter(tempTypeFilter);
+          setCurrentPage(1);
+          setShowFilterDrawer(false);
+        }}
       >
         <div className="space-y-4">
           <Select
             label="Status"
-            value={statusFilter}
-            onChange={(e) => { setStatusFilter(e.target.value as any); setCurrentPage(1); }}
+            value={tempStatusFilter}
+            onChange={(e) => setTempStatusFilter(e.target.value as any)}
             options={[
               { value: 'All', label: 'All Statuses' },
               { value: 'Paid', label: 'Paid' },
@@ -828,8 +844,8 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ onViewChange, invoiceItems, s
 
           <Select
             label="Invoice Type"
-            value={typeFilter}
-            onChange={(e) => { setTypeFilter(e.target.value); setCurrentPage(1); }}
+            value={tempTypeFilter}
+            onChange={(e) => setTempTypeFilter(e.target.value)}
             options={typeOptions.map(t => ({ value: t, label: t === 'All' ? 'All Types' : t }))}
           />
         </div>

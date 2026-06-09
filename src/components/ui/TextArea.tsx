@@ -22,7 +22,7 @@ export const TextArea: React.FC<TextAreaProps> = ({
       <textarea
         className={`
           w-full border rounded-xl py-2 px-5 
-          text-[11px] font-normal text-[#304166] placeholder:text-slate-400 placeholder:font-normal 
+          text-[11px] font-normal text-[#304166] placeholder:text-slate-400 placeholder:text-[11px] placeholder:font-normal 
           outline-none transition-all resize-none custom-scrollbar
           form-textarea-container
           ${error ? 'border-red-500 focus:ring-red-500/5' : ''}

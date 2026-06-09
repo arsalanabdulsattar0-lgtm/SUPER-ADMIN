@@ -7,10 +7,8 @@ import {
   Settings,
   HelpCircle,
   LogOut,
-  Zap,
+  FilePlus,
   Menu,
-  Sparkles,
-  ChevronDown,
   Box
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
@@ -32,9 +30,8 @@ const Sidebar: React.FC<Props> = ({ activeView, onViewChange, isCollapsed, onTog
 
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'dashboard1', label: 'Dashboard 1', icon: Sparkles },
     { id: 'invoices', label: 'Invoices', icon: FileText },
-    { id: 'add-invoice-v4', label: 'Create V4', icon: Zap },
+    { id: 'add-invoice-v4', label: 'Add Invoice', icon: FilePlus },
     { id: 'customers', label: 'Customers', icon: Users },
     { id: 'products', label: 'Products', icon: Box },
   ];
@@ -47,7 +44,7 @@ const Sidebar: React.FC<Props> = ({ activeView, onViewChange, isCollapsed, onTog
   return (
     <motion.aside
       initial={false}
-      animate={{ width: isCollapsed ? 60 : 224 }}
+      animate={{ width: isCollapsed ? 48 : 180 }}
       transition={{ duration: 0.3, ease: 'easeInOut' }}
       className="h-screen flex flex-col sticky top-0 flex-shrink-0 overflow-hidden z-50 transition-colors duration-300"
       style={{
@@ -56,13 +53,13 @@ const Sidebar: React.FC<Props> = ({ activeView, onViewChange, isCollapsed, onTog
       }}
     >
       {/* Logo / Toggle */}
-      <div className={`py-6 flex items-center ${isCollapsed ? 'justify-center' : 'px-6 gap-2.5'}`}>
+      <div className={`py-6 flex items-center ${isCollapsed ? 'justify-center' : 'px-5 gap-2'}`}>
         <button
           onClick={onToggleSidebar}
-          className="group/logo relative shrink-0 overflow-hidden transition-all hover:opacity-90"
+          className="group/logo relative shrink-0 overflow-hidden transition-all hover:opacity-90 cursor-pointer"
           style={{
-            width: isCollapsed ? 40 : 32,
-            height: isCollapsed ? 40 : 32,
+            width: 32,
+            height: 32,
             backgroundColor: brand.primary,
             borderRadius: 10,
             boxShadow: `0 4px 12px ${brand.primary}40`,
@@ -73,12 +70,12 @@ const Sidebar: React.FC<Props> = ({ activeView, onViewChange, isCollapsed, onTog
         >
           <span
             className="text-white font-bold group-hover/logo:scale-0 transition-all duration-300"
-            style={{ fontSize: isCollapsed ? 20 : 16 }}
+            style={{ fontSize: 16 }}
           >
             I
           </span>
           <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/logo:opacity-100 scale-50 group-hover/logo:scale-100 transition-all duration-300">
-            <Menu className={`${isCollapsed ? 'w-6 h-6' : 'w-5 h-5'} text-white`} />
+            <Menu className="w-[18px] h-[18px] text-white" />
           </div>
         </button>
 
@@ -86,7 +83,7 @@ const Sidebar: React.FC<Props> = ({ activeView, onViewChange, isCollapsed, onTog
           <motion.span
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="text-lg font-bold tracking-tight truncate transition-colors duration-300"
+            className="text-md font-bold tracking-tight truncate transition-colors duration-300"
             style={{ color: brand.textPrimary }}
           >
             InvoiceFlow
@@ -95,17 +92,17 @@ const Sidebar: React.FC<Props> = ({ activeView, onViewChange, isCollapsed, onTog
       </div>
 
       {/* Nav Items */}
-      <nav className={`flex-grow ${isCollapsed ? 'px-2' : 'px-3'} space-y-1.5 py-4 overflow-y-auto custom-scrollbar`}>
+      <nav className={`flex-grow ${isCollapsed ? 'px-1.5' : 'px-2.5'} space-y-1.5 py-4 overflow-y-auto custom-scrollbar`}>
         {menuItems.map((item) => {
           const isActive = activeView === item.id;
           return (
             <button
               key={item.id}
               onClick={() => handleMenuClick(item.id)}
-              className={`w-full flex items-center ${isCollapsed ? 'justify-center px-0 h-11' : 'gap-2.5 px-4 py-2.5'} rounded-xl text-[13px] font-medium transition-all relative`}
+              className={`w-full flex items-center ${isCollapsed ? 'justify-center px-0 h-8 w-8 mx-auto' : 'gap-2 px-3 py-2'} rounded-xl text-[12px] font-semibold transition-all relative cursor-pointer`}
               style={{
-                backgroundColor: isActive ? brand.sidebarActiveBg : 'transparent',
-                color: isActive ? brand.sidebarActiveText : brand.sidebarText,
+                backgroundColor: isActive ? brand.primary : 'transparent',
+                color: isActive ? '#FFFFFF' : '#000000',
               }}
               title={isCollapsed ? item.label : ''}
             >
@@ -114,18 +111,17 @@ const Sidebar: React.FC<Props> = ({ activeView, onViewChange, isCollapsed, onTog
                   layoutId="active-pill"
                   className="absolute inset-0 rounded-xl z-0"
                   style={{
-                    backgroundColor: brand.sidebarActiveBg,
-                    border: `1px solid ${brand.primary}20`,
+                    backgroundColor: brand.primary,
                   }}
                   transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
                 />
               )}
               <item.icon
-                className={`${isCollapsed ? 'w-6 h-6' : 'w-4 h-4'} relative z-10`}
-                style={{ color: isActive ? brand.sidebarActiveText : brand.sidebarText }}
+                className={`${isCollapsed ? 'w-[16px] h-[16px]' : 'w-4 h-4'} relative z-10`}
+                style={{ color: isActive ? '#FFFFFF' : '#000000' }}
               />
               {!isCollapsed && (
-                <span className="relative z-10 truncate">{item.label}</span>
+                <span className="relative z-10 truncate" style={{ color: isActive ? '#FFFFFF' : '#000000' }}>{item.label}</span>
               )}
             </button>
           );
@@ -134,39 +130,55 @@ const Sidebar: React.FC<Props> = ({ activeView, onViewChange, isCollapsed, onTog
 
       {/* Bottom Items */}
       <div
-        className={`py-4 space-y-1.5 ${isCollapsed ? 'px-2' : 'px-3'}`}
+        className={`py-4 space-y-1.5 ${isCollapsed ? 'px-1.5' : 'px-2.5'}`}
         style={{ borderTop: `1px solid ${brand.border}` }}
       >
-        {bottomItems.map((item) => (
-          <button
-            key={item.id}
-            onClick={() => onViewChange(item.id)}
-            className={`w-full flex items-center ${isCollapsed ? 'justify-center px-0 h-11' : 'gap-2.5 px-4 py-2.5'} rounded-xl text-[13px] font-medium transition-all hover:opacity-80`}
-            style={{ color: brand.sidebarText }}
-            title={isCollapsed ? item.label : ''}
-          >
-            <item.icon
-              className={`${isCollapsed ? 'w-6 h-6' : 'w-4 h-4'}`}
-              style={{ color: brand.sidebarText }}
-            />
-            {!isCollapsed && <span className="truncate">{item.label}</span>}
-          </button>
-        ))}
+        {bottomItems.map((item) => {
+          const isActive = activeView === item.id;
+          return (
+            <button
+              key={item.id}
+              onClick={() => onViewChange(item.id)}
+              className={`w-full flex items-center ${isCollapsed ? 'justify-center px-0 h-8 w-8 mx-auto' : 'gap-2 px-3 py-2'} rounded-xl text-[12px] font-semibold transition-all relative cursor-pointer`}
+              style={{
+                backgroundColor: isActive ? brand.primary : 'transparent',
+                color: isActive ? '#FFFFFF' : '#000000',
+              }}
+              title={isCollapsed ? item.label : ''}
+            >
+              {isActive && !isCollapsed && (
+                <motion.div
+                  layoutId="active-pill"
+                  className="absolute inset-0 rounded-xl z-0"
+                  style={{
+                    backgroundColor: brand.primary,
+                  }}
+                  transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
+                />
+              )}
+              <item.icon
+                className={`${isCollapsed ? 'w-[16px] h-[16px]' : 'w-4 h-4'} relative z-10`}
+                style={{ color: isActive ? '#FFFFFF' : '#000000' }}
+              />
+              {!isCollapsed && <span className="relative z-10 truncate" style={{ color: isActive ? '#FFFFFF' : '#000000' }}>{item.label}</span>}
+            </button>
+          );
+        })}
 
         <button
           onClick={onLogout}
-          className={`w-full flex items-center ${isCollapsed ? 'justify-center px-0 h-11' : 'gap-2.5 px-4 py-2.5'} rounded-xl text-[13px] font-medium text-red-500 hover:bg-red-50 transition-all`}
+          className={`w-full flex items-center ${isCollapsed ? 'justify-center px-0 h-8 w-8 mx-auto' : 'gap-2 px-3 py-2'} rounded-xl text-[12px] font-semibold text-red-500 hover:bg-red-50 transition-all cursor-pointer`}
         >
-          <LogOut className={`${isCollapsed ? 'w-6 h-6' : 'w-4 h-4'}`} />
+          <LogOut className={`${isCollapsed ? 'w-[16px] h-[16px]' : 'w-4 h-4'}`} />
           {!isCollapsed && <span>Logout</span>}
         </button>
 
         {/* PROFILE CARD */}
         <div className="mt-4 pt-4" style={{ borderTop: `1px solid ${brand.border}` }}>
-          <button className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'justify-between px-2'} group cursor-pointer`}>
-            <div className="flex items-center gap-3">
+          <div className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'justify-between px-1.5'} group`}>
+            <div className="flex items-center gap-2.5">
               <div
-                className="w-9 h-9 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-lg shrink-0"
+                className="w-8 h-8 rounded-xl flex items-center justify-center text-white font-bold text-xs shadow-lg shrink-0"
                 style={{
                   background: `linear-gradient(135deg, ${brand.primary}, ${brand.accent})`,
                 }}
@@ -175,18 +187,12 @@ const Sidebar: React.FC<Props> = ({ activeView, onViewChange, isCollapsed, onTog
               </div>
               {!isCollapsed && (
                 <div className="text-left">
-                  <p className="text-sm font-bold leading-tight" style={{ color: brand.textPrimary }}>John Doe</p>
-                  <p className="text-[11px] font-medium tracking-wider" style={{ color: brand.sidebarText }}>Admin Account</p>
+                  <p className="text-[12px] font-bold leading-tight" style={{ color: brand.textPrimary }}>John Doe</p>
+                  <p className="text-[10px] font-medium tracking-wider mt-0.5" style={{ color: brand.sidebarText }}>Admin Account</p>
                 </div>
               )}
             </div>
-            {!isCollapsed && (
-              <ChevronDown
-                className="w-4 h-4 group-hover:translate-y-0.5 transition-transform shrink-0"
-                style={{ color: brand.sidebarText }}
-              />
-            )}
-          </button>
+          </div>
         </div>
       </div>
     </motion.aside>

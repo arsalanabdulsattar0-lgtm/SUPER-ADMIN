@@ -63,7 +63,7 @@ export const SalesTargetsModal: React.FC<SalesTargetsModalProps> = ({
       }
     >
       {salesPerson && (
-        <Card className="p-4 shadow-sm" style={{ borderColor: brand.dark + '10' }}>
+        <Card className="p-4" style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}>
           {/* Summary Row */}
           <div className="grid grid-cols-2 gap-4">
             <Input
@@ -89,7 +89,8 @@ export const SalesTargetsModal: React.FC<SalesTargetsModalProps> = ({
               {monthlyData.map((m, idx) => (
                 <Card
                   key={idx}
-                  className="p-2.5 border rounded-xl bg-white flex flex-col gap-0.5 border-slate-100 hover:border-slate-200 transition-colors"
+                  className="p-2.5 border rounded-xl bg-white flex flex-col gap-0.5 transition-colors"
+                  style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}
                 >
                   <span className="text-[11px] text-black">{m.label}</span>
                   <span className="text-[11px] text-slate-600" >

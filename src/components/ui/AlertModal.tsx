@@ -44,7 +44,8 @@ export const AlertModal: React.FC<AlertModalProps> = ({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 15 }}
             transition={{ type: 'spring', duration: 0.4, bounce: 0.15 }}
-            className="bg-white rounded-3xl w-full max-w-[400px] p-6 shadow-2xl relative border border-slate-100 font-sans"
+            className="bg-white rounded-3xl w-full max-w-[400px] p-6 relative border border-[#E2E8F0] font-sans"
+            style={{ boxShadow: 'none' }}
           >
             {/* Header */}
             <div className="flex items-center gap-3 pr-8">
@@ -71,7 +72,8 @@ export const AlertModal: React.FC<AlertModalProps> = ({
 
             {/* Message */}
             <Card
-              className="mt-4 border-slate-100 !bg-slate-50/40 text-[12px] text-slate-600 leading-relaxed font-medium !p-4 !rounded-2xl shadow-none"
+              className="mt-4 !bg-slate-50/40 text-[12px] text-slate-600 leading-relaxed font-medium !p-4 !rounded-2xl shadow-none"
+              style={{ borderColor: '#E2E8F0' }}
             >
               {message}
             </Card>
@@ -80,7 +82,7 @@ export const AlertModal: React.FC<AlertModalProps> = ({
             <div className="flex justify-end mt-6">
               <button
                 onClick={onClose}
-                className="px-6 py-2 text-white rounded-full text-xs font-bold shadow-md hover:shadow-lg transition-all cursor-pointer hover:brightness-110"
+                className="px-6 py-2 text-white border border-[#E2E8F0] rounded-full text-xs font-bold transition-all cursor-pointer hover:brightness-110 shadow-none"
                 style={{
                   background: `linear-gradient(to right, ${brand.primary}, ${brand.dark})`,
                 }}

@@ -311,8 +311,8 @@ const InlineProductForm: React.FC<Props> = ({ isOpen, onClose, initialData }) =>
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[201] w-full max-w-4xl bg-white border shadow-2xl rounded-3xl max-h-[85vh] flex flex-col overflow-hidden"
-            style={{ borderColor: brand.dark + '10' }}
+            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[201] w-full max-w-4xl bg-white border shadow-none rounded-3xl max-h-[85vh] flex flex-col overflow-hidden"
+            style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}
           >
             {/* Header */}
             <ModalHeader
@@ -325,11 +325,11 @@ const InlineProductForm: React.FC<Props> = ({ isOpen, onClose, initialData }) =>
               <div className="relative w-full max-w-xl flex items-center justify-between">
 
                 {/* Connecting lines */}
-                <div className="absolute left-6 right-6 top-6 h-[2px] bg-slate-200" style={{ zIndex: 0 }} />
+                <div className="absolute left-6 right-6 top-6 h-[1px] bg-slate-200" style={{ zIndex: 0 }} />
 
                 {/* Active connecting progress line */}
                 <div
-                  className="absolute left-6 top-6 h-[2px] transition-all duration-300"
+                  className="absolute left-6 top-6 h-[1px] transition-all duration-300"
                   style={{
                     zIndex: 0,
                     backgroundColor: brand.primary,
@@ -342,7 +342,7 @@ const InlineProductForm: React.FC<Props> = ({ isOpen, onClose, initialData }) =>
                   <button
                     type="button"
                     onClick={() => setActiveTab('general')}
-                    className="w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all duration-300 cursor-pointer shadow-xs"
+                    className="w-12 h-12 rounded-full flex items-center justify-center border transition-all duration-300 cursor-pointer shadow-none"
                     style={getStepStyles('general').circle}
                   >
                     <FileText className="w-5 h-5" />
@@ -366,7 +366,7 @@ const InlineProductForm: React.FC<Props> = ({ isOpen, onClose, initialData }) =>
                       }
                       setActiveTab('tax');
                     }}
-                    className="w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all duration-300 cursor-pointer shadow-xs"
+                    className="w-12 h-12 rounded-full flex items-center justify-center border transition-all duration-300 cursor-pointer shadow-none"
                     style={getStepStyles('tax').circle}
                   >
                     <Percent className="w-5 h-5" />
@@ -390,7 +390,7 @@ const InlineProductForm: React.FC<Props> = ({ isOpen, onClose, initialData }) =>
                       }
                       setActiveTab('pricing');
                     }}
-                    className="w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all duration-300 cursor-pointer shadow-xs"
+                    className="w-12 h-12 rounded-full flex items-center justify-center border transition-all duration-300 cursor-pointer shadow-none"
                     style={getStepStyles('pricing').circle}
                   >
                     <Package className="w-5 h-5" />
@@ -413,7 +413,7 @@ const InlineProductForm: React.FC<Props> = ({ isOpen, onClose, initialData }) =>
                 <div className="space-y-4 animate-fadeIn">
                   <div className="space-y-1.5">
                     <SectionHeader title="Basic Information" icon={Tag} />
-                    <Card className="p-4 shadow-sm" style={{ borderColor: brand.dark + '10' }}>
+                    <Card className="p-4 shadow-none" style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                         <Input variant="compact" label="Product Name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} placeholder="e.g. Logic board pro v4" />
                         <Input variant="compact" label="Product Code" value={formData.code} onChange={(e) => setFormData({ ...formData, code: e.target.value })} placeholder="e.g. PROD-1001" />
@@ -429,7 +429,7 @@ const InlineProductForm: React.FC<Props> = ({ isOpen, onClose, initialData }) =>
                   {/* Card 2: Classification & Description */}
                   <div className="space-y-1.5">
                     <SectionHeader title="Classification & Details" icon={Layers} />
-                    <Card className="p-4 shadow-sm" style={{ borderColor: brand.dark + '10' }}>
+                    <Card className="p-4 shadow-none" style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}>
                       <div className="space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                           <ComboBox variant="compact" label="Category" value={formData.category_id || ''} onChange={(val) => setFormData({ ...formData, category_id: val })} options={ProductCategory} placeholder="Select Category" />
@@ -441,7 +441,7 @@ const InlineProductForm: React.FC<Props> = ({ isOpen, onClose, initialData }) =>
                         </div>
 
                         {/* Additional Details */}
-                        <div className="space-y-3 pt-2 border-t border-slate-200/40">
+                        <div className="space-y-3 pt-2 border-t border-[#E2E8F0]">
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                             <TextArea className="!rounded-lg text-[11px] py-1.5 px-3 h-14" label="Description" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} placeholder="Additional description..." />
                             <TextArea className="!rounded-lg text-[11px] py-1.5 px-3 h-14" label="Notes" value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} placeholder="Internal notes..." />
@@ -459,7 +459,7 @@ const InlineProductForm: React.FC<Props> = ({ isOpen, onClose, initialData }) =>
               {activeTab === 'pricing' && (
                 <div className="space-y-1.5 animate-fadeIn">
                   <SectionHeader title="Inventory & Dimensions" icon={Box} />
-                  <Card className="p-4 shadow-sm" style={{ borderColor: brand.dark + '10' }}>
+                  <Card className="p-4 shadow-none" style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}>
                     <div className="space-y-4">
                       {/* Row 1: Stock Info (3 inputs) */}
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -487,7 +487,7 @@ const InlineProductForm: React.FC<Props> = ({ isOpen, onClose, initialData }) =>
               {activeTab === 'tax' && (
                 <div className="space-y-1.5 animate-fadeIn">
                   <SectionHeader title="Tax Compliance & FBR Linking" icon={Percent} />
-                  <Card className="p-4 shadow-sm" style={{ borderColor: brand.dark + '10' }}>
+                  <Card className="p-4 shadow-none" style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}>
                     <div className="space-y-4">
                       {/* Tax Configuration Grid */}
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -521,7 +521,7 @@ const InlineProductForm: React.FC<Props> = ({ isOpen, onClose, initialData }) =>
             </div>
 
             {/* Footer */}
-            <div className="p-6 border-t border-slate-200/50 flex justify-between items-center bg-slate-50/50 flex-shrink-0">
+            <div className="p-6 border-t border-[#E2E8F0] flex justify-between items-center bg-slate-50/50 flex-shrink-0">
               {/* Left action (Back button) */}
               <div>
                 {activeTab !== 'general' && (
@@ -570,7 +570,7 @@ const InlineProductForm: React.FC<Props> = ({ isOpen, onClose, initialData }) =>
                     size="md"
                     icon={Save}
                     onClick={handleSave}
-                    className="bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/10 border-none text-white"
+                    className="bg-emerald-500 hover:bg-emerald-600 shadow-none text-white"
                   >
                     {initialData?.id ? 'Save Changes' : 'Add Product'}
                   </Button>

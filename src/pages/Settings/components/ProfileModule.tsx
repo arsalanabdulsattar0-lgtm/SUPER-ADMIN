@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Card from '../../../components/ui/Card';
 import { Button } from '../../../components/ui/Button';
 import { Input, TextArea } from '../../../components/ui/FormControls';
 import { useTheme } from '../../../context/ThemeContext';
@@ -42,7 +43,7 @@ export const ProfileModule: React.FC<ProfileModuleProps> = ({ brand }) => {
     <div className="space-y-6">
 
       {/* ── Personal Profile Card ── */}
-      <div className="bg-white rounded-2xl border shadow-sm overflow-hidden" style={{ borderColor: brand.dark + '10' }}>
+      <Card className="rounded-2xl overflow-hidden p-0" style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}>
         {/* Card header bar */}
         <div className="px-4 py-2.5 flex items-center gap-2 text-white" style={{ backgroundColor: brand.primary }}>
           <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
@@ -83,10 +84,10 @@ export const ProfileModule: React.FC<ProfileModuleProps> = ({ brand }) => {
             </Button>
           </div>
         </div>
-      </div>
+      </Card>
 
       {/* ── Company / Sender Information Card ── */}
-      <div className="bg-white rounded-2xl border shadow-sm overflow-hidden" style={{ borderColor: brand.dark + '10' }}>
+      <Card className="rounded-2xl overflow-hidden p-0" style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}>
         {/* Card header bar */}
         <div className="px-4 py-2.5 flex items-center gap-2 text-white" style={{ backgroundColor: brand.primary }}>
           <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
@@ -144,7 +145,7 @@ export const ProfileModule: React.FC<ProfileModuleProps> = ({ brand }) => {
             </Button>
           </div>
         </div>
-      </div>
+      </Card>
 
     </div>
   );

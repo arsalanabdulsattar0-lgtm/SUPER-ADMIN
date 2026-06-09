@@ -23,6 +23,7 @@ interface InvoiceItem {
 
 interface DashboardProps {
   invoiceItems?: InvoiceItem[];
+  onViewChange?: (view: string) => void;
 }
 
 const statusStyle: Record<InvoiceItem['status'], { bg: string; text: string }> = {
@@ -33,7 +34,7 @@ const statusStyle: Record<InvoiceItem['status'], { bg: string; text: string }> =
 };
 
 
-export default function Dashboard({ invoiceItems }: DashboardProps) {
+export default function Dashboard({ invoiceItems, onViewChange }: DashboardProps) {
   const [trendFilter, setTrendFilter] = useState<'All' | 'Paid' | 'Pending' | 'Overdue'>('All');
 
   const invoicesToUse = useMemo(() => {
@@ -277,6 +278,45 @@ export default function Dashboard({ invoiceItems }: DashboardProps) {
   return (
     <div style={{ fontFamily: "'DM Sans', 'Segoe UI', sans-serif", background: "#f8fafc", minHeight: "100vh", color: "#111827" }}>
       <div style={{ padding: "20px 28px", maxWidth: 1280, margin: "0 auto" }}>
+        
+        {/* Page Header with switcher */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-5">
+          <div>
+            <h1 className="text-2xl font-black tracking-tight" style={{ color: '#0f172a' }}>
+              Dashboard
+            </h1>
+            <p className="text-[12px] font-medium text-slate-400 mt-0.5">
+              Here's your overview of your business sales.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            {/* Dashboard Version Switcher */}
+            <div className="flex bg-slate-200/50 p-0.5 rounded-lg border border-slate-200/30">
+              {[
+                { id: 'dashboard', label: 'Default' },
+                { id: 'dashboard1', label: 'AI insights' },
+                { id: 'dashboard2', label: 'Business overview' },
+              ].map(t => {
+                const isActive = t.id === 'dashboard';
+                return (
+                  <button
+                    key={t.id}
+                    onClick={() => onViewChange?.(t.id)}
+                    className={`px-3 py-1 text-[11px] font-bold rounded-md transition-all cursor-pointer ${
+                      isActive
+                        ? 'bg-white text-slate-900 shadow-xs'
+                        : 'text-slate-500 hover:text-slate-800 bg-transparent'
+                    }`}
+                  >
+                    {t.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
         {/* Stats Row */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14, marginBottom: 20 }}>
           {stats.map((s) => (

@@ -121,6 +121,44 @@ const Dashboard1: React.FC<Dashboard1Props> = ({ invoiceItems = [], onViewChange
       {/* Main */}
       <div className="max-w-7xl mx-auto px-8 py-6 space-y-6">
 
+        {/* Page Header with switcher */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h1 className="text-2xl font-black tracking-tight" style={{ color: brand.dark }}>
+              Dashboard
+            </h1>
+            <p className="text-[12px] font-medium text-slate-400 mt-0.5">
+              Here's your overview of your business sales.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            {/* Dashboard Version Switcher */}
+            <div className="flex bg-slate-200/50 p-0.5 rounded-lg border border-slate-200/30">
+              {[
+                { id: 'dashboard', label: 'Default' },
+                { id: 'dashboard1', label: 'AI insights' },
+                { id: 'dashboard2', label: 'Business overview' },
+              ].map(t => {
+                const isActive = t.id === 'dashboard1';
+                return (
+                  <button
+                    key={t.id}
+                    onClick={() => onViewChange?.(t.id)}
+                    className={`px-3 py-1 text-[11px] font-bold rounded-md transition-all cursor-pointer ${
+                      isActive
+                        ? 'bg-white text-slate-900 shadow-xs'
+                        : 'text-slate-500 hover:text-slate-800 bg-transparent'
+                    }`}
+                  >
+                    {t.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
         {/* Stats Cards */}
         <section>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

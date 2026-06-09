@@ -61,6 +61,10 @@ const CustomerManagement: React.FC = () => {
   const [selectedWalkinStatus, setSelectedWalkinStatus] = useState<string>('all');
   const [selectedActiveStatus, setSelectedActiveStatus] = useState<'all' | 'active' | 'inactive'>('all');
   const [selectedSalesPerson, setSelectedSalesPerson] = useState<string>('all');
+  const [tempFilerStatus, setTempFilerStatus] = useState<string>('all');
+  const [tempWalkinStatus, setTempWalkinStatus] = useState<string>('all');
+  const [tempActiveStatus, setTempActiveStatus] = useState<'all' | 'active' | 'inactive'>('all');
+  const [tempSalesPerson, setTempSalesPerson] = useState<string>('all');
   const [sortKey, setSortKey] = useState<'name' | 'email' | 'credit_limit' | 'opening_balance' | 'status'>('name');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
 
@@ -351,10 +355,15 @@ const CustomerManagement: React.FC = () => {
     setSelectedWalkinStatus('all');
     setSelectedActiveStatus('all');
     setSelectedSalesPerson('all');
+    setTempFilerStatus('all');
+    setTempWalkinStatus('all');
+    setTempActiveStatus('all');
+    setTempSalesPerson('all');
     setSortKey('name');
     setSortDir('asc');
     setSearch('');
     setCurrentPage(1);
+    setShowFilterDrawer(false);
   };
 
   const handleSort = (key: 'name' | 'email' | 'credit_limit' | 'opening_balance' | 'status') => {
@@ -452,7 +461,13 @@ const CustomerManagement: React.FC = () => {
               variant="white"
               size="md"
               icon={SlidersHorizontal}
-              onClick={() => setShowFilterDrawer(true)}
+              onClick={() => {
+                setTempFilerStatus(selectedFilerStatus);
+                setTempWalkinStatus(selectedWalkinStatus);
+                setTempActiveStatus(selectedActiveStatus);
+                setTempSalesPerson(selectedSalesPerson);
+                setShowFilterDrawer(true);
+              }}
               className="relative"
             >
               Filter
@@ -466,7 +481,7 @@ const CustomerManagement: React.FC = () => {
               variant="primary"
               size="md"
               icon={Plus}
-              className="bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/20"
+              className="bg-emerald-500 hover:bg-emerald-600 shadow-none"
             >
               Add Customer
             </Button>
@@ -480,28 +495,31 @@ const CustomerManagement: React.FC = () => {
           <motion.div key={stat.label}
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.07 }}
-            className="bg-white rounded-2xl p-4 border shadow-sm hover:shadow-md transition-all group cursor-default"
-            style={{ borderColor: brand.dark + '10' }}
           >
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-[11px] font-bold text-black tracking-wide">{stat.label}</p>
-                <p className="text-2xl font-black mt-1 tracking-tight" style={{ color: brand.dark }}>{stat.value}</p>
-                <p className="text-[10px] font-medium text-slate-400 mt-1">{stat.sub}</p>
+            <Card
+              className="p-4 transition-all group cursor-default"
+              style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}
+            >
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-[11px] font-bold text-black tracking-wide">{stat.label}</p>
+                  <p className="text-2xl font-black mt-1 tracking-tight" style={{ color: brand.dark }}>{stat.value}</p>
+                  <p className="text-[10px] font-medium text-slate-400 mt-1">{stat.sub}</p>
+                </div>
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center transition-all group-hover:scale-110"
+                  style={{ background: stat.bg }}>
+                  <stat.icon className="w-5 h-5" style={{ color: stat.color }} />
+                </div>
               </div>
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center transition-all group-hover:scale-110"
-                style={{ background: stat.bg }}>
-                <stat.icon className="w-5 h-5" style={{ color: stat.color }} />
-              </div>
-            </div>
+            </Card>
           </motion.div>
         ))}
       </div>
 
       {/* ── Table Card ── */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-        className="bg-white rounded-2xl border shadow-sm overflow-hidden"
-        style={{ borderColor: brand.dark + '10' }}>
+        className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-none"
+        style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}>
 
         {/* ── Solid Header Bar ── */}
         <div className="px-4 py-2.5 flex items-center justify-between text-white"
@@ -653,8 +671,8 @@ const CustomerManagement: React.FC = () => {
                   <ScrollArea className="w-full max-w-full" maxHeight="450px" style={{ overscrollBehavior: 'contain' }}>
                     <table className="w-full">
                       <thead className="sticky top-0 z-10 bg-white">
-                        <tr className="border-b" style={{ borderColor: brand.dark + '10' }}>
-                          <th className="px-4 py-3 text-center w-12 border-b">
+                        <tr className="border-b border-[#E2E8F0]">
+                          <th className="px-4 py-2.5 text-center w-12 border-b border-[#E2E8F0]">
                             <input
                               type="checkbox"
                               checked={filteredCustomers.length > 0 && selectedCustomerIds.length === filteredCustomers.length}
@@ -680,7 +698,7 @@ const CustomerManagement: React.FC = () => {
                               sortDir={sortDir}
                               onSort={(key) => handleSort(key)}
                               width={h.width}
-                              borderLeft={idx !== 0}
+                              borderLeft={false}
                             />
                           ))}
                         </tr>
@@ -694,11 +712,11 @@ const CustomerManagement: React.FC = () => {
                               initial={{ opacity: 0, y: 8 }}
                               animate={{ opacity: 1, y: 0 }}
                               transition={{ type: 'spring', stiffness: 350, damping: 30, delay: i * 0.03 }}
-                              className={`group border-b transition-colors hover:bg-slate-50/60 cursor-pointer last:border-0 ${isSelected ? 'bg-blue-50/15' : ''}`}
-                              style={{ borderColor: brand.dark + '08' }}>
+                              className={`group border-b border-[#E2E8F0] transition-colors hover:bg-slate-50/60 cursor-pointer last:border-0 ${isSelected ? 'bg-blue-50/15' : ''}`}
+                            >
 
                               {/* Checkbox */}
-                              <td className="px-4 py-3 text-center border-l border-slate-50 first:border-0 w-12">
+                              <td className="px-4 py-3 text-center w-12">
                                 <input
                                   type="checkbox"
                                   checked={isSelected}
@@ -708,7 +726,7 @@ const CustomerManagement: React.FC = () => {
                               </td>
 
                               {/* Customer Details (Name + ID) */}
-                              <td className="px-4 py-3 border-l border-slate-50">
+                              <td className="px-4 py-3">
                                 <div className="flex items-center gap-2.5">
                                   <div className="w-14 h-7 rounded-lg flex items-center justify-center bg-slate-100 border border-slate-200 text-black text-[10px] font-mono font-medium flex-shrink-0">
                                     {cust.customer_id || `C-${cust.id.slice(0, 4).toUpperCase()}`}
@@ -721,30 +739,30 @@ const CustomerManagement: React.FC = () => {
                               </td>
 
                               {/* Contact Info (Phone) */}
-                              <td className="px-4 py-3 border-l border-slate-50 text-[12px] font-normal text-black">
+                              <td className="px-4 py-3 text-[12px] font-normal text-black">
                                 <span className="whitespace-nowrap">
                                   {cust.phone || cust.mobile || 'N/A'}
                                 </span>
                               </td>
 
                               {/* City */}
-                              <td className="px-4 py-3 border-l border-slate-50 text-[12px] font-normal text-black">
+                              <td className="px-4 py-3 text-[12px] font-normal text-black">
                                 {cust.city || 'N/A'}
                               </td>
 
                               {/* Credit Limit */}
-                              <td className="px-4 py-3 border-l border-slate-50 text-[12px] font-normal text-black">
+                              <td className="px-4 py-3 text-[12px] font-normal text-black">
                                 {cust.credit_limit ? cust.credit_limit.toLocaleString(undefined, { minimumFractionDigits: 2 }) : '0.00'}
                               </td>
 
                               {/* Total Balance */}
-                              <td className="px-4 py-3 border-l border-slate-50 text-[12px] font-normal text-black"
+                              <td className="px-4 py-3 text-[12px] font-normal text-black"
                                 style={{ color: cust.opening_balance > 0 ? '#BE123C' : '#000000' }}>
                                 {cust.opening_balance ? cust.opening_balance.toLocaleString(undefined, { minimumFractionDigits: 2 }) : '0.00'}
                               </td>
 
                               {/* Tax Status */}
-                              <td className="px-4 py-3 border-l border-slate-50">
+                              <td className="px-4 py-3">
                                 {cust.is_filer
                                   ? <FilerChip label="Filer" size="md" />
                                   : <NonFilerChip label="Non-Filer" size="md" />
@@ -752,7 +770,7 @@ const CustomerManagement: React.FC = () => {
                               </td>
 
                               {/* Status */}
-                              <td className="px-4 py-3 border-l border-slate-50">
+                              <td className="px-4 py-3">
                                 {cust.is_active
                                   ? <ActiveChip label="Active" size="md" onClick={() => handleToggleActive(cust.id)} />
                                   : <InactiveChip label="Inactive" size="md" onClick={() => handleToggleActive(cust.id)} />
@@ -760,7 +778,7 @@ const CustomerManagement: React.FC = () => {
                               </td>
 
                               {/* Actions */}
-                              <td className="px-1 py-3 border-l border-slate-50 w-16 whitespace-nowrap">
+                              <td className="px-1 py-3 w-16 whitespace-nowrap">
                                 <div className="flex items-center gap-0">
                                   <Button onClick={() => setViewingCustomer(cust)}
                                     variant="ghost" size="xs" icon={Eye} title="View Profile"
@@ -809,9 +827,13 @@ const CustomerManagement: React.FC = () => {
                           exit={{ opacity: 0, scale: 0.95 }}
                           transition={{ duration: 0.2 }}
                         >
-                          <Card className="h-full flex flex-col hover:-translate-y-1 hover:shadow-lg transition-all cursor-pointer group border-slate-100 p-4" onClick={() => setViewingCustomer(cust)}>
+                          <Card
+                            className="h-full flex flex-col hover:-translate-y-1 transition-all cursor-pointer group p-4"
+                            style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}
+                            onClick={() => setViewingCustomer(cust)}
+                          >
                             <div className="flex justify-between items-start mb-3">
-                              <div className="h-8 px-2.5 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-700 font-mono font-bold text-[10px] shadow-sm group-hover:scale-105 transition-transform">
+                              <div className="h-8 px-2.5 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-700 font-mono font-bold text-[10px] shadow-none group-hover:scale-105 transition-transform">
                                 {cust.customer_id || `C-${cust.id.slice(0, 4).toUpperCase()}`}
                               </div>
 
@@ -899,7 +921,8 @@ const CustomerManagement: React.FC = () => {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-white rounded-3xl max-w-2xl w-full max-h-[85vh] flex flex-col overflow-hidden shadow-2xl relative border border-slate-150"
+              className="bg-white rounded-3xl max-w-2xl w-full max-h-[85vh] flex flex-col overflow-hidden relative border shadow-none"
+              style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}
             >
               {/* Modal Header */}
               <ModalHeader
@@ -913,7 +936,7 @@ const CustomerManagement: React.FC = () => {
                 {/* SECTION 1: Customer Contact & Location */}
                 <div className="space-y-1.5">
                   <SectionHeader title="Customer Contact & Location" icon={MapPin} />
-                  <Card className="p-4 shadow-sm" style={{ borderColor: brand.dark + '10' }}>
+                  <Card className="p-4" style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}>
                     <div className="grid grid-cols-2 gap-4">
                       <Input variant="compact" label="Email Address" readOnly value={viewingCustomer.email || 'N/A'} />
                       <Input variant="compact" label="Phone Number" readOnly value={viewingCustomer.phone || 'N/A'} />
@@ -931,7 +954,7 @@ const CustomerManagement: React.FC = () => {
                 {/* SECTION 2: Business Settings & Credit */}
                 <div className="space-y-1.5">
                   <SectionHeader title="Business Settings & Credit" icon={CreditCard} />
-                  <Card className="p-4 shadow-sm" style={{ borderColor: brand.dark + '10' }}>
+                  <Card className="p-4" style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}>
                     <div className="grid grid-cols-2 gap-4">
                       <Input variant="compact" label="Credit Limit (Rs.)" readOnly value={viewingCustomer.credit_limit.toLocaleString(undefined, { minimumFractionDigits: 2 })} />
                       <Input variant="compact" label="Total Balance (Rs.)" readOnly value={viewingCustomer.opening_balance.toLocaleString(undefined, { minimumFractionDigits: 2 })} />
@@ -948,7 +971,7 @@ const CustomerManagement: React.FC = () => {
                 {/* SECTION 3: Tax Compliance Registry */}
                 <div className="space-y-1.5">
                   <SectionHeader title="Tax Compliance Registry" icon={ShieldCheck} />
-                  <Card className="p-4 shadow-sm" style={{ borderColor: brand.dark + '10' }}>
+                  <Card className="p-4" style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}>
                     <div className="grid grid-cols-2 gap-4">
                       <Input variant="compact" label="NTN Code" readOnly value={viewingCustomer.ntn || 'N/A'} />
                       <Input variant="compact" label="STRN Registry" readOnly value={viewingCustomer.stn || 'N/A'} />
@@ -960,7 +983,7 @@ const CustomerManagement: React.FC = () => {
               </div>
 
               {/* Modal Footer */}
-              <div className="flex justify-end gap-2 px-6 py-4 border-t bg-slate-50 flex-shrink-0" style={{ borderColor: brand.dark + '10' }}>
+              <div className="flex justify-end gap-2 px-6 py-4 border-t bg-slate-50 flex-shrink-0" style={{ borderColor: '#E2E8F0' }}>
                 <Button
                   variant="white"
                   size="md"
@@ -992,7 +1015,8 @@ const CustomerManagement: React.FC = () => {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-white rounded-3xl max-w-4xl w-full max-h-[85vh] flex flex-col overflow-hidden shadow-2xl relative border border-slate-100 font-sans"
+              className="bg-white rounded-3xl max-w-4xl w-full max-h-[85vh] flex flex-col overflow-hidden relative border font-sans shadow-none"
+              style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}
             >
               {/* Modal Header */}
               <ModalHeader
@@ -1005,11 +1029,11 @@ const CustomerManagement: React.FC = () => {
                 <div className="relative w-full max-w-xl flex items-center justify-between">
 
                   {/* Connecting lines */}
-                  <div className="absolute left-6 right-6 top-6 h-[2px] bg-slate-200" style={{ zIndex: 0 }} />
+                  <div className="absolute left-6 right-6 top-6 h-[1px] bg-slate-200" style={{ zIndex: 0 }} />
 
                   {/* Active connecting progress line */}
                   <div
-                    className="absolute left-6 top-6 h-[2px] transition-all duration-300"
+                    className="absolute left-6 top-6 h-[1px] transition-all duration-300"
                     style={{
                       zIndex: 0,
                       backgroundColor: brand.primary,
@@ -1022,7 +1046,7 @@ const CustomerManagement: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setActiveTab('general')}
-                      className="w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all duration-300 cursor-pointer shadow-xs bg-white"
+                      className="w-12 h-12 rounded-full flex items-center justify-center border transition-all duration-300 cursor-pointer shadow-none bg-white"
                       style={getStepStyles('general').circle}
                     >
                       <User className="w-5 h-5" />
@@ -1046,7 +1070,7 @@ const CustomerManagement: React.FC = () => {
                         }
                         setActiveTab('settings');
                       }}
-                      className="w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all duration-300 cursor-pointer shadow-xs bg-white"
+                      className="w-12 h-12 rounded-full flex items-center justify-center border transition-all duration-300 cursor-pointer shadow-none bg-white"
                       style={getStepStyles('settings').circle}
                     >
                       <ShieldCheck className="w-5 h-5" />
@@ -1070,7 +1094,7 @@ const CustomerManagement: React.FC = () => {
                         }
                         setActiveTab('accounting');
                       }}
-                      className="w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all duration-300 cursor-pointer shadow-xs bg-white"
+                      className="w-12 h-12 rounded-full flex items-center justify-center border transition-all duration-300 cursor-pointer shadow-none bg-white"
                       style={getStepStyles('accounting').circle}
                     >
                       <CreditCard className="w-5 h-5" />
@@ -1093,7 +1117,7 @@ const CustomerManagement: React.FC = () => {
                     {/* SECTION 1: BASIC INFO */}
                     <div className="space-y-1.5">
                       <SectionHeader title="Basic Contact Information" icon={User} className="text-slate-700" />
-                      <Card className="p-4 shadow-sm" style={{ borderColor: brand.dark + '10' }}>
+                      <Card className="p-4" style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}>
                         <div className="grid grid-cols-3 gap-3">
                           <Input variant="compact" label="Customer ID" value={editing.customer_id || ''} onChange={(e) => setEditing({ ...editing, customer_id: e.target.value })} placeholder="e.g. CUST-001" />
                           <Input variant="compact" label="Customer Name *" value={editing.name} onChange={(e) => setEditing({ ...editing, name: e.target.value })} placeholder="e.g. Acme Corporation" />
@@ -1108,7 +1132,7 @@ const CustomerManagement: React.FC = () => {
                     {/* SECTION 4: PHYSICAL ADDRESS */}
                     <div className="space-y-1.5">
                       <SectionHeader title="Physical Address" icon={MapPin} className="text-slate-700" />
-                      <Card className="p-4 shadow-sm" style={{ borderColor: brand.dark + '10' }}>
+                      <Card className="p-4" style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}>
                         <div className="grid grid-cols-3 gap-3">
                           <div className="col-span-2">
                             <TextArea className="!rounded-lg !text-[11px] py-1.5 px-3 h-14" label="Billing Street Address" value={editing.address} onChange={(e) => setEditing({ ...editing, address: e.target.value })} placeholder="e.g. Suite #12, 3rd Floor, Commercial Plaza" />
@@ -1127,14 +1151,14 @@ const CustomerManagement: React.FC = () => {
                     {/* SECTION 2: BUSINESS SETTINGS */}
                     <div className="space-y-1.5">
                       <SectionHeader title="Business & Tax Settings" icon={ShieldCheck} className="text-slate-700" />
-                      <Card className="p-4 shadow-sm" style={{ borderColor: brand.dark + '10' }}>
+                      <Card className="p-4" style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}>
                         <div className="space-y-4">
                           <div className="flex items-center gap-6 flex-wrap pt-1">
                             <Toggle checked={editing.is_walkin} onChange={(v) => setEditing({ ...editing, is_walkin: v })} label="Walk-in Retail Customer" />
                             <Toggle checked={editing.is_filer} onChange={(v) => setEditing({ ...editing, is_filer: v })} label="Registered Tax Filer" />
                             <Toggle checked={editing.is_active} onChange={(v) => setEditing({ ...editing, is_active: v })} label="Active Account Status" />
                           </div>
-                          <div className="grid grid-cols-3 gap-3 pt-2 border-t border-slate-200/40">
+                          <div className="grid grid-cols-3 gap-3 pt-2 border-t border-[#E2E8F0]">
                             <Input variant="compact" label="Credit Limit (Rs.)" type="number" value={editing.credit_limit?.toString() ?? ''} onChange={(e) => setEditing({ ...editing, credit_limit: parseFloat(e.target.value) || 0 })} placeholder="0.00" />
                             <Input variant="compact" label="Payment Terms (Days)" type="number" value={editing.payment_term_days?.toString() ?? ''} onChange={(e) => setEditing({ ...editing, payment_term_days: parseInt(e.target.value) || 0 })} placeholder="30" />
                             <Input variant="compact" label="Default Discount (%)" type="number" value={editing.discount_percent?.toString() ?? ''} onChange={(e) => setEditing({ ...editing, discount_percent: parseFloat(e.target.value) || 0 })} placeholder="0" />
@@ -1146,7 +1170,7 @@ const CustomerManagement: React.FC = () => {
                     {/* SECTION 5: TAX LAWS */}
                     <div className="space-y-1.5">
                       <SectionHeader title="Government Registries & WHT" icon={Globe} className="text-slate-700" />
-                      <Card className="p-4 shadow-sm" style={{ borderColor: brand.dark + '10' }}>
+                      <Card className="p-4" style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}>
                         <div className="grid grid-cols-3 gap-3">
                           <Input variant="compact" label="National Tax Number (NTN)" value={editing.ntn} onChange={(e) => setEditing({ ...editing, ntn: e.target.value })} placeholder="1234567-8" />
                           <Input variant="compact" label="Sales Tax Number (STRN)" value={editing.stn} onChange={(e) => setEditing({ ...editing, stn: e.target.value })} placeholder="STN-12345" />
@@ -1163,7 +1187,7 @@ const CustomerManagement: React.FC = () => {
                     {/* SECTION 3: FINANCIAL ACCOUNTING */}
                     <div className="space-y-1.5">
                       <SectionHeader title="Accounting Details" icon={CreditCard} className="text-slate-700" />
-                      <Card className="p-4 shadow-sm" style={{ borderColor: brand.dark + '10' }}>
+                      <Card className="p-4" style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}>
                         <div className="grid grid-cols-3 gap-3">
                           <Input variant="compact" label="Total Balance (Rs.)" type="number" value={editing.opening_balance?.toString() ?? ''} onChange={(e) => setEditing({ ...editing, opening_balance: parseFloat(e.target.value) || 0 })} placeholder="0.00" />
                           <Select
@@ -1184,7 +1208,7 @@ const CustomerManagement: React.FC = () => {
               </div>
 
               {/* Modal Footer */}
-              <div className="flex justify-between items-center px-6 py-4 border-t bg-slate-50 rounded-b-3xl flex-shrink-0" style={{ borderColor: brand.dark + '10' }}>
+              <div className="flex justify-between items-center px-6 py-4 border-t bg-slate-50 rounded-b-3xl flex-shrink-0" style={{ borderColor: '#E2E8F0' }}>
                 {/* Left action (Back button) */}
                 <div>
                   {activeTab !== 'general' && (
@@ -1229,7 +1253,7 @@ const CustomerManagement: React.FC = () => {
                       Next
                     </Button>
                   ) : (
-                    <Button variant="primary" size="md" onClick={handleSave} className="bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/10">
+                    <Button variant="primary" size="md" onClick={handleSave} className="bg-emerald-500 hover:bg-emerald-600 shadow-none">
                       Save Customer
                     </Button>
                   )}
@@ -1245,7 +1269,14 @@ const CustomerManagement: React.FC = () => {
         isOpen={showFilterDrawer}
         onClose={() => setShowFilterDrawer(false)}
         onReset={handleResetFilters}
-        onApply={() => setShowFilterDrawer(false)}
+        onApply={() => {
+          setSelectedFilerStatus(tempFilerStatus);
+          setSelectedWalkinStatus(tempWalkinStatus);
+          setSelectedActiveStatus(tempActiveStatus);
+          setSelectedSalesPerson(tempSalesPerson);
+          setCurrentPage(1);
+          setShowFilterDrawer(false);
+        }}
       >
 
         {/* Tax Status */}
@@ -1257,11 +1288,11 @@ const CustomerManagement: React.FC = () => {
               { key: 'filer', label: 'Filer' },
               { key: 'non-filer', label: 'Non-Filer' }
             ].map(opt => {
-              const isActive = selectedFilerStatus === opt.key;
+              const isActive = tempFilerStatus === opt.key;
               return (
                 <button
                   key={opt.key}
-                  onClick={() => { setSelectedFilerStatus(opt.key); setCurrentPage(1); }}
+                  onClick={() => setTempFilerStatus(opt.key)}
                   className={`py-1 rounded text-[11px] font-bold transition-all text-center cursor-pointer outline-none ${isActive
                     ? 'bg-white shadow-xs border border-slate-200/40'
                     : 'text-slate-500 hover:text-slate-800 bg-transparent border border-transparent'
@@ -1284,11 +1315,11 @@ const CustomerManagement: React.FC = () => {
               { key: 'walkin', label: 'Walk-in' },
               { key: 'standard', label: 'Standard' }
             ].map(opt => {
-              const isActive = selectedWalkinStatus === opt.key;
+              const isActive = tempWalkinStatus === opt.key;
               return (
                 <button
                   key={opt.key}
-                  onClick={() => { setSelectedWalkinStatus(opt.key); setCurrentPage(1); }}
+                  onClick={() => setTempWalkinStatus(opt.key)}
                   className={`py-1 rounded text-[11px] font-bold transition-all text-center cursor-pointer outline-none ${isActive
                     ? 'bg-white shadow-xs border border-slate-200/40'
                     : 'text-slate-500 hover:text-slate-800 bg-transparent border border-transparent'
@@ -1311,11 +1342,11 @@ const CustomerManagement: React.FC = () => {
               { key: 'active', label: 'Active' },
               { key: 'inactive', label: 'Inactive' }
             ].map(opt => {
-              const isActive = selectedActiveStatus === opt.key;
+              const isActive = tempActiveStatus === opt.key;
               return (
                 <button
                   key={opt.key}
-                  onClick={() => { setSelectedActiveStatus(opt.key as any); setCurrentPage(1); }}
+                  onClick={() => setTempActiveStatus(opt.key as any)}
                   className={`py-1 rounded text-[11px] font-bold transition-all text-center cursor-pointer outline-none ${isActive
                     ? 'bg-white shadow-xs border border-slate-200/40'
                     : 'text-slate-500 hover:text-slate-800 bg-transparent border border-transparent'
@@ -1333,8 +1364,8 @@ const CustomerManagement: React.FC = () => {
         <div className="space-y-1.5">
           <label className="block text-[11px] font-bold text-slate-500">Sales Person</label>
           <ComboBox
-            value={selectedSalesPerson === 'all' ? '' : selectedSalesPerson}
-            onChange={(val) => { setSelectedSalesPerson(val || 'all'); setCurrentPage(1); }}
+            value={tempSalesPerson === 'all' ? '' : tempSalesPerson}
+            onChange={(val) => setTempSalesPerson(val || 'all')}
             options={SALES_PERSONS}
             placeholder="Select Sales Person..."
             variant="compact"

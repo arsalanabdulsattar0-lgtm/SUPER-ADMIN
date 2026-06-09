@@ -25,7 +25,7 @@ export const Input: React.FC<InputProps> = ({
 
   let baseClasses = "";
   if (isTransparent) {
-    baseClasses = "w-full bg-transparent border-none text-[11px] font-normal outline-none placeholder:text-slate-200 placeholder:font-normal";
+    baseClasses = "w-full bg-transparent border-none text-[11px] font-normal outline-none placeholder:text-slate-200 placeholder:text-[11px] placeholder:font-normal";
   } else {
     const sizeClasses = {
       sm: variant === 'compact'
@@ -34,7 +34,8 @@ export const Input: React.FC<InputProps> = ({
       md: "h-9 px-4 py-1.5 text-sm rounded-xl",
       lg: "h-12 px-5 py-3 text-sm rounded-2xl",
     };
-    baseClasses = `w-full border font-normal text-[#304166] placeholder:text-slate-400 placeholder:font-normal outline-none transition-all form-input-container ${sizeClasses[size]}`;
+    const placeholderSize = variant === 'compact' ? 'placeholder:text-[11px]' : 'placeholder:text-sm';
+    baseClasses = `w-full border font-normal text-[#304166] placeholder:text-slate-400 ${placeholderSize} placeholder:font-normal outline-none transition-all form-input-container ${sizeClasses[size]}`;
   }
 
   const paddingLeft = !isTransparent && Icon ? 'pl-11' : (!isTransparent ? (size === 'lg' ? 'px-5' : 'px-4') : '');

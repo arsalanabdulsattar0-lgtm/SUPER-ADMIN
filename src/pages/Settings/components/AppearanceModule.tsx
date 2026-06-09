@@ -37,7 +37,7 @@ export const AppearanceModule: React.FC<AppearanceModuleProps> = ({
         backgroundColor: isSelected ? brand.surface : '#FAFAFA',
         borderColor: isSelected ? brand.primary : '#E2E8F0',
         borderWidth: isSelected ? 2 : 1,
-        boxShadow: isSelected ? `0 0 0 3px ${brand.primary}20, 0 4px 16px ${brand.primary}15` : '0 1px 4px rgba(0,0,0,0.06)',
+        boxShadow: 'none',
       }}
     >
       {isSelected && (
@@ -99,7 +99,7 @@ export const AppearanceModule: React.FC<AppearanceModuleProps> = ({
           border: `1px solid ${brand.primary}30`,
         }}
       >
-        <div className="w-10 h-10 rounded-xl flex-shrink-0 shadow-md" style={{ backgroundColor: brand.primary }} />
+        <div className="w-10 h-10 rounded-xl flex-shrink-0" style={{ backgroundColor: brand.primary }} />
         <div>
           <p className="text-xs font-bold" style={{ color: brand.textPrimary }}>
             Active Theme Applied ✓
@@ -110,7 +110,7 @@ export const AppearanceModule: React.FC<AppearanceModuleProps> = ({
         </div>
         <div className="flex gap-1.5 ml-auto">
           {[brand.primary, brand.accent, brand.soft].map((c, i) => (
-            <div key={i} className="w-5 h-5 rounded-full border-2 border-white shadow" style={{ backgroundColor: c }} />
+            <div key={i} className="w-5 h-5 rounded-full border-2 border-white" style={{ backgroundColor: c }} />
           ))}
         </div>
       </motion.div>

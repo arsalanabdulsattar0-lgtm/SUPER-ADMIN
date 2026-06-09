@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Card from '../../../components/ui/Card';
 import { motion } from 'framer-motion';
 import { Search, SlidersHorizontal, Plus, Pencil, Trash2, Check } from 'lucide-react';
 import { Button } from '../../../components/ui/Button';
@@ -35,6 +36,9 @@ export const TaxSetupModule: React.FC<TaxSetupModuleProps> = ({ brand }) => {
   const [filterType, setFilterType] = useState('all');
   const [filterProvince, setFilterProvince] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
+  const [tempType, setTempType] = useState('all');
+  const [tempProvince, setTempProvince] = useState('all');
+  const [tempStatus, setTempStatus] = useState('all');
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<TaxSetup | null>(null);
   const [form, setForm] = useState<Omit<TaxSetup, 'id'>>(emptyTax());
@@ -69,7 +73,15 @@ export const TaxSetupModule: React.FC<TaxSetupModuleProps> = ({ brand }) => {
     setTaxes(prev => prev.filter(t => t.id !== deleteModal.id));
   };
 
-  const handleReset = () => { setFilterType('all'); setFilterProvince('all'); setFilterStatus('all'); };
+  const handleReset = () => {
+    setFilterType('all');
+    setFilterProvince('all');
+    setFilterStatus('all');
+    setTempType('all');
+    setTempProvince('all');
+    setTempStatus('all');
+    setShowFilter(false);
+  };
 
   return (
     <div className="space-y-4">
@@ -85,13 +97,25 @@ export const TaxSetupModule: React.FC<TaxSetupModuleProps> = ({ brand }) => {
           />
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="white" size="md" icon={SlidersHorizontal} onClick={() => setShowFilter(true)}>Filter</Button>
+          <Button
+            variant="white"
+            size="md"
+            icon={SlidersHorizontal}
+            onClick={() => {
+              setTempType(filterType);
+              setTempProvince(filterProvince);
+              setTempStatus(filterStatus);
+              setShowFilter(true);
+            }}
+          >
+            Filter
+          </Button>
           <Button variant="primary" size="md" icon={Plus} onClick={openAdd} style={{ backgroundColor: brand.primary }}>Add Tax</Button>
         </div>
       </div>
 
       {/* Table Card */}
-      <div className="bg-white rounded-2xl border shadow-sm overflow-hidden" style={{ borderColor: brand.dark + '10' }}>
+      <Card className="rounded-2xl overflow-hidden p-0" style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}>
         {/* Table header bar */}
         <div className="px-4 py-2.5 flex items-center justify-between text-white" style={{ backgroundColor: brand.primary }}>
           <div className="flex items-center gap-2">
@@ -106,14 +130,14 @@ export const TaxSetupModule: React.FC<TaxSetupModuleProps> = ({ brand }) => {
         <ScrollArea maxHeight="340px">
           <table className="w-full border-collapse">
             <thead className="sticky top-0 z-10 bg-white">
-              <tr className="border-b" style={{ borderColor: brand.dark + '10' }}>
-                {['Tax Code', 'Tax Type', 'Tax Rate (%)', 'Province', 'Status', 'Actions'].map((h, idx) => (
+              <tr className="border-b border-[#E2E8F0]">
+                 {['Tax Code', 'Tax Type', 'Tax Rate (%)', 'Province', 'Status', 'Actions'].map((h) => (
                   <TableHeader
                     key={h}
                     label={h}
                     width={h === 'Actions' ? 'w-20' : ''}
                     padding={h === 'Actions' ? 'px-2' : 'px-4'}
-                    borderLeft={idx !== 0}
+                    borderLeft={false}
                   />
                 ))}
               </tr>
@@ -129,19 +153,18 @@ export const TaxSetupModule: React.FC<TaxSetupModuleProps> = ({ brand }) => {
                   initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.03 }}
-                  className="group border-b transition-colors hover:bg-slate-50/60 last:border-0"
-                  style={{ borderColor: brand.dark + '08' }}
+                  className="group border-b border-[#E2E8F0] transition-colors hover:bg-slate-50/60 last:border-0"
                 >
-                  <td className="px-4 py-3 border-l border-slate-50 text-[12px] font-normal text-slate-600">{t.taxCode}</td>
-                  <td className="px-4 py-3 border-l border-slate-50 text-[12px] font-normal text-slate-600">{t.taxType}</td>
-                  <td className="px-4 py-3 border-l border-slate-50 text-[12px] font-normal text-slate-600">{t.taxRate}%</td>
-                  <td className="px-4 py-3 border-l border-slate-50 text-[12px] font-normal text-slate-600">{t.province}</td>
-                  <td className="px-4 py-3 border-l border-slate-50">
+                  <td className="px-4 py-3 text-[12px] font-normal text-slate-600">{t.taxCode}</td>
+                  <td className="px-4 py-3 text-[12px] font-normal text-slate-600">{t.taxType}</td>
+                  <td className="px-4 py-3 text-[12px] font-normal text-slate-600">{t.taxRate}%</td>
+                  <td className="px-4 py-3 text-[12px] font-normal text-slate-600">{t.province}</td>
+                  <td className="px-4 py-3">
                     {t.active
                       ? <ActiveChip label="Active" size="md" />
                       : <InactiveChip label="Inactive" size="md" />}
                   </td>
-                  <td className="px-2 py-3 border-l border-slate-50 w-20">
+                  <td className="px-2 py-3 w-20">
                     <div className="flex items-center gap-1">
                       <Button variant="ghost" size="xs" icon={Pencil} title="Edit" className="!px-1" onClick={() => openEdit(t)} />
                       <Button variant="ghost" size="xs" icon={Trash2} title="Delete" className="!px-1 !text-red-500" onClick={() => handleDelete(t.id, t.taxCode)} />
@@ -152,7 +175,7 @@ export const TaxSetupModule: React.FC<TaxSetupModuleProps> = ({ brand }) => {
             </tbody>
           </table>
         </ScrollArea>
-      </div>
+      </Card>
 
       <Modal
         isOpen={showForm}
@@ -213,7 +236,12 @@ export const TaxSetupModule: React.FC<TaxSetupModuleProps> = ({ brand }) => {
         isOpen={showFilter}
         onClose={() => setShowFilter(false)}
         onReset={handleReset}
-        onApply={() => setShowFilter(false)}
+        onApply={() => {
+          setFilterType(tempType);
+          setFilterProvince(tempProvince);
+          setFilterStatus(tempStatus);
+          setShowFilter(false);
+        }}
         title="Filter Taxes"
       >
         <div className="space-y-1.5">
@@ -222,9 +250,9 @@ export const TaxSetupModule: React.FC<TaxSetupModuleProps> = ({ brand }) => {
             {['all', ...TAX_TYPES].map(opt => (
               <button
                 key={opt}
-                onClick={() => setFilterType(opt)}
-                className={`py-1 rounded text-[11px] font-bold transition-all text-center cursor-pointer ${filterType === opt ? 'bg-white shadow-xs border border-slate-200/40' : 'text-slate-500 hover:text-slate-800 bg-transparent border border-transparent'}`}
-                style={{ color: filterType === opt ? brand.primary : undefined }}
+                onClick={() => setTempType(opt)}
+                className={`py-1 rounded text-[11px] font-bold transition-all text-center cursor-pointer ${tempType === opt ? 'bg-white shadow-xs border border-slate-200/40' : 'text-slate-500 hover:text-slate-800 bg-transparent border border-transparent'}`}
+                style={{ color: tempType === opt ? brand.primary : undefined }}
               >
                 {opt === 'all' ? 'All' : opt}
               </button>
@@ -235,8 +263,8 @@ export const TaxSetupModule: React.FC<TaxSetupModuleProps> = ({ brand }) => {
           <label className="block text-[11px] font-bold text-slate-500">Province</label>
           <Select
             variant="compact"
-            value={filterProvince}
-            onChange={e => setFilterProvince(e.target.value)}
+            value={tempProvince}
+            onChange={e => setTempProvince(e.target.value)}
             options={[{ value: 'all', label: 'All Provinces' }, ...PROVINCES.map(p => ({ value: p, label: p }))]}
           />
         </div>
@@ -246,9 +274,9 @@ export const TaxSetupModule: React.FC<TaxSetupModuleProps> = ({ brand }) => {
             {[{ key: 'all', label: 'All' }, { key: 'active', label: 'Active' }, { key: 'inactive', label: 'Inactive' }].map(opt => (
               <button
                 key={opt.key}
-                onClick={() => setFilterStatus(opt.key)}
-                className={`py-1 rounded text-[11px] font-bold transition-all text-center cursor-pointer ${filterStatus === opt.key ? 'bg-white shadow-xs border border-slate-200/40' : 'text-slate-500 hover:text-slate-800 bg-transparent border border-transparent'}`}
-                style={{ color: filterStatus === opt.key ? brand.primary : undefined }}
+                onClick={() => setTempStatus(opt.key)}
+                className={`py-1 rounded text-[11px] font-bold transition-all text-center cursor-pointer ${tempStatus === opt.key ? 'bg-white shadow-xs border border-slate-200/40' : 'text-slate-500 hover:text-slate-800 bg-transparent border border-transparent'}`}
+                style={{ color: tempStatus === opt.key ? brand.primary : undefined }}
               >
                 {opt.label}
               </button>

@@ -32,7 +32,8 @@ export const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = (
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 15 }}
             transition={{ type: 'spring', duration: 0.4, bounce: 0.15 }}
-            className="bg-white rounded-3xl w-full max-w-[420px] p-6 shadow-2xl relative border border-slate-100 font-sans"
+            className="bg-white rounded-3xl w-full max-w-[420px] p-6 relative border border-[#E2E8F0] font-sans"
+            style={{ boxShadow: 'none' }}
           >
             {/* Header with Icon and Title */}
             <div className="flex items-center gap-3 pr-8">
@@ -51,7 +52,7 @@ export const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = (
             </button>
 
             {/* Message Box */}
-            <Card className="mt-4 border-slate-100 !bg-slate-50/40 text-[12px] text-slate-600 leading-relaxed font-medium !p-4 !rounded-2xl shadow-none">
+            <Card className="mt-4 !bg-slate-50/40 text-[12px] text-slate-600 leading-relaxed font-medium !p-4 !rounded-2xl shadow-none" style={{ borderColor: '#E2E8F0' }}>
               Are you sure you want to delete <strong className="text-slate-800">"{itemName}"</strong>? {warningText}
             </Card>
 
@@ -59,7 +60,7 @@ export const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = (
             <div className="flex justify-end gap-2.5 mt-6">
               <button
                 onClick={onClose}
-                className="px-6 py-2 border border-slate-200 hover:border-slate-350 rounded-full text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 transition-all cursor-pointer"
+                className="px-6 py-2 border border-[#E2E8F0] rounded-full text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 transition-all cursor-pointer shadow-none"
               >
                 Cancel
               </button>
@@ -68,7 +69,7 @@ export const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = (
                   onConfirm();
                   onClose();
                 }}
-                className="px-6 py-2 bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white rounded-full text-xs font-bold shadow-md hover:shadow-lg transition-all cursor-pointer"
+                className="px-6 py-2 bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white border border-[#E2E8F0] rounded-full text-xs font-bold transition-all cursor-pointer shadow-none"
               >
                 Yes, Delete
               </button>

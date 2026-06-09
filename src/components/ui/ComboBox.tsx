@@ -168,11 +168,12 @@ export const ComboBox: React.FC<ComboBoxProps> = ({
                 initial={{ opacity: 0, y: openUpwards ? -5 : 5, scale: 0.98 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: openUpwards ? -5 : 5, scale: 0.98 }}
-                className="fixed z-[99999] bg-white border rounded-xl shadow-xl overflow-hidden combobox-dropdown-container"
+                className="fixed z-[99999] bg-white border border-[#E2E8F0] rounded-xl overflow-hidden combobox-dropdown-container"
                 style={{
                   top: coords.top,
                   left: coords.left,
                   width: coords.width,
+                  boxShadow: 'none',
                 }}
               >
                 <ScrollArea maxHeight="200px" className="p-1.5">

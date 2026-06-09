@@ -214,3 +214,63 @@ export const seedBranches: Branch[] = [
   { id: 'br-4', companyId: 'co4', name: 'Faisalabad Head Office', address: 'D-Ground, Peoples Colony, Faisalabad', is_head_office: true },
 ];
 
+export interface UserRecord {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  mobile: string;
+  roles: string[];
+  isActive: boolean;
+  allowedIps: string;
+  companyIds: string[];
+  defaultCompanyId: string;
+  branchIds: string[];
+  password?: string;
+}
+
+export const ROLES = ['Admin', 'Manager', 'Salesperson', 'Operator', 'Viewer'];
+
+export const seedUsers: UserRecord[] = [
+  {
+    id: 'u1',
+    firstName: 'Aman',
+    lastName: 'Khan',
+    email: 'aman.khan@ledger.com',
+    mobile: '0300-1112222',
+    roles: ['Admin'],
+    isActive: true,
+    allowedIps: '192.168.1.1, 192.168.1.2',
+    companyIds: ['co1', 'co2'],
+    defaultCompanyId: 'co1',
+    branchIds: ['br-1', 'br-2', 'br-3'],
+  },
+  {
+    id: 'u2',
+    firstName: 'Zain',
+    lastName: 'Ahmed',
+    email: 'zain.ahmed@ledger.com',
+    mobile: '0321-4445555',
+    roles: ['Manager'],
+    isActive: true,
+    allowedIps: '',
+    companyIds: ['co1'],
+    defaultCompanyId: 'co1',
+    branchIds: ['br-1'],
+  },
+  {
+    id: 'u3',
+    firstName: 'Sara',
+    lastName: 'Malik',
+    email: 'sara.malik@ledger.com',
+    mobile: '0333-8889999',
+    roles: ['Operator'],
+    isActive: false,
+    allowedIps: '10.0.0.5',
+    companyIds: ['co2', 'co4'],
+    defaultCompanyId: 'co2',
+    branchIds: ['br-3', 'br-4'],
+  },
+];
+
+

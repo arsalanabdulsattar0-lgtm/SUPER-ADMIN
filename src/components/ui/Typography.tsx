@@ -83,15 +83,15 @@ export const TableHeader: React.FC<TableHeaderProps> = ({
   const { brand } = useTheme();
   const isSortable = !!sortKey && !!onSort;
   const isSorted = isSortable && activeSortKey === sortKey;
-  const defaultPadding = label === 'Actions' ? 'px-2' : 'px-4';
+  const defaultPadding = label === 'Actions' ? 'px-2' : 'px-3';
   const finalPadding = padding || defaultPadding;
 
   return (
     <th
-      className={`${finalPadding} py-3 text-left border-b ${
+      className={`${finalPadding} py-2.5 text-left border-b ${
         isSortable ? 'cursor-pointer hover:bg-blue-50/40 select-none' : ''
       } transition-colors ${borderLeft ? 'border-l border-slate-100' : ''} ${width}`}
-      style={{ borderColor: brand.dark + '10' }}
+      style={{ borderColor: '#E2E8F0' }}
       onClick={() => isSortable && onSort(sortKey)}
     >
       <span
@@ -163,7 +163,7 @@ export const ModalHeader: React.FC<ModalHeaderProps> = ({
   return (
     <div
       className="flex items-center justify-between px-6 py-4 bg-white border-b flex-shrink-0"
-      style={{ borderColor: brand.dark + '10' }}
+      style={{ borderColor: '#E2E8F0' }}
     >
       <div className="flex items-center gap-2">
         <h2 className="text-lg font-black text-slate-900 flex items-center gap-2.5" style={{ color: brand.dark }}>

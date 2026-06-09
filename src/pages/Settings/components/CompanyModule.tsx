@@ -73,6 +73,8 @@ export const CompanyModule: React.FC<CompanyModuleProps> = ({ brand }) => {
   const [showFilter, setShowFilter] = useState(false);
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterType, setFilterType] = useState('all');
+  const [tempStatus, setTempStatus] = useState('all');
+  const [tempType, setTempType] = useState('all');
   const [sortKey, setSortKey] = useState<keyof Company>('name');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [currentPage, setCurrentPage] = useState(1);
@@ -177,6 +179,9 @@ export const CompanyModule: React.FC<CompanyModuleProps> = ({ brand }) => {
   const handleReset = () => {
     setFilterStatus('all');
     setFilterType('all');
+    setTempStatus('all');
+    setTempType('all');
+    setShowFilter(false);
   };
 
   const getBranchCount = (companyId: string) => {
@@ -253,8 +258,8 @@ export const CompanyModule: React.FC<CompanyModuleProps> = ({ brand }) => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.07 }}
-            className="bg-white rounded-2xl p-4 border shadow-sm hover:shadow-md transition-all group cursor-default"
-            style={{ borderColor: brand.dark + '10' }}
+            className="bg-white rounded-2xl p-4 border transition-all group cursor-default"
+            style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}
           >
             <div className="flex items-start justify-between">
               <div>
@@ -287,7 +292,16 @@ export const CompanyModule: React.FC<CompanyModuleProps> = ({ brand }) => {
           />
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="white" size="md" icon={SlidersHorizontal} onClick={() => setShowFilter(true)}>
+          <Button
+            variant="white"
+            size="md"
+            icon={SlidersHorizontal}
+            onClick={() => {
+              setTempStatus(filterStatus);
+              setTempType(filterType);
+              setShowFilter(true);
+            }}
+          >
             Filter
           </Button>
           <Button
@@ -307,8 +321,8 @@ export const CompanyModule: React.FC<CompanyModuleProps> = ({ brand }) => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="bg-white rounded-2xl border shadow-sm overflow-hidden"
-        style={{ borderColor: brand.dark + '10' }}
+        className="bg-white rounded-2xl border overflow-hidden"
+        style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}
       >
         {/* Table header bar */}
         <div
@@ -331,7 +345,7 @@ export const CompanyModule: React.FC<CompanyModuleProps> = ({ brand }) => {
           <div className="w-full overflow-x-auto">
             <table className="w-full border-collapse min-w-[860px]">
               <thead className="sticky top-0 z-10 bg-white">
-                <tr className="border-b" style={{ borderColor: brand.dark + '10' }}>
+                <tr className="border-b border-[#E2E8F0]">
                   {[
                     { label: 'Company Name', key: 'name' as keyof Company, w: 'min-w-[150px]' },
                     { label: 'NTN', key: 'ntn' as keyof Company, w: 'min-w-[100px]' },
@@ -342,7 +356,7 @@ export const CompanyModule: React.FC<CompanyModuleProps> = ({ brand }) => {
                     { label: 'Branch Count', key: undefined, w: 'min-w-[100px]' },
                     { label: 'Status', key: undefined, w: 'min-w-[80px]' },
                     { label: 'Actions', key: undefined, w: 'w-24' },
-                  ].map((h, idx) => (
+                  ].map((h) => (
                     <TableHeader
                       key={h.label}
                       label={h.label}
@@ -352,7 +366,7 @@ export const CompanyModule: React.FC<CompanyModuleProps> = ({ brand }) => {
                       onSort={h.key ? () => handleSort(h.key!) : undefined}
                       width={h.w}
                       padding={h.label === 'Actions' ? 'px-2' : 'px-4'}
-                      borderLeft={idx !== 0}
+                      borderLeft={false}
                     />
                   ))}
                 </tr>
@@ -371,37 +385,36 @@ export const CompanyModule: React.FC<CompanyModuleProps> = ({ brand }) => {
                       initial={{ opacity: 0, y: 6 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: i * 0.03 }}
-                      className="group border-b transition-colors hover:bg-slate-50/60 last:border-0"
-                      style={{ borderColor: brand.dark + '08' }}
+                      className="group border-b border-[#E2E8F0] transition-colors hover:bg-slate-50/60 last:border-0"
                     >
-                      <td className="px-4 py-2.5 border-l border-slate-50 text-[12px] font-normal text-slate-600">
+                      <td className="px-4 py-2.5 text-[12px] font-normal text-slate-600">
                         {c.name}
                       </td>
-                      <td className="px-4 py-2.5 border-l border-slate-50 text-[12px] font-normal text-slate-600">
+                      <td className="px-4 py-2.5 text-[12px] font-normal text-slate-600">
                         {c.ntn || '-'}
                       </td>
-                      <td className="px-4 py-2.5 border-l border-slate-50 text-[12px] font-normal text-slate-600">
+                      <td className="px-4 py-2.5 text-[12px] font-normal text-slate-600">
                         {c.email || '-'}
                       </td>
-                      <td className="px-4 py-2.5 border-l border-slate-50 text-[12px] font-normal text-slate-600">
+                      <td className="px-4 py-2.5 text-[12px] font-normal text-slate-600">
                         {c.phone || '-'}
                       </td>
-                      <td className="px-4 py-2.5 border-l border-slate-50 text-[12px] font-normal text-slate-600">
+                      <td className="px-4 py-2.5 text-[12px] font-normal text-slate-600">
                         {c.city || '-'}
                       </td>
-                      <td className="px-4 py-2.5 border-l border-slate-50 text-[12px] font-normal text-slate-600">
+                      <td className="px-4 py-2.5 text-[12px] font-normal text-slate-600">
                         {c.business_type || '-'}
                       </td>
-                      <td className="px-4 py-2.5 border-l border-slate-50 text-[12px] font-normal text-slate-600">
+                      <td className="px-4 py-2.5 text-[12px] font-normal text-slate-600">
                         {getBranchCount(c.id)}
                       </td>
-                      <td className="px-4 py-2.5 border-l border-slate-50">
+                      <td className="px-4 py-2.5">
                         {c.is_active
                           ? <ActiveChip label="Active" size="md" onClick={() => handleToggleActive(c.id)} />
                           : <InactiveChip label="Inactive" size="md" onClick={() => handleToggleActive(c.id)} />
                         }
                       </td>
-                      <td className="px-2 py-2.5 border-l border-slate-50 w-24">
+                      <td className="px-2 py-2.5 w-24">
                         <div className="flex items-center gap-1">
                           <Button
                             variant="ghost"
@@ -441,7 +454,7 @@ export const CompanyModule: React.FC<CompanyModuleProps> = ({ brand }) => {
         {totalPages > 1 && (
           <div
             className="px-4 py-3 border-t flex items-center justify-between"
-            style={{ borderColor: brand.dark + '08', background: brand.surface + '60' }}
+            style={{ borderColor: '#E2E8F0', background: brand.surface + '60' }}
           >
             <p className="text-[11px] font-medium text-slate-400">
               Showing {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, filtered.length)} of {filtered.length}
@@ -508,7 +521,7 @@ export const CompanyModule: React.FC<CompanyModuleProps> = ({ brand }) => {
           {/* Section 1: Company Information */}
           <div className="space-y-1.5">
             <SectionHeader title="Company Information" icon={Building2} />
-            <Card className="p-4 shadow-sm" style={{ borderColor: brand.dark + '10' }}>
+            <Card className="p-4" style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}>
               <div className="grid grid-cols-2 gap-4">
                 <Input
                   label="Company Name *"
@@ -552,7 +565,7 @@ export const CompanyModule: React.FC<CompanyModuleProps> = ({ brand }) => {
           {/* Section 2: Contact Information */}
           <div className="space-y-1.5">
             <SectionHeader title="Contact Information" icon={Phone} />
-            <Card className="p-4 shadow-sm" style={{ borderColor: brand.dark + '10' }}>
+            <Card className="p-4" style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}>
               <div className="grid grid-cols-2 gap-4">
                 <Input
                   label="Email"
@@ -590,7 +603,7 @@ export const CompanyModule: React.FC<CompanyModuleProps> = ({ brand }) => {
           {/* Section 3: Location Information */}
           <div className="space-y-1.5">
             <SectionHeader title="Location Information" icon={MapPin} />
-            <Card className="p-4 shadow-sm" style={{ borderColor: brand.dark + '10' }}>
+            <Card className="p-4" style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}>
               <div className="grid grid-cols-2 gap-4">
                 <Input
                   label="City"
@@ -622,7 +635,7 @@ export const CompanyModule: React.FC<CompanyModuleProps> = ({ brand }) => {
           {/* Section 4: Integration Information */}
           <div className="space-y-1.5">
             <SectionHeader title="Integration Information" icon={Globe} />
-            <Card className="p-4 shadow-sm" style={{ borderColor: brand.dark + '10' }}>
+            <Card className="p-4" style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}>
               <div className="grid grid-cols-2 gap-4">
                 <Input
                   label="PRAL Token"
@@ -638,7 +651,7 @@ export const CompanyModule: React.FC<CompanyModuleProps> = ({ brand }) => {
           {/* Section 5: Status Information */}
           <div className="space-y-1.5">
             <SectionHeader title="Status Information" icon={Building2} />
-            <Card className="p-4 shadow-sm" style={{ borderColor: brand.dark + '10' }}>
+            <Card className="p-4" style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}>
               <div className="flex items-center gap-3">
                 <Toggle
                   checked={form.is_active}
@@ -657,7 +670,12 @@ export const CompanyModule: React.FC<CompanyModuleProps> = ({ brand }) => {
         isOpen={showFilter}
         onClose={() => setShowFilter(false)}
         onReset={handleReset}
-        onApply={() => setShowFilter(false)}
+        onApply={() => {
+          setFilterStatus(tempStatus);
+          setFilterType(tempType);
+          setCurrentPage(1);
+          setShowFilter(false);
+        }}
         title="Filter Companies"
       >
         {/* Status filter */}
@@ -671,13 +689,13 @@ export const CompanyModule: React.FC<CompanyModuleProps> = ({ brand }) => {
             ].map(opt => (
               <button
                 key={opt.key}
-                onClick={() => { setFilterStatus(opt.key); setCurrentPage(1); }}
+                onClick={() => setTempStatus(opt.key)}
                 className={`py-1 rounded text-[11px] font-bold transition-all text-center cursor-pointer ${
-                  filterStatus === opt.key
+                  tempStatus === opt.key
                     ? 'bg-white shadow-xs border border-slate-200/40'
                     : 'text-slate-500 hover:text-slate-800 bg-transparent border border-transparent'
                 }`}
-                style={{ color: filterStatus === opt.key ? brand.primary : undefined }}
+                style={{ color: tempStatus === opt.key ? brand.primary : undefined }}
               >
                 {opt.label}
               </button>
@@ -690,8 +708,8 @@ export const CompanyModule: React.FC<CompanyModuleProps> = ({ brand }) => {
           <label className="block text-[11px] font-bold text-slate-500">Business Type</label>
           <Select
             variant="compact"
-            value={filterType}
-            onChange={e => { setFilterType(e.target.value); setCurrentPage(1); }}
+            value={tempType}
+            onChange={e => setTempType(e.target.value)}
             options={[
               { value: 'all', label: 'All Types' },
               ...BUSINESS_TYPES.map(t => ({ value: t, label: t })),

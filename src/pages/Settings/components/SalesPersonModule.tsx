@@ -93,6 +93,7 @@ export const SalesPersonModule: React.FC<SalesPersonModuleProps> = ({ brand }) =
   const [search, setSearch] = useState('');
   const [showFilter, setShowFilter] = useState(false);
   const [filterStatus, setFilterStatus] = useState('all');
+  const [tempStatus, setTempStatus] = useState('all');
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<SalesPerson | null>(null);
   const [form, setForm] = useState<Omit<SalesPerson, 'id'> & { spId: string }>(emptySP());
@@ -190,7 +191,11 @@ export const SalesPersonModule: React.FC<SalesPersonModuleProps> = ({ brand }) =
     setPeople(prev => prev.filter(p => p.id !== deleteModal.id));
   };
 
-  const handleReset = () => setFilterStatus('all');
+  const handleReset = () => {
+    setFilterStatus('all');
+    setTempStatus('all');
+    setShowFilter(false);
+  };
 
   return (
     <div className="space-y-5">
@@ -206,7 +211,15 @@ export const SalesPersonModule: React.FC<SalesPersonModuleProps> = ({ brand }) =
           />
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="white" size="md" icon={SlidersHorizontal} onClick={() => setShowFilter(true)}>
+          <Button
+            variant="white"
+            size="md"
+            icon={SlidersHorizontal}
+            onClick={() => {
+              setTempStatus(filterStatus);
+              setShowFilter(true);
+            }}
+          >
             Filter
           </Button>
           <Button
@@ -226,8 +239,8 @@ export const SalesPersonModule: React.FC<SalesPersonModuleProps> = ({ brand }) =
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="bg-white rounded-2xl border shadow-sm overflow-hidden"
-        style={{ borderColor: brand.dark + '10' }}
+        className="bg-white rounded-2xl border overflow-hidden"
+        style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}
       >
         {/* Table header bar */}
         <div
@@ -250,7 +263,7 @@ export const SalesPersonModule: React.FC<SalesPersonModuleProps> = ({ brand }) =
           <div className="w-full overflow-x-auto">
             <table className="w-full border-collapse min-w-[860px]">
               <thead className="sticky top-0 z-10 bg-white">
-                <tr className="border-b" style={{ borderColor: brand.dark + '10' }}>
+                <tr className="border-b border-[#E2E8F0]">
                   {[
                     { label: 'Name', w: 'min-w-[120px]' },
                     { label: 'Contact', w: 'min-w-[100px]' },
@@ -260,13 +273,13 @@ export const SalesPersonModule: React.FC<SalesPersonModuleProps> = ({ brand }) =
                     { label: 'Status', w: 'min-w-[80px]' },
                     { label: 'Created Date', w: 'min-w-[90px]' },
                     { label: 'Actions', w: 'w-20' },
-                  ].map((h, idx) => (
+                  ].map((h) => (
                     <TableHeader
                       key={h.label}
                       label={h.label}
                       width={h.w}
                       padding="px-2"
-                      borderLeft={idx !== 0}
+                      borderLeft={false}
                     />
                   ))}
                 </tr>
@@ -288,35 +301,34 @@ export const SalesPersonModule: React.FC<SalesPersonModuleProps> = ({ brand }) =
                       initial={{ opacity: 0, y: 6 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: i * 0.03 }}
-                      className="group border-b transition-colors hover:bg-slate-50/60 last:border-0"
-                      style={{ borderColor: brand.dark + '08' }}
+                      className="group border-b border-[#E2E8F0] transition-colors hover:bg-slate-50/60 last:border-0"
                     >
-                      <td className="px-2 py-2 border-l border-slate-50 text-[12px] font-normal text-slate-600">
+                      <td className="px-2 py-2 text-[12px] font-normal text-slate-600">
                         {p.name}
                       </td>
-                      <td className="px-2 py-2 border-l border-slate-50 text-[12px] font-normal text-slate-600">
+                      <td className="px-2 py-2 text-[12px] font-normal text-slate-600">
                         {p.contact || '-'}
                       </td>
-                      <td className="px-2 py-2 border-l border-slate-50 text-[12px] font-normal text-slate-600">
+                      <td className="px-2 py-2 text-[12px] font-normal text-slate-600">
                         {p.address1 || '-'}
                       </td>
-                      <td className="px-2 py-2 border-l border-slate-50 text-[12px] font-normal text-slate-600">
+                      <td className="px-2 py-2 text-[12px] font-normal text-slate-600">
                         {p.telephone1 || '-'}
                       </td>
-                      <td className="px-2 py-2 border-l border-slate-50 text-[12px] font-normal text-slate-600">
+                      <td className="px-2 py-2 text-[12px] font-normal text-slate-600">
                         {p.email || '-'}
                       </td>
-                      <td className="px-2 py-2 border-l border-slate-50">
+                      <td className="px-2 py-2">
                         {p.active ? (
                           <ActiveChip label="Active" size="md" onClick={() => handleToggleActive(p.id)} />
                         ) : (
                           <InactiveChip label="Inactive" size="md" onClick={() => handleToggleActive(p.id)} />
                         )}
                       </td>
-                      <td className="px-2 py-2 border-l border-slate-50 text-[12px] font-normal text-slate-500 whitespace-nowrap">
+                      <td className="px-2 py-2 text-[12px] font-normal text-slate-500 whitespace-nowrap">
                         {p.createdDate}
                       </td>
-                      <td className="px-2 py-3 border-l border-slate-50 w-20">
+                      <td className="px-2 py-3 w-20">
                         <div className="flex items-center gap-1">
                           <Button
                             variant="ghost"
@@ -380,7 +392,7 @@ export const SalesPersonModule: React.FC<SalesPersonModuleProps> = ({ brand }) =
           {/* Section 1: Basic contact information */}
           <div className="space-y-1.5">
             <SectionHeader title="Basic Contact Information" icon={User} />
-            <Card className="p-4 shadow-sm" style={{ borderColor: brand.dark + '10' }}>
+            <Card className="p-4" style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}>
               <div className="grid grid-cols-2 gap-4">
                 <ComboBox
                   label="Salesperson ID"
@@ -469,7 +481,7 @@ export const SalesPersonModule: React.FC<SalesPersonModuleProps> = ({ brand }) =
           {/* Section 2: Targets and commission */}
           <div className="space-y-1.5">
             <SectionHeader title="Targets And Commission" icon={ShieldCheck} />
-            <Card className="p-4 shadow-sm" style={{ borderColor: brand.dark + '10' }}>
+            <Card className="p-4" style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}>
               <div className="grid grid-cols-3 gap-4">
                 <Input
                   label="Commission (%)"
@@ -511,7 +523,7 @@ export const SalesPersonModule: React.FC<SalesPersonModuleProps> = ({ brand }) =
           {/* Section 3: Monthly targets breakdown */}
           <div className="space-y-1.5">
             <SectionHeader title="Monthly Targets Breakdown (Rs.)" icon={SlidersHorizontal} />
-            <Card className="p-4 shadow-sm" style={{ borderColor: brand.dark + '10' }}>
+            <Card className="p-4" style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}>
               <div className="grid grid-cols-4 gap-3">
                 {[
                   { label: 'Jan Target', key: 'JanT' },
@@ -550,7 +562,7 @@ export const SalesPersonModule: React.FC<SalesPersonModuleProps> = ({ brand }) =
           {/* Section 4: System configuration */}
           <div className="space-y-1.5">
             <SectionHeader title="System Configuration" icon={ShieldCheck} />
-            <Card className="p-4 shadow-sm" style={{ borderColor: brand.dark + '10' }}>
+            <Card className="p-4" style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}>
               <div className="flex items-center justify-between">
                 <div className="w-1/2">
                   <Input
@@ -586,7 +598,10 @@ export const SalesPersonModule: React.FC<SalesPersonModuleProps> = ({ brand }) =
         isOpen={showFilter}
         onClose={() => setShowFilter(false)}
         onReset={handleReset}
-        onApply={() => setShowFilter(false)}
+        onApply={() => {
+          setFilterStatus(tempStatus);
+          setShowFilter(false);
+        }}
         title="Filter Salespersons"
       >
         <div className="space-y-1.5">
@@ -599,12 +614,12 @@ export const SalesPersonModule: React.FC<SalesPersonModuleProps> = ({ brand }) =
             ].map(opt => (
               <button
                 key={opt.key}
-                onClick={() => setFilterStatus(opt.key)}
-                className={`py-1 rounded text-[11px] font-bold transition-all text-center cursor-pointer ${filterStatus === opt.key
+                onClick={() => setTempStatus(opt.key)}
+                className={`py-1 rounded text-[11px] font-bold transition-all text-center cursor-pointer ${tempStatus === opt.key
                     ? 'bg-white shadow-xs border border-slate-200/40'
                     : 'text-slate-500 hover:text-slate-800 bg-transparent border border-transparent'
                   }`}
-                style={{ color: filterStatus === opt.key ? brand.primary : undefined }}
+                style={{ color: tempStatus === opt.key ? brand.primary : undefined }}
               >
                 {opt.label}
               </button>

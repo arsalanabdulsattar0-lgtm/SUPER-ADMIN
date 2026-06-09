@@ -47,11 +47,11 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({
             animate={{ x: 0 }}
             exit={{ x: '105%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed right-0 top-0 bottom-0 z-[1000] w-80 bg-white border-l shadow-2xl flex flex-col overflow-hidden"
-            style={{ borderColor: brand.dark + '10' }}
+            className="fixed right-0 top-0 bottom-0 z-[1000] w-80 bg-white border-l flex flex-col overflow-hidden"
+            style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}
           >
             {/* Drawer Header */}
-            <div className="flex items-center justify-between px-5 py-4 bg-white border-b flex-shrink-0" style={{ borderColor: brand.dark + '10' }}>
+            <div className="flex items-center justify-between px-5 py-4 bg-white border-b flex-shrink-0" style={{ borderColor: '#E2E8F0' }}>
               <div className="flex items-center gap-2">
                 <SlidersHorizontal className="w-4 h-4" style={{ color: brand.primary }} />
                 <h2 className="text-sm font-black text-slate-800">{title}</h2>
@@ -71,14 +71,13 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({
 
             {/* Drawer Footer */}
             {(onReset || onApply) && (
-              <div className="p-4 border-t border-slate-100 flex items-center gap-2 bg-slate-50/50 flex-shrink-0">
+              <div className="p-3 border-t border-[#E2E8F0] flex justify-end items-center gap-2 bg-slate-50/50 flex-shrink-0">
                 {onReset && (
                   <Button
                     onClick={onReset}
                     variant="white"
-                    size="md"
-                    fullWidth
-                    className="text-slate-650 font-bold border-slate-200 hover:bg-slate-100"
+                    size="sm"
+                    className="text-slate-650 font-bold hover:bg-slate-100"
                   >
                     {resetLabel}
                   </Button>
@@ -87,8 +86,7 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({
                   <Button
                     onClick={onApply}
                     variant="primary"
-                    size="md"
-                    fullWidth
+                    size="sm"
                     style={{ backgroundColor: brand.primary }}
                   >
                     {applyLabel}

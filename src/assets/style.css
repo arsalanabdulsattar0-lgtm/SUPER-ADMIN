@@ -45,36 +45,38 @@
 }
 
 .border-brand-dark-08 {
-  border-color: var(--brand-dark-08) !important;
+  border-color: #E2E8F0 !important;
 }
 .border-brand-dark-10 {
-  border-color: var(--brand-dark-10) !important;
+  border-color: #E2E8F0 !important;
 }
 .border-brand-dark-15 {
-  border-color: var(--brand-dark-15) !important;
+  border-color: #E2E8F0 !important;
 }
 .border-brand-dark-20 {
-  border-color: var(--brand-dark-20) !important;
+  border-color: #E2E8F0 !important;
 }
 .border-brand-primary-30 {
-  border-color: var(--brand-primary-30) !important;
+  border-color: #E2E8F0 !important;
 }
 .border-brand-primary-10 {
-  border-color: var(--brand-primary-10) !important;
+  border-color: #E2E8F0 !important;
 }
 
 /* Form Controls Components Styles */
 
 /* Input Component */
 .form-input-container {
-  border-color: #E2E8F0;
+  border: 1px solid #E2E8F0 !important;
   background-color: #FFFFFF;
+  box-shadow: none !important;
   transition: all 0.2s ease-in-out;
 }
 .form-input-container:focus {
-  border-color: var(--brand-primary) !important;
-  box-shadow: 0 0 0 2px var(--brand-primary-20) !important;
+  border: 1px solid #E2E8F0 !important;
+  box-shadow: none !important;
   background-color: #FFFFFF !important;
+  outline: none !important;
 }
 .form-input-icon {
   color: #CBD5E1;
@@ -86,38 +88,44 @@
 
 /* Select Component */
 .form-select-container {
-  border-color: #E2E8F0;
+  border: 1px solid #E2E8F0 !important;
   background-color: #FFFFFF;
+  box-shadow: none !important;
   transition: all 0.2s ease-in-out;
 }
 .form-select-container:focus {
-  border-color: var(--brand-primary) !important;
-  box-shadow: 0 0 0 2px var(--brand-primary-20) !important;
+  border: 1px solid #E2E8F0 !important;
+  box-shadow: none !important;
   background-color: #FFFFFF !important;
+  outline: none !important;
 }
 
 /* TextArea Component */
 .form-textarea-container {
-  border-color: #E2E8F0;
+  border: 1px solid #E2E8F0 !important;
   background-color: #FFFFFF;
+  box-shadow: none !important;
   transition: all 0.2s ease-in-out;
 }
 .form-textarea-container:focus {
-  border-color: var(--brand-primary) !important;
-  box-shadow: 0 0 0 2px var(--brand-primary-20) !important;
+  border: 1px solid #E2E8F0 !important;
+  box-shadow: none !important;
   background-color: #FFFFFF !important;
+  outline: none !important;
 }
 
 /* ComboBox Component */
 .combobox-container-base {
-  border-color: #E2E8F0;
+  border: 1px solid #E2E8F0 !important;
   background-color: #FFFFFF;
+  box-shadow: none !important;
   transition: all 0.2s ease-in-out;
 }
 .combobox-container-open {
-  border-color: var(--brand-primary) !important;
-  box-shadow: 0 0 0 4px var(--brand-primary-10) !important;
+  border: 1px solid #E2E8F0 !important;
+  box-shadow: none !important;
   background-color: #FFFFFF !important;
+  outline: none !important;
 }
 .combobox-icon-base {
   color: #CBD5E1;
@@ -127,7 +135,8 @@
   color: var(--brand-primary) !important;
 }
 .combobox-dropdown-container {
-  border-color: var(--brand-dark-10) !important;
+  border: 1px solid #E2E8F0 !important;
+  box-shadow: none !important;
 }
 .combobox-option-selected {
   background-color: var(--brand-soft-25) !important;
@@ -146,10 +155,10 @@
 
 /* Page specific classes - InvoiceEditorV4 */
 .invoice-matrix-container {
-  border-color: var(--brand-dark-10) !important;
+  border-color: #E2E8F0 !important;
 }
 .invoice-card-header {
-  border-color: var(--brand-dark-08) !important;
+  border-color: #E2E8F0 !important;
 }
 .invoice-card-badge {
   background-color: var(--brand-soft);
@@ -171,7 +180,7 @@
   color: var(--brand-primary) !important;
 }
 .invoice-header-div {
-  border-color: var(--brand-dark-10) !important;
+  border-color: #E2E8F0 !important;
 }
 .invoice-header-title {
   color: var(--brand-dark) !important;
@@ -183,23 +192,23 @@
   color: var(--brand-primary) !important;
 }
 .invoice-dropdown-menu {
-  border-color: var(--brand-dark-15) !important;
+  border-color: #E2E8F0 !important;
 }
 .invoice-dropdown-item {
   color: var(--brand-dark) !important;
 }
 .invoice-recent-table-head {
   color: var(--brand-dark) !important;
-  border-color: var(--brand-dark-10) !important;
+  border-color: #E2E8F0 !important;
 }
 .invoice-recent-table-body {
-  border-color: var(--brand-dark-10) !important;
+  border-color: #E2E8F0 !important;
 }
 .invoice-recent-table-row {
-  border-color: var(--brand-dark-08) !important;
+  border-color: #E2E8F0 !important;
 }
 .invoice-recent-table-footer {
-  border-color: var(--brand-dark-10) !important;
+  border-color: #E2E8F0 !important;
 }
 
 /* Glassmorphic input search in InvoiceEditorV4 header */
