@@ -8,6 +8,7 @@ import Dashboard from './pages/Invoices/Dashboard/Dashboard';
 import Dashboard1 from './pages/Invoices/Dashboard/Dashboard1';
 import Dashboard2 from './pages/Invoices/Dashboard/Dashboard2';
 import InvoiceEditorV4 from './pages/Invoices/InvoiceEditorV4';
+import ReturnInvoiceEditor from './pages/Invoices/ReturnInvoiceEditor';
 import InvoiceListModule from './pages/Invoices/InvoiceList';
 import CustomerManagement from './pages/Customers/CustomerManagement';
 import Settings from './pages/Settings/Settings';
@@ -20,7 +21,7 @@ import InlineProductForm from './components/ui/InlineProductForm';
 import { initialInvoices } from './pages/Invoices/invoiceTypes';
 import type { Invoice } from './pages/Invoices/invoiceTypes';
 
-type View = 'dashboard' | 'dashboard1' | 'dashboard2' | 'invoices' | 'add-invoice' | 'add-invoice-v2' | 'add-invoice-v3' | 'add-invoice-v4' | 'customers' | 'products' | 'settings' | 'help';
+type View = 'dashboard' | 'dashboard1' | 'dashboard2' | 'invoices' | 'add-invoice' | 'add-invoice-v2' | 'add-invoice-v3' | 'add-invoice-v4' | 'return-invoice' | 'customers' | 'products' | 'settings' | 'help';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
@@ -117,6 +118,30 @@ function App() {
     type: 'Standard',
   });
 
+  const [returnInvoice, setReturnInvoice] = useState<InvoiceData>({
+    invoiceNumber: 'RTN-' + Math.floor(Math.random() * 100000).toString().padStart(5, '0'),
+    date: new Date().toISOString().split('T')[0],
+    dueDate: new Date().toISOString().split('T')[0],
+    senderName: 'Antigravity Creative Studio',
+    senderAddress: '452 Innovation Blvd, San Francisco, CA 94107\ncontact@antigravity.studio | +1 (555) 012-3456',
+    customerName: '',
+    customerAddress: '',
+    subject: 'Returned Items',
+    reference: '',
+    productCode: '',
+    remarks: '',
+    type: 'Return',
+    items: [],
+    taxRate: 8,
+    discountPercentage: 0,
+    discountAmount: 0,
+    shippingCharges: 0,
+    roundOff: 0,
+    receivedAmount: 0,
+    bankAccount: 'chase',
+    notes: 'Return invoice details.'
+  });
+
   // Save default invoice data to localStorage if not present
   useEffect(() => {
     try {
@@ -202,12 +227,59 @@ function App() {
     setActiveView('invoices');
   };
 
+  const handleSaveReturnInvoice = (data: InvoiceData) => {
+    const subtotal = data.items.reduce((sum, item) => sum + (item.quantity * item.price) - item.discount + item.tax + item.furtherTax, 0);
+    const taxAmount = (subtotal * data.taxRate) / 100;
+    const discountVal = data.discountAmount || (subtotal * data.discountPercentage) / 100;
+    const netPayable = subtotal + taxAmount - discountVal + data.shippingCharges + data.roundOff;
+
+    const initials = data.customerName ? data.customerName.split(' ').map(x => x[0]).join('').toUpperCase().slice(0, 2) : 'RT';
+    const colors = ['#2759CD', '#10B981', '#F59E0B', '#8B5CF6', '#EE4932', '#0EA5E9', '#EC4899', '#14B8A6'];
+    const randomColor = colors[Math.floor(Math.random() * colors.length)];
+
+    const updatedInvoice: Invoice = {
+      id: data.invoiceNumber || 'RTN-' + Math.floor(1000 + Math.random() * 9000),
+      customer: data.customerName || 'Unnamed Customer',
+      customerInitials: initials,
+      customerColor: randomColor,
+      issueDate: data.date || new Date().toISOString().split('T')[0],
+      dueDate: data.dueDate || new Date().toISOString().split('T')[0],
+      amount: `Rs. ${netPayable.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+      rawAmount: netPayable,
+      status: 'Draft',
+      payment: 'Net 30',
+      type: 'Return'
+    };
+
+    try {
+      localStorage.setItem(`invoice_detail_${updatedInvoice.id}`, JSON.stringify(data));
+    } catch { /* ignore */ }
+
+    setInvoiceList(prev => {
+      const exists = prev.some(x => x.id === updatedInvoice.id);
+      if (exists) {
+        return prev.map(x => x.id === updatedInvoice.id ? updatedInvoice : x);
+      } else {
+        return [updatedInvoice, ...prev];
+      }
+    });
+
+    alert(`Return Invoice ${updatedInvoice.id} saved successfully!`);
+    setActiveView('invoices');
+  };
+
   const handleEditInvoice = (id: string) => {
     try {
       const stored = localStorage.getItem(`invoice_detail_${id}`);
       if (stored) {
-        setInvoice(JSON.parse(stored) as InvoiceData);
-        setActiveView('add-invoice-v4');
+        const parsed = JSON.parse(stored) as InvoiceData;
+        if (parsed.type === 'Return') {
+          setReturnInvoice(parsed);
+          setActiveView('return-invoice');
+        } else {
+          setInvoice(parsed);
+          setActiveView('add-invoice-v4');
+        }
       } else {
         const inv = invoiceList.find(i => i.id === id);
         if (inv) {
@@ -219,7 +291,7 @@ function App() {
             senderAddress: '452 Innovation Blvd, San Francisco, CA 94107',
             customerName: inv.customer,
             customerAddress: 'Enterprise Customer Account',
-            subject: 'Services Rendered',
+            subject: inv.type === 'Return' ? 'Returned Items' : 'Services Rendered',
             reference: '',
             productCode: '',
             remarks: '',
@@ -245,10 +317,15 @@ function App() {
             roundOff: 0,
             receivedAmount: 0,
             bankAccount: '',
-            notes: `Please include the invoice number ${inv.id} in your wire transfer reference.`
+            notes: inv.type === 'Return' ? 'Return invoice details.' : `Please include the invoice number ${inv.id} in your wire transfer reference.`
           };
-          setInvoice(fallback);
-          setActiveView('add-invoice-v4');
+          if (inv.type === 'Return') {
+            setReturnInvoice(fallback);
+            setActiveView('return-invoice');
+          } else {
+            setInvoice(fallback);
+            setActiveView('add-invoice-v4');
+          }
         } else {
           alert('Invoice not found!');
         }
@@ -274,6 +351,8 @@ function App() {
         return <div>Invoice creation v3 handled via AI Inline Panel.</div>;
       case 'add-invoice-v4':
         return <InvoiceEditorV4 data={invoice} onChange={setInvoice} onSave={handleSaveInvoice} onViewChange={(v) => setActiveView(v as View)} onPrint={handlePrintInvoice} />;
+      case 'return-invoice':
+        return <ReturnInvoiceEditor data={returnInvoice} onChange={setReturnInvoice} onSave={handleSaveReturnInvoice} onViewChange={(v) => setActiveView(v as View)} onPrint={handlePrintInvoice} />;
       case 'invoices':
         return <InvoiceListModule invoiceItems={invoiceList} setInvoiceItems={setInvoiceList} onViewChange={(v) => setActiveView(v as View)} onPrintInvoice={handlePrintInvoice} onEditInvoice={handleEditInvoice} />;
       case 'customers':
@@ -371,7 +450,9 @@ function App() {
                 </p>
               </div>
               <div style={{ textAlign: 'right' }}>
-                <h2 style={{ fontSize: '28px', fontWeight: 900, color: '#2759CD', margin: 0, letterSpacing: '2px' }}>Invoice</h2>
+                <h2 style={{ fontSize: '28px', fontWeight: 900, color: '#2759CD', margin: 0, letterSpacing: '2px' }}>
+                  {printInvoiceData.type === 'Return' ? 'Return Invoice' : 'Invoice'}
+                </h2>
                 <p style={{ fontSize: '13px', fontWeight: 700, color: '#334155', marginTop: '4px' }}>#{printInvoiceData.id}</p>
                 <div style={{ fontSize: '10px', color: '#64748b', marginTop: '8px', lineHeight: '1.8' }}>
                   <div><strong>Issue date:</strong> {printInvoiceData.issueDate}</div>
@@ -407,7 +488,7 @@ function App() {
             <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '32px' }}>
               <thead>
                 <tr style={{ background: '#f1f5f9', borderBottom: '2px solid #cbd5e1' }}>
-                  {['Code', 'Description', 'Unit', 'Qty', 'Rate (Rs.)', 'Tax (Rs.)', 'Discount (Rs.)', 'Total (Rs.)'].map(h => (
+                  {['Code', 'Description', 'Unit', printInvoiceData.type === 'Return' ? 'Returned Qty' : 'Qty', 'Rate (Rs.)', 'Tax (Rs.)', 'Discount (Rs.)', 'Total (Rs.)'].map(h => (
                     <th key={h} style={{ padding: '10px 12px', fontSize: '9px', fontWeight: 900, letterSpacing: '1px', color: '#64748b', textAlign: (h === 'Description' || h === 'Code') ? 'left' : 'right', whiteSpace: 'nowrap' }}>{h}</th>
                   ))}
                 </tr>

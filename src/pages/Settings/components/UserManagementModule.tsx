@@ -360,9 +360,8 @@ export const UserManagementModule: React.FC<UserManagementModuleProps> = ({ bran
           </div>
         </div>
 
-        <ScrollArea maxHeight="340px">
-          <div className="w-full overflow-x-auto">
-            <table className="w-full border-collapse min-w-[760px]">
+        <ScrollArea maxHeight="220px" className="w-full overflow-x-auto">
+          <table className="w-full border-collapse min-w-[760px]">
               <thead className="sticky top-0 z-10 bg-white">
                 <tr className="border-b border-[#E2E8F0]">
                   {[
@@ -459,7 +458,6 @@ export const UserManagementModule: React.FC<UserManagementModuleProps> = ({ bran
                 )}
               </tbody>
             </table>
-          </div>
         </ScrollArea>
 
         {/* Pagination */}

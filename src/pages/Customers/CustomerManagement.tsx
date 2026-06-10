@@ -689,7 +689,7 @@ const CustomerManagement: React.FC = () => {
                             { label: 'Tax Status', key: null, width: 'w-[17%]' },
                             { label: 'Status', key: 'status', width: 'w-[15%]' },
                             { label: 'Actions', key: null, width: 'w-20' },
-                          ] as { label: string; key: 'name' | 'email' | 'credit_limit' | 'opening_balance' | 'status' | null; width: string }[]).map((h, idx) => (
+                          ] as { label: string; key: 'name' | 'email' | 'credit_limit' | 'opening_balance' | 'status' | null; width: string }[]).map((h) => (
                             <TableHeader
                               key={h.label}
                               label={h.label}

@@ -341,9 +341,8 @@ export const CompanyModule: React.FC<CompanyModuleProps> = ({ brand }) => {
           </div>
         </div>
 
-        <ScrollArea maxHeight="340px">
-          <div className="w-full overflow-x-auto">
-            <table className="w-full border-collapse min-w-[860px]">
+        <ScrollArea maxHeight="233px" className="w-full overflow-x-auto">
+          <table className="w-full border-collapse min-w-[860px]">
               <thead className="sticky top-0 z-10 bg-white">
                 <tr className="border-b border-[#E2E8F0]">
                   {[
@@ -447,7 +446,6 @@ export const CompanyModule: React.FC<CompanyModuleProps> = ({ brand }) => {
                 )}
               </tbody>
             </table>
-          </div>
         </ScrollArea>
 
         {/* Pagination */}
@@ -733,7 +731,6 @@ export const CompanyModule: React.FC<CompanyModuleProps> = ({ brand }) => {
         isOpen={activeBranchCompany !== null}
         onClose={() => setActiveBranchCompany(null)}
         company={activeBranchCompany}
-        allCompanies={companies}
         branches={branches.filter(b => b.companyId === activeBranchCompany?.id)}
         onSave={handleSaveBranch}
         onDelete={handleDeleteBranch}

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  User, CreditCard, Palette, Receipt, Users, Building2, Shield,
+  User, CreditCard, Palette, Receipt, Users, Building2, Shield, Package, Warehouse,
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -13,11 +13,14 @@ import { TaxSetupModule } from './components/TaxSetupModule';
 import { SalesPersonModule } from './components/SalesPersonModule';
 import { CompanyModule } from './components/CompanyModule';
 import { UserManagementModule } from './components/UserManagementModule';
+import { ProductSetupModule } from './components/ProductSetupModule';
+import { WarehouseModule } from './components/WarehouseModule';
 
 // Re-export types imported from separate modules (for settingsData.ts and other consumers)
 export type { TaxSetup } from './components/TaxSetupModule';
 export type { SalesPerson } from './components/SalesPersonModule';
 export type { Company } from './components/CompanyModule';
+export type { Warehouse } from './components/WarehouseModule';
 
 // ─── Main Settings component ──────────────────────────────────────────────────
 
@@ -33,6 +36,8 @@ const Settings: React.FC = () => {
     { id: 'sales', title: 'Salesperson', desc: 'Manage salespersons, targets, and commissions.', icon: Users },
     { id: 'company', title: 'Company', desc: 'Manage company profiles, NTN, STN, PRAL tokens and contacts.', icon: Building2 },
     { id: 'users', title: 'User Management', desc: 'Manage user access, roles, allowed IPs, and company assignments.', icon: Shield },
+    { id: 'product', title: 'Product Setup', desc: 'Configure product setup types, serial prefixes, and lookup values.', icon: Package },
+    { id: 'warehouse', title: 'Warehouse', desc: 'Manage warehouses, storage locations and inventory distribution.', icon: Warehouse },
   ];
 
   const toggle = (id: string) =>
@@ -147,6 +152,8 @@ const Settings: React.FC = () => {
               {activeSection === 'sales' && <SalesPersonModule brand={brand} />}
               {activeSection === 'company' && <CompanyModule brand={brand} />}
               {activeSection === 'users' && <UserManagementModule brand={brand} />}
+              {activeSection === 'product' && <ProductSetupModule brand={brand} />}
+              {activeSection === 'warehouse' && <WarehouseModule brand={brand} />}
             </div>
           </motion.div>
         )}

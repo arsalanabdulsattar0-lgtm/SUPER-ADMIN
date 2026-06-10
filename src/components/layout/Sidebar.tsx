@@ -9,7 +9,8 @@ import {
   LogOut,
   FilePlus,
   Menu,
-  Box
+  Box,
+  Undo2
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -32,6 +33,7 @@ const Sidebar: React.FC<Props> = ({ activeView, onViewChange, isCollapsed, onTog
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'invoices', label: 'Invoices', icon: FileText },
     { id: 'add-invoice-v4', label: 'Add Invoice', icon: FilePlus },
+    { id: 'return-invoice', label: 'Return Invoice', icon: Undo2 },
     { id: 'customers', label: 'Customers', icon: Users },
     { id: 'products', label: 'Products', icon: Box },
   ];

@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Plus, Pencil, Trash2, Check, MapPin, Building, Home } from 'lucide-react';
 import { useTheme } from '../../../context/ThemeContext';
 import { Button } from '../../../components/ui/Button';
-import { Input, Select, TextArea, Toggle, ScrollArea } from '../../../components/ui/FormControls';
+import { Input, TextArea, Toggle, ScrollArea } from '../../../components/ui/FormControls';
 import { ActiveChip } from '../../../components/ui/Chip';
 import { SectionHeader } from '../../../components/ui/Typography';
 import Card from '../../../components/ui/Card';
@@ -15,7 +15,6 @@ interface BranchManagementDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   company: Company | null;
-  allCompanies: Company[];
   branches: Branch[];
   onSave: (branch: Omit<Branch, 'id'> & { id?: string }) => void;
   onDelete: (id: string) => void;
@@ -32,7 +31,6 @@ export const BranchManagementDrawer: React.FC<BranchManagementDrawerProps> = ({
   isOpen,
   onClose,
   company,
-  allCompanies,
   branches,
   onSave,
   onDelete,
@@ -231,12 +229,11 @@ export const BranchManagementDrawer: React.FC<BranchManagementDrawerProps> = ({
                     <div className="space-y-1.5">
                       <SectionHeader title="Branch Details" icon={Building} />
                       <Card className="p-4 space-y-4" style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}>
-                        <Select
-                          label="Company *"
+                        <Input
+                          label="Company"
                           variant="compact"
-                          value={form.companyId}
-                          onChange={(e) => setForm({ ...form, companyId: e.target.value })}
-                          options={allCompanies.map((c) => ({ value: c.id, label: c.name }))}
+                          value={company?.name || 'Acme Corporation'}
+                          readOnly
                         />
 
                         <Input

@@ -328,7 +328,7 @@ export default function Dashboard({ invoiceItems, onViewChange }: DashboardProps
                 <div style={{ fontSize: 11, color: "#9ca3af", marginTop: 3 }}>{s.sub}</div>
               </div>
               <div style={{ width: 80, height: 35, marginLeft: 12, flexShrink: 0 }}>
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                   <AreaChart data={finalSparklines} margin={{ top: 2, right: 2, left: 2, bottom: 2 }}>
                     <defs>
                       <linearGradient id={`sparkGrad-${s.label.replace(/\s+/g, '')}`} x1="0" y1="0" x2="0" y2="1">
@@ -406,7 +406,7 @@ export default function Dashboard({ invoiceItems, onViewChange }: DashboardProps
 
               {/* Chart area */}
               <div style={{ position: "relative", height: 120 }}>
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                   <AreaChart data={trendData} margin={{ top: 20, right: 8, left: -32, bottom: 0 }}>
                     <defs>
                       <linearGradient id="trendGrad1" x1="0" y1="0" x2="1" y2="0">

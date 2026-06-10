@@ -78,7 +78,7 @@ const ProductList: React.FC<Props> = ({ onAddProductClick }) => {
   const [search, setSearch] = useState('');
 
   // Interactive Filters & Sorting States
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [selectedCategory, setSelectedCategory] = useState<string>('cat-1');
   const [priceOperator, setPriceOperator] = useState<string>('all');
   const [priceValue, setPriceValue] = useState<string>('');
   const [stockOperator, setStockOperator] = useState<string>('all');
@@ -291,7 +291,7 @@ const ProductList: React.FC<Props> = ({ onAddProductClick }) => {
   };
 
   const handleResetFilters = () => {
-    setSelectedCategory('all');
+    setSelectedCategory('cat-1');
     setPriceOperator('all');
     setPriceValue('');
     setStockOperator('all');
@@ -318,7 +318,7 @@ const ProductList: React.FC<Props> = ({ onAddProductClick }) => {
         p.code.toLowerCase().includes(search.toLowerCase()) ||
         p.description.toLowerCase().includes(search.toLowerCase());
 
-      const matchCategory = selectedCategory === 'all' || p.category_id === selectedCategory;
+      const matchCategory = p.category_id === selectedCategory;
 
       const matchStatus =
         selectedStatus === 'All' ||
@@ -423,7 +423,7 @@ const ProductList: React.FC<Props> = ({ onAddProductClick }) => {
               className="relative"
             >
               Filter
-              {(selectedCategory !== 'all' || priceOperator !== 'all' || stockOperator !== 'all' || selectedStatus !== 'All' || selectedSupplier !== 'all' || search !== '') && (
+              {(selectedCategory !== 'cat-1' || search !== '') && (
                 <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full text-[9px] font-black flex items-center justify-center text-white"
                   style={{ background: brand.accent || '#EF4444' }}>!</span>
               )}
@@ -629,7 +629,7 @@ const ProductList: React.FC<Props> = ({ onAddProductClick }) => {
                             { label: 'Status', key: 'status', width: 'w-[10%]' },
                             { label: 'Last Updated', key: null, width: 'w-[12%]' },
                             { label: 'Actions', key: null, width: 'w-20' },
-                          ] as { label: string; key: SortKey | null; width: string }[]).map((h, idx) => (
+                          ] as { label: string; key: SortKey | null; width: string }[]).map((h) => (
                             <TableHeader
                               key={h.label}
                               label={h.label}

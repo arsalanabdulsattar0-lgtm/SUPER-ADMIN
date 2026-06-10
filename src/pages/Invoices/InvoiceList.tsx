@@ -421,7 +421,7 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ onViewChange, invoiceItems, s
                       { label: 'Type', key: 'type', width: 'w-[11%]' },
                       { label: 'Status', key: 'status', width: 'w-[12%]' },
                       { label: 'Actions', key: null, width: 'w-28' },
-                    ] as { label: string; key: SortKey | null; width: string }[]).map((h, idx) => (
+                    ] as { label: string; key: SortKey | null; width: string }[]).map((h) => (
                       <th key={h.label}
                         className={`${h.label === 'Actions' ? 'px-2' : 'px-4'} py-3 text-left border-b ${h.key ? 'cursor-pointer hover:bg-blue-50/40 select-none' : ''} transition-colors ${h.width}`}
                         style={{ borderColor: brand.dark + '10' }}

@@ -259,109 +259,107 @@ export const SalesPersonModule: React.FC<SalesPersonModuleProps> = ({ brand }) =
           </div>
         </div>
 
-        <ScrollArea maxHeight="260px">
-          <div className="w-full overflow-x-auto">
-            <table className="w-full border-collapse min-w-[860px]">
-              <thead className="sticky top-0 z-10 bg-white">
-                <tr className="border-b border-[#E2E8F0]">
-                  {[
-                    { label: 'Name', w: 'min-w-[120px]' },
-                    { label: 'Contact', w: 'min-w-[100px]' },
-                    { label: 'Address 1', w: 'min-w-[120px]' },
-                    { label: 'Telephone 1', w: 'min-w-[100px]' },
-                    { label: 'Email', w: 'min-w-[130px]' },
-                    { label: 'Status', w: 'min-w-[80px]' },
-                    { label: 'Created Date', w: 'min-w-[90px]' },
-                    { label: 'Actions', w: 'w-20' },
-                  ].map((h) => (
-                    <TableHeader
-                      key={h.label}
-                      label={h.label}
-                      width={h.w}
-                      padding="px-2"
-                      borderLeft={false}
-                    />
-                  ))}
+        <ScrollArea maxHeight="204px" className="w-full overflow-x-auto">
+          <table className="w-full border-collapse min-w-[860px]">
+            <thead className="sticky top-0 z-10 bg-white">
+              <tr className="border-b border-[#E2E8F0]">
+                {[
+                  { label: 'Name', w: 'min-w-[120px]' },
+                  { label: 'Contact', w: 'min-w-[100px]' },
+                  { label: 'Address 1', w: 'min-w-[120px]' },
+                  { label: 'Telephone 1', w: 'min-w-[100px]' },
+                  { label: 'Email', w: 'min-w-[130px]' },
+                  { label: 'Status', w: 'min-w-[80px]' },
+                  { label: 'Created Date', w: 'min-w-[90px]' },
+                  { label: 'Actions', w: 'w-20' },
+                ].map((h) => (
+                  <TableHeader
+                    key={h.label}
+                    label={h.label}
+                    width={h.w}
+                    padding="px-2"
+                    borderLeft={false}
+                  />
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={8}
+                    className="px-4 py-8 text-center text-[12px] text-slate-400"
+                  >
+                    No salespeople found.
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {filtered.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan={8}
-                      className="px-4 py-8 text-center text-[12px] text-slate-400"
-                    >
-                      No salespeople found.
+              ) : (
+                filtered.map((p, i) => (
+                  <motion.tr
+                    key={p.id}
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.03 }}
+                    className="group border-b border-[#E2E8F0] transition-colors hover:bg-slate-50/60 last:border-0"
+                  >
+                    <td className="px-2 py-2 text-[12px] font-normal text-slate-600">
+                      {p.name}
                     </td>
-                  </tr>
-                ) : (
-                  filtered.map((p, i) => (
-                    <motion.tr
-                      key={p.id}
-                      initial={{ opacity: 0, y: 6 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.03 }}
-                      className="group border-b border-[#E2E8F0] transition-colors hover:bg-slate-50/60 last:border-0"
-                    >
-                      <td className="px-2 py-2 text-[12px] font-normal text-slate-600">
-                        {p.name}
-                      </td>
-                      <td className="px-2 py-2 text-[12px] font-normal text-slate-600">
-                        {p.contact || '-'}
-                      </td>
-                      <td className="px-2 py-2 text-[12px] font-normal text-slate-600">
-                        {p.address1 || '-'}
-                      </td>
-                      <td className="px-2 py-2 text-[12px] font-normal text-slate-600">
-                        {p.telephone1 || '-'}
-                      </td>
-                      <td className="px-2 py-2 text-[12px] font-normal text-slate-600">
-                        {p.email || '-'}
-                      </td>
-                      <td className="px-2 py-2">
-                        {p.active ? (
-                          <ActiveChip label="Active" size="md" onClick={() => handleToggleActive(p.id)} />
-                        ) : (
-                          <InactiveChip label="Inactive" size="md" onClick={() => handleToggleActive(p.id)} />
-                        )}
-                      </td>
-                      <td className="px-2 py-2 text-[12px] font-normal text-slate-500 whitespace-nowrap">
-                        {p.createdDate}
-                      </td>
-                      <td className="px-2 py-3 w-20">
-                        <div className="flex items-center gap-1">
-                          <Button
-                            variant="ghost"
-                            size="xs"
-                            icon={Eye}
-                            title="View Targets"
-                            className="!px-1 text-slate-500 hover:text-slate-800"
-                            onClick={() => setViewingTarget(p)}
-                          />
-                          <Button
-                            variant="ghost"
-                            size="xs"
-                            icon={Pencil}
-                            title="Edit"
-                            className="!px-1"
-                            onClick={() => openEdit(p)}
-                          />
-                          <Button
-                            variant="ghost"
-                            size="xs"
-                            icon={Trash2}
-                            title="Delete"
-                            className="!px-1 !text-red-500"
-                            onClick={() => handleDelete(p.id, p.name)}
-                          />
-                        </div>
-                      </td>
-                    </motion.tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+                    <td className="px-2 py-2 text-[12px] font-normal text-slate-600">
+                      {p.contact || '-'}
+                    </td>
+                    <td className="px-2 py-2 text-[12px] font-normal text-slate-600">
+                      {p.address1 || '-'}
+                    </td>
+                    <td className="px-2 py-2 text-[12px] font-normal text-slate-600">
+                      {p.telephone1 || '-'}
+                    </td>
+                    <td className="px-2 py-2 text-[12px] font-normal text-slate-600">
+                      {p.email || '-'}
+                    </td>
+                    <td className="px-2 py-2">
+                      {p.active ? (
+                        <ActiveChip label="Active" size="md" onClick={() => handleToggleActive(p.id)} />
+                      ) : (
+                        <InactiveChip label="Inactive" size="md" onClick={() => handleToggleActive(p.id)} />
+                      )}
+                    </td>
+                    <td className="px-2 py-2 text-[12px] font-normal text-slate-500 whitespace-nowrap">
+                      {p.createdDate}
+                    </td>
+                    <td className="px-2 py-3 w-20">
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="ghost"
+                          size="xs"
+                          icon={Eye}
+                          title="View Targets"
+                          className="!px-1 text-slate-500 hover:text-slate-800"
+                          onClick={() => setViewingTarget(p)}
+                        />
+                        <Button
+                          variant="ghost"
+                          size="xs"
+                          icon={Pencil}
+                          title="Edit"
+                          className="!px-1"
+                          onClick={() => openEdit(p)}
+                        />
+                        <Button
+                          variant="ghost"
+                          size="xs"
+                          icon={Trash2}
+                          title="Delete"
+                          className="!px-1 !text-red-500"
+                          onClick={() => handleDelete(p.id, p.name)}
+                        />
+                      </div>
+                    </td>
+                  </motion.tr>
+                ))
+              )}
+            </tbody>
+          </table>
         </ScrollArea>
       </motion.div>
 

@@ -127,7 +127,7 @@ export const TaxSetupModule: React.FC<TaxSetupModuleProps> = ({ brand }) => {
           </div>
         </div>
 
-        <ScrollArea maxHeight="340px">
+        <ScrollArea maxHeight="248px">
           <table className="w-full border-collapse">
             <thead className="sticky top-0 z-10 bg-white">
               <tr className="border-b border-[#E2E8F0]">
