@@ -18,6 +18,7 @@ export interface ComboBoxProps {
   autoFocus?: boolean;
   onQueryChange?: (query: string) => void;
   minQueryLength?: number;
+  hideErrorText?: boolean;
 }
 
 export const ComboBox: React.FC<ComboBoxProps> = ({
@@ -32,7 +33,8 @@ export const ComboBox: React.FC<ComboBoxProps> = ({
   className = '',
   autoFocus,
   onQueryChange,
-  minQueryLength
+  minQueryLength,
+  hideErrorText
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -135,7 +137,11 @@ export const ComboBox: React.FC<ComboBoxProps> = ({
   };
 
   return (
-    <div className="w-full flex flex-col gap-1" ref={containerRef}>
+    <div 
+      className="w-full flex flex-col gap-1" 
+      ref={containerRef}
+      data-invalid={error ? "true" : undefined}
+    >
       {label && (
         <label className="text-[11px] text-black ml-1 flex items-center gap-1.5">
           {label}
@@ -257,7 +263,7 @@ export const ComboBox: React.FC<ComboBoxProps> = ({
         )}
       </div>
 
-      {error && <p className="text-[11px] font-normal text-red-500 ml-1">{error}</p>}
+      {error && !hideErrorText && <p className="text-[11px] font-normal text-red-500 ml-1">{error}</p>}
     </div>
   );
 };

@@ -21,6 +21,7 @@ import { Button } from '../../components/ui/Button';
 import { sampleCustomers } from '../../utils/customerData';
 import { sampleProducts } from '../../utils/productData';
 import { ConfirmModal } from '../../components/ui/ConfirmModal';
+import { Toast } from '../../components/ui/Toast';
 import { AlertModal } from '../../components/ui/AlertModal';
 import { seedPrintTemplates } from '../../utils/settingsData';
 import { getCodeSettingsForBranch } from '../../utils/codeSettingsHelper';
@@ -163,6 +164,7 @@ const ReturnInvoiceEditor: React.FC<Props> = ({ data, onChange, onSave, onViewCh
   const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; type: 'new' | 'close' }>({ isOpen: false, type: 'new' });
   const [alertModal, setAlertModal] = useState<{ isOpen: boolean; title?: string; message: string; variant?: 'warning' | 'error' | 'info' }>({ isOpen: false, message: '' });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [toastMessageData, setToastMessageData] = useState<{ isOpen: boolean; messages: string[] }>({ isOpen: false, messages: [] });
 
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>((window as any).isSidebarCollapsed || false);
 
@@ -425,21 +427,50 @@ const ReturnInvoiceEditor: React.FC<Props> = ({ data, onChange, onSave, onViewCh
 
   const handleSave = () => {
     const newErrors: Record<string, string> = {};
+    const toastMsgs: string[] = [];
+    
     if (!selectedCustomerId) {
       newErrors.customer = 'Customer is required';
+      toastMsgs.push('Customer Selection is required');
     }
+    
     if (data.items.length === 0) {
       newErrors.items = 'At least one item is required';
+      toastMsgs.push('At least one Product Item row is required');
     } else {
-      data.items.forEach((item) => {
+      data.items.forEach((item, idx) => {
+        const rowNum = idx + 1;
+        const rowErrFields: string[] = [];
         if (!item.productCode) {
           newErrors[`item_${item.id}`] = 'Product Code is required';
+          rowErrFields.push('Product Code');
+        }
+        if (item.quantity === undefined || item.quantity === null || isNaN(item.quantity) || item.quantity <= 0) {
+          newErrors[`qty_${item.id}`] = 'Quantity is required';
+          rowErrFields.push('Quantity (must be > 0)');
+        }
+        if (rowErrFields.length > 0) {
+          toastMsgs.push(`Row ${rowNum}: ${rowErrFields.join(', ')} is required`);
         }
       });
     }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
+      setToastMessageData({
+        isOpen: true,
+        messages: toastMsgs
+      });
+      setTimeout(() => {
+        const firstInvalid = document.querySelector('[data-invalid="true"]');
+        if (firstInvalid) {
+          firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          const inputEl = firstInvalid.querySelector('input, select, textarea') || firstInvalid;
+          if (inputEl instanceof HTMLElement) {
+            inputEl.focus();
+          }
+        }
+      }, 100);
       return;
     }
 
@@ -1002,6 +1033,7 @@ const ReturnInvoiceEditor: React.FC<Props> = ({ data, onChange, onSave, onViewCh
                                 options={sampleProducts.map(p => ({ id: p.id, name: p.id, subtitle: p.name }))}
                                 minQueryLength={3}
                                 error={errors[`item_${item.id}`]}
+                                hideErrorText
                                onChange={(id) => {
                                   const prod = sampleProducts.find(p => p.id === id);
                                   if (prod) {
@@ -1064,7 +1096,19 @@ const ReturnInvoiceEditor: React.FC<Props> = ({ data, onChange, onSave, onViewCh
                                 variant="compact"
                                 className="text-center !bg-white border-slate-200 !text-[12px] font-normal text-slate-700 placeholder:text-slate-400 placeholder:font-normal"
                                 value={item.quantity}
-                                onChange={(e) => updateItem(item.id, { quantity: parseFloat(e.target.value) || 0 })}
+                                error={errors[`qty_${item.id}`]}
+                                hideErrorText
+                                onChange={(e) => {
+                                  const val = parseFloat(e.target.value) || 0;
+                                  updateItem(item.id, { quantity: val });
+                                  if (val > 0 && errors[`qty_${item.id}`]) {
+                                    setErrors(prev => {
+                                      const copy = { ...prev };
+                                      delete copy[`qty_${item.id}`];
+                                      return copy;
+                                    });
+                                  }
+                                }}
                               />
                             </td>
                           )}
@@ -1592,6 +1636,11 @@ const ReturnInvoiceEditor: React.FC<Props> = ({ data, onChange, onSave, onViewCh
       title={alertModal.title || "Required Fields Missing"}
       message={alertModal.message}
       variant={alertModal.variant || "warning"}
+    />
+    <Toast
+      isOpen={toastMessageData.isOpen}
+      onClose={() => setToastMessageData(prev => ({ ...prev, isOpen: false }))}
+      messages={toastMessageData.messages}
     />
   </>
   );

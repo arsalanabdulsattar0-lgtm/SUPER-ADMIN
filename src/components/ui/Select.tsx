@@ -10,6 +10,7 @@ export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElemen
   options: SelectOption[];
   error?: string;
   variant?: 'default' | 'compact';
+  hideErrorText?: boolean;
 }
 
 export const Select: React.FC<SelectProps> = ({
@@ -19,6 +20,7 @@ export const Select: React.FC<SelectProps> = ({
   variant = 'default',
   className = '',
   style,
+  hideErrorText,
   ...props
 }) => {
   const isCompact = variant === 'compact';
@@ -30,7 +32,10 @@ export const Select: React.FC<SelectProps> = ({
     : `w-full border rounded-xl h-7 pl-4 pr-10 text-sm font-normal ${valueColorClass} appearance-none cursor-pointer outline-none transition-all form-select-container bg-white`;
 
   return (
-    <div className={`w-full ${!isCompact ? 'space-y-1' : 'space-y-1'} group`}>
+    <div 
+      data-invalid={error ? "true" : undefined}
+      className={`w-full ${!isCompact ? 'space-y-1' : 'space-y-1'} group`}
+    >
       {label && (
         <label className="text-[11px] text-black ml-1 flex items-center gap-1">
           {label}
@@ -54,7 +59,7 @@ export const Select: React.FC<SelectProps> = ({
           </svg>
         </div>
       </div>
-      {error && <p className="text-[11px] font-normal text-red-500 ml-1">{error}</p>}
+      {error && !hideErrorText && <p className="text-[11px] font-normal text-red-500 ml-1">{error}</p>}
     </div>
   );
 };

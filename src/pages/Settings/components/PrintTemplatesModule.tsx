@@ -134,10 +134,9 @@ export const PrintTemplatesModule: React.FC<PrintTemplatesModuleProps> = ({ bran
     const initialTemplates: PrintTemplate[] = (() => {
       try {
         const storedT = localStorage.getItem('print_templates');
-        const list = storedT ? JSON.parse(storedT) : seedPrintTemplates;
-        return list.map((t: any) => t.is_default ? { ...t, layout_mode: 'flow' } : t);
+        return storedT ? JSON.parse(storedT) : seedPrintTemplates;
       } catch {
-        return seedPrintTemplates.map(t => t.is_default ? { ...t, layout_mode: 'flow' } : t);
+        return seedPrintTemplates;
       }
     })();
 
@@ -173,10 +172,9 @@ export const PrintTemplatesModule: React.FC<PrintTemplatesModuleProps> = ({ bran
     const initialTemplates: PrintTemplate[] = (() => {
       try {
         const storedT = localStorage.getItem('print_templates');
-        const list = storedT ? JSON.parse(storedT) : seedPrintTemplates;
-        return list.map((t: any) => t.is_default ? { ...t, layout_mode: 'flow' } : t);
+        return storedT ? JSON.parse(storedT) : seedPrintTemplates;
       } catch {
-        return seedPrintTemplates.map(t => t.is_default ? { ...t, layout_mode: 'flow' } : t);
+        return seedPrintTemplates;
       }
     })();
 
@@ -226,10 +224,9 @@ export const PrintTemplatesModule: React.FC<PrintTemplatesModuleProps> = ({ bran
     const initialTemplates: PrintTemplate[] = (() => {
       try {
         const storedT = localStorage.getItem('print_templates');
-        const list = storedT ? JSON.parse(storedT) : seedPrintTemplates;
-        return list.map((t: any) => t.is_default ? { ...t, layout_mode: 'flow' } : t);
+        return storedT ? JSON.parse(storedT) : seedPrintTemplates;
       } catch {
-        return seedPrintTemplates.map(t => t.is_default ? { ...t, layout_mode: 'flow' } : t);
+        return seedPrintTemplates;
       }
     })();
 
@@ -1293,7 +1290,6 @@ export const PrintTemplatesModule: React.FC<PrintTemplatesModuleProps> = ({ bran
       prev.map(t => {
         if (t.template_id === currentTemplateId) {
           const nextT = { ...t, ...props };
-          if (nextT.is_default) nextT.layout_mode = 'flow';
           return nextT;
         }
         return t;

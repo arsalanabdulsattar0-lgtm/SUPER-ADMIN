@@ -26,10 +26,10 @@ export const Toggle: React.FC<ToggleProps> = ({ checked, onChange, label, classN
         onClick={() => onChange(!checked)}
       >
         <span
-          className={`pointer-events-none block ${thumbSize} rounded-full bg-white border border-slate-200 shadow-none transform ring-0 transition duration-200 ease-in-out ${thumbTranslate}`}
+          className={`pointer-events-none block ${thumbSize} rounded-full bg-white shadow-sm transform ring-0 transition duration-200 ease-in-out ${thumbTranslate}`}
         />
       </button>
-      {label && <span className="text-xs font-bold text-slate-600">{label}</span>}
+      {label && <span className="text-[11px] font-bold text-[#304166]">{label}</span>}
     </label>
   );
 };

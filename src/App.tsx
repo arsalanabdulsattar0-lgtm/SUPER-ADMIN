@@ -673,12 +673,10 @@ function App() {
       // Filter out only the old deleted static default templates (pt-1 to pt-12)
       // while keeping the 5 Sales Return (srt-) templates and any user-customized/imported templates (pt-[timestamp]).
       templates = rawTemplates
-        .filter((t: any) => !deletedIds.has(t.template_id))
-        .map((t: any) => t.is_default ? { ...t, layout_mode: 'flow' } : t);
+        .filter((t: any) => !deletedIds.has(t.template_id));
     } catch {
       templates = seedPrintTemplates
-        .filter((t: any) => !deletedIds.has(t.template_id))
-        .map(t => t.is_default ? { ...t, layout_mode: 'flow' } : t);
+        .filter((t: any) => !deletedIds.has(t.template_id));
     }
 
     if (!tId) {

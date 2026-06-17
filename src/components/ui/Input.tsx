@@ -8,6 +8,7 @@ export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElem
   variant?: 'default' | 'compact' | 'transparent';
   suffix?: React.ReactNode;
   size?: 'sm' | 'md' | 'lg';
+  hideErrorText?: boolean;
 }
 
 export const Input: React.FC<InputProps> = ({
@@ -19,6 +20,7 @@ export const Input: React.FC<InputProps> = ({
   size = 'sm',
   className = '',
   style,
+  hideErrorText,
   ...props
 }) => {
   const isTransparent = variant === 'transparent';
@@ -41,7 +43,10 @@ export const Input: React.FC<InputProps> = ({
   const paddingLeft = !isTransparent && Icon ? 'pl-11' : (!isTransparent ? (size === 'lg' ? 'px-5' : 'px-4') : '');
 
   return (
-    <div className={`w-full form-input-container-group ${!isTransparent ? 'space-y-1 group' : ''}`}>
+    <div 
+      data-invalid={error ? "true" : undefined}
+      className={`w-full form-input-container-group ${!isTransparent ? 'space-y-1 group' : ''}`}
+    >
       {label && (
         <label className="text-[11px] text-black ml-1 flex items-center gap-1">
           {label}
@@ -64,7 +69,7 @@ export const Input: React.FC<InputProps> = ({
           </div>
         )}
       </div>
-      {error && <p className="text-[11px] font-normal text-red-500 ml-1">{error}</p>}
+      {error && !hideErrorText && <p className="text-[11px] font-normal text-red-500 ml-1">{error}</p>}
     </div>
   );
 };

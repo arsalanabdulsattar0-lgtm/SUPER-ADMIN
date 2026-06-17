@@ -3,6 +3,7 @@ import React from 'react';
 export interface TextAreaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   label?: string;
   error?: string;
+  hideErrorText?: boolean;
 }
 
 export const TextArea: React.FC<TextAreaProps> = ({
@@ -10,10 +11,14 @@ export const TextArea: React.FC<TextAreaProps> = ({
   error,
   className = '',
   style,
+  hideErrorText,
   ...props
 }) => {
   return (
-    <div className="space-y-1 w-full group">
+    <div 
+      data-invalid={error ? "true" : undefined}
+      className="space-y-1 w-full group"
+    >
       {label && (
         <label className="text-[11px]  text-black ml-1">
           {label}
@@ -31,7 +36,7 @@ export const TextArea: React.FC<TextAreaProps> = ({
         style={style}
         {...props}
       />
-      {error && <p className="text-[11px] font-normal text-red-500 ml-1">{error}</p>}
+      {error && !hideErrorText && <p className="text-[11px] font-normal text-red-500 ml-1">{error}</p>}
     </div>
   );
 };
