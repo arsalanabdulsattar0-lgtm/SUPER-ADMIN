@@ -1,6 +1,6 @@
 import { useState, useEffect, Suspense, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import type { InvoiceData } from './types';
+import type { InvoiceData, InvoiceItem } from './types';
 import Layout from './components/layout/Layout';
 import Card from './components/ui/Card';
 import { Button } from './components/ui/Button';
@@ -313,31 +313,45 @@ function App() {
     furtherTax: 0
   }));
 
-  const emptyInvoiceData = (type: string, invoiceNumber: string): InvoiceData => ({
-    invoiceNumber,
-    date: new Date().toISOString().split('T')[0],
-    dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    senderName: 'Antigravity Creative Studio',
-    senderAddress: 'Antigravity Creative Studio\ncontact@antigravity.studio | +1 (555) 012-3456',
-    customerName: '',
-    customerAddress: '',
-    subject: '',
-    reference: '',
-    items: [],
-    taxRate: 8,
-    discountPercentage: 0,
-    discountAmount: 0,
-    shippingCharges: 0,
-    roundOff: 0,
-    receivedAmount: 0,
-    bankAccount: 'bank',
-    notes: '',
-    salesPerson: '',
-    department: '',
-    productCode: '',
-    remarks: '',
-    type: type as any,
-  });
+  const emptyInvoiceData = (type: string, invoiceNumber: string): InvoiceData => {
+    const defaultItem: InvoiceItem = {
+      id: crypto.randomUUID(),
+      productCode: '',
+      description: '',
+      unit: '',
+      unitDetails: '',
+      quantity: 1,
+      price: 0,
+      discount: 0,
+      tax: 0,
+      furtherTax: 0
+    };
+    return {
+      invoiceNumber,
+      date: new Date().toISOString().split('T')[0],
+      dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      senderName: 'Antigravity Creative Studio',
+      senderAddress: 'Antigravity Creative Studio\ncontact@antigravity.studio | +1 (555) 012-3456',
+      customerName: '',
+      customerAddress: '',
+      subject: '',
+      reference: '',
+      items: [defaultItem],
+      taxRate: 8,
+      discountPercentage: 0,
+      discountAmount: 0,
+      shippingCharges: 0,
+      roundOff: 0,
+      receivedAmount: 0,
+      bankAccount: 'bank',
+      notes: '',
+      salesPerson: '',
+      department: '',
+      productCode: '',
+      remarks: '',
+      type: type as any,
+    };
+  };
 
   const [invoice, setInvoice] = useState<InvoiceData>({
     invoiceNumber: 'SI-000248',
@@ -378,7 +392,18 @@ function App() {
     productCode: '',
     remarks: '',
     type: 'Return',
-    items: [],
+    items: [{
+      id: crypto.randomUUID(),
+      productCode: '',
+      description: '',
+      unit: '',
+      unitDetails: '',
+      quantity: 1,
+      price: 0,
+      discount: 0,
+      tax: 0,
+      furtherTax: 0
+    }],
     taxRate: 8,
     discountPercentage: 0,
     discountAmount: 0,
