@@ -13,6 +13,20 @@ export interface EntityCodeSetting {
   effectiveTo?: string;
   allowManualEntry?: boolean;
   serialReset?: 'None' | 'Daily' | 'Monthly' | 'Yearly';
+
+  // Draft settings
+  draftFormatGrid?: {
+    id: string;
+    type: string;
+    value: string;
+    separator: string;
+  }[];
+  draftPrefix?: string;
+  draftNextNumber?: number;
+  draftPadding?: number;
+  draftAllowManualEntry?: boolean;
+  draftSerialReset?: 'None' | 'Daily' | 'Monthly' | 'Yearly';
+  documentNoAsDraftNo?: boolean;
 }
 
 export interface BranchCodeSettings {
@@ -58,7 +72,7 @@ export const DEFAULT_ENTITY_SETTINGS: Record<string, EntityCodeSetting> = {
   digital_invoice: { mode: 'auto', prefix: 'DIG-', nextNumber: 1, padding: 5 },
   warehouse: { mode: 'auto', prefix: 'WH-', nextNumber: 1, padding: 5 },
   salesperson: { mode: 'auto', prefix: 'SP-', nextNumber: 1, padding: 5 },
-  customer: { mode: 'auto', prefix: 'CUS-', nextNumber: 1, padding: 5 },
+  customer: { mode: 'auto', prefix: 'BP-', nextNumber: 1, padding: 5 },
   product: { mode: 'auto', prefix: 'PRD-', nextNumber: 1, padding: 5 },
   branch: { mode: 'auto', prefix: 'BR-', nextNumber: 1, padding: 5 },
   department: { mode: 'auto', prefix: 'HR', nextNumber: 1, padding: 5 },

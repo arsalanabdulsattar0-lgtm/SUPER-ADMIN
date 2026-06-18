@@ -51,6 +51,7 @@ const DOC_TYPES = [
   'Service Invoice',
   'Digital Invoice',
   'Customer',
+  'Supplier',
   'Inventory'
 ];
 
@@ -60,6 +61,7 @@ const DOC_TYPE_ICONS: Record<string, React.ComponentType<any>> = {
   'Service Invoice': Wrench,
   'Digital Invoice': Globe,
   'Customer': User,
+  'Supplier': User,
   'Inventory': Package
 };
 
@@ -69,6 +71,7 @@ const DEFAULT_FIELDS: Record<string, string[]> = {
   'Digital Invoice': ['Sales Person', 'Department', 'Due Date'],
   'Sale Return':     ['Sales Person', 'Department', 'Due Date'],
   'Customer':  [],
+  'Supplier':  [],
   'Inventory': []
 };
 
@@ -78,6 +81,7 @@ const DEFAULT_FOOTER: Record<string, string[]> = {
   'Digital Invoice': [],
   'Sale Return':     [],
   'Customer':        [],
+  'Supplier':        [],
   'Inventory':       []
 };
 
@@ -87,15 +91,16 @@ const DEFAULT_COLUMNS: Record<string, string[]> = {
   'Digital Invoice': ['Details', 'Discount', 'Tax', 'Further Tax'],
   'Sale Return':     ['Details', 'Discount', 'Tax', 'Further Tax'],
   'Customer':  [],
+  'Supplier':  [],
   'Inventory': []
 };
 
 const FIELD_DESCRIPTIONS: Record<string, string> = {
-  'Customer': 'Show customer details selector in header',
+  'Customer': 'Show partner details selector in header',
   'Issue Date': 'Show document date field in header',
   'Invoice ID': 'Show invoice number input in header',
   'Reference': 'Show reference PO number in header',
-  'Customer Address': 'Show customer billing address in header',
+  'Customer Address': 'Show partner billing address in header',
   'Due Date': 'Show invoice due date in header',
   'Invoice Type': 'Show invoice document layout type in header',
   'Notes & Special Terms': 'Show payment terms and notes block in footer',
@@ -106,24 +111,24 @@ const FIELD_DESCRIPTIONS: Record<string, string> = {
   'Return Invoice No.': 'Show return serial number in header',
   'Reference Invoice': 'Show original invoice reference in header',
   'Return Reason': 'Show reason description field in header',
-  'Customer ID': 'Show customer selector in header',
+  'Customer ID': 'Show partner selector in header',
   'Department': 'Show department field in header',
   'Sales Person': 'Show sales person field in header',
-  'Email Address': 'Customer email address input field',
-  'Phone Number': 'Customer landline phone number',
-  'Mobile Number': 'Customer cell phone number',
-  'Website Link': 'Customer company website URL',
+  'Email Address': 'Partner email address input field',
+  'Phone Number': 'Partner landline phone number',
+  'Mobile Number': 'Partner cell phone number',
+  'Website Link': 'Partner company website URL',
   'Billing Address': 'Billing street, city, state and country',
-  'Walk-in Customer': 'Allow walk-in retail customer setting',
+  'Walk-in Customer': 'Allow walk-in retail partner setting',
   'Tax Filer': 'Filer/Non-Filer tax registration toggle',
   'Credit Limit': 'Maximum allowable credit balance',
   'Payment Terms': 'Default credit limit payment grace days',
-  'Default Discount': 'Standard discount percentage for customer',
+  'Default Discount': 'Standard discount percentage for partner',
   'NTN Code': 'National Tax Number input field',
   'STRN Registry': 'Sales Tax Registration Number input field',
   'CNIC Number': 'National Identity Card number input field',
   'WHT Category': 'Withholding Tax category classification',
-  'Total Balance': 'Customer opening or total balance',
+  'Total Balance': 'Partner opening or total balance',
   'Salesperson': 'Assigned sales representative link',
   'Category': 'Product group category picker',
   'Brand': 'Product manufacturer brand picker',
@@ -155,6 +160,8 @@ const COLUMN_DESCRIPTIONS: Record<string, string> = {
   'Further Tax': 'Show Further Tax option column',
   'Total': 'Show computed line-item total price column',
   'Customer Details': 'Show Code & Name columns in client list',
+  'Partner Details': 'Show Code & Name columns in partner list',
+  'Partner Type': 'Show partner type badge column in list',
   'Phone Number': 'Show client Email & Phone columns in list',
   'City': 'Show client city/province column',
   'Credit Limit (Rs.)': 'Show credit limit value column',
@@ -905,7 +912,7 @@ export const DocumentSettingsModule: React.FC<DocumentSettingsModuleProps> = ({
       <div className="space-y-6">
         <div className="flex justify-between items-center h-5">
           <p className="text-[11px] text-slate-400 font-medium font-sans">
-            Configure visible fields and columns for <strong className="text-slate-600">{activeTab}</strong>. Changes save automatically.
+            Configure visible fields and columns for <strong className="text-slate-600">{activeTab === 'Customer' ? 'Business Partner - Customer' : activeTab === 'Supplier' ? 'Business Partner - Supplier' : activeTab}</strong>. Changes save automatically.
           </p>
           {savedMessage && (
             <div className="text-[10px] font-black text-emerald-600 flex items-center gap-1 animate-fade-in-out font-sans">

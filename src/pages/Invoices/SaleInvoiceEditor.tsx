@@ -450,8 +450,8 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
     const toastMsgs: string[] = [];
     
     if (!selectedCustomerId) {
-      newErrors.customer = 'Customer is required';
-      toastMsgs.push('Customer Selection is required');
+      newErrors.customer = 'Partner is required';
+      toastMsgs.push('Partner Selection is required');
     }
     
     if (data.items.length === 0) {
@@ -518,7 +518,7 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
 
     return {
       id: data.invoiceNumber || 'INV-' + Math.floor(1000 + Math.random() * 9000),
-      customer: data.customerName || 'Unnamed Customer',
+      customer: data.customerName || 'Unnamed Partner',
       customerInitials: initials,
       customerColor: randomColor,
       issueDate: data.date || new Date().toISOString().split('T')[0],
@@ -580,7 +580,7 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
 
   const validateInvoiceForExport = () => {
     if (!selectedCustomerId) {
-      setAlertModal({ isOpen: true, message: 'Please select a Customer before printing or exporting.' });
+      setAlertModal({ isOpen: true, message: 'Please select a Business Partner before printing or exporting.' });
       return false;
     }
     if (!data.items || data.items.length === 0) {
@@ -804,8 +804,8 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
                     <div className="lg:col-span-5">
                       <ComboBox
                         variant="compact"
-                        label="Customer *"
-                        placeholder="Search Customer..."
+                        label="Business Partner *"
+                        placeholder="Search Business Partner..."
                         value={selectedCustomerId}
                         options={sampleCustomers}
                         minQueryLength={3}
@@ -852,7 +852,7 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-3">
                   {docSettings.fields['Customer Address'] && (
                     <div className="lg:col-span-5">
-                      <Input variant="compact" label="Customer Address" placeholder="Street, city, country..." value={data.customerAddress || ''} readOnly />
+                      <Input variant="compact" label="Partner Address" placeholder="Street, city, country..." value={data.customerAddress || ''} readOnly />
                     </div>
                   )}
                   {docSettings.fields['Due Date'] && (
@@ -923,7 +923,7 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
                   {/* Header */}
                   <div className="px-3 py-2.5 flex items-center justify-between bg-brand-primary">
                     <span className="text-[11px] font-black text-white tracking-wide flex items-center gap-1.5">
-                      <User className="w-3.5 h-3.5 text-white" /> Customer Profile
+                      <User className="w-3.5 h-3.5 text-white" /> Partner Profile
                     </span>
                     <div className={`px-2 py-0.5 rounded-full text-[8px] font-black tracking-wider ${selectedCustomer.status === 'active' ? 'invoice-badge-active' :
                       selectedCustomer.status === 'overdue' ? 'invoice-badge-overdue' :
@@ -972,7 +972,7 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
                     <Package className="w-5 h-5 text-slate-200" />
                   </div>
                   <p className="text-[9px] font-bold text-slate-300 text-center tracking-widest leading-relaxed">
-                    Select Customer<br />To View Profile
+                    Select Partner<br />To View Profile
                   </p>
                 </motion.div>
               )}
@@ -1620,7 +1620,7 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
           </div>
           <div>
             <h3 className="printable-billing-section-title">Bill To</h3>
-            <h4 className="printable-billing-name">{data.customerName || 'Unnamed Customer'}</h4>
+            <h4 className="printable-billing-name">{data.customerName || 'Unnamed Partner'}</h4>
             <p className="printable-billing-address">
               {data.customerAddress}
             </p>

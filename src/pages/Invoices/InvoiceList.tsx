@@ -158,7 +158,7 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ onViewChange, invoiceItems, s
 
   const handleExport = () => {
     try {
-      const headers = ['Invoice ID', 'Customer', 'Issue date', 'Due date', 'Amount (Rs.)', 'Type', 'Status'];
+      const headers = ['Invoice ID', 'Business Partner', 'Issue date', 'Due date', 'Amount (Rs.)', 'Type', 'Status'];
       const rows = filtered.map(inv => [
         inv.id,
         inv.customer,
@@ -311,7 +311,7 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ onViewChange, invoiceItems, s
 
   const sortOptions: { key: SortKey; label: string }[] = [
     { key: 'id', label: 'Invoice ID' },
-    { key: 'customer', label: 'Customer Name' },
+    { key: 'customer', label: 'Partner Name' },
     { key: 'issueDate', label: 'Issue Date' },
     { key: 'dueDate', label: 'Due Date' },
     { key: 'amount', label: 'Amount' },
@@ -428,7 +428,7 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ onViewChange, invoiceItems, s
               <input
                 value={search}
                 onChange={e => { setSearch(e.target.value); setCurrentPage(1); }}
-                placeholder="Search invoices or customers..."
+                placeholder="Search invoices or partners..."
                 className="h-7 pl-7 pr-3 rounded-lg text-[11px] font-medium border outline-none w-52"
                 style={{ background: 'rgba(255,255,255,0.12)', borderColor: 'rgba(255,255,255,0.2)', color: 'white' }}
               />
@@ -487,7 +487,7 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ onViewChange, invoiceItems, s
                   <tr className="border-b border-[#E2E8F0]">
                     {([
                       { label: 'Invoice ID', key: 'id', width: 'w-[15%]' },
-                      { label: 'Customer', key: 'customer', width: 'w-[25%]' },
+                      { label: 'Business Partner', key: 'customer', width: 'w-[25%]' },
                       { label: 'Issue Date', key: 'issueDate', width: 'w-[12%]' },
                       { label: 'Due Date', key: 'dueDate', width: 'w-[12%]' },
                       { label: 'Amount (Rs.)', key: 'amount', width: 'w-[13%]' },
@@ -725,8 +725,8 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ onViewChange, invoiceItems, s
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Customer details */}
                         <div className="space-y-3">
-                          <Input variant="compact" label="Customer Name" placeholder="Customer Name" readOnly value={previewInvoice.customerName} />
-                          <TextArea label="Customer Address" placeholder="Customer Address" readOnly value={previewInvoice.customerAddress || ''} className="!rounded-lg text-[11px] py-1.5 px-3 h-14" />
+                          <Input variant="compact" label="Partner Name" placeholder="Partner Name" readOnly value={previewInvoice.customerName} />
+                          <TextArea label="Partner Address" placeholder="Partner Address" readOnly value={previewInvoice.customerAddress || ''} className="!rounded-lg text-[11px] py-1.5 px-3 h-14" />
                         </div>
                         {/* Sender details */}
                         <div className="space-y-3">
@@ -981,10 +981,10 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ onViewChange, invoiceItems, s
         <div className="space-y-4">
           <Select
             variant="compact"
-            label="Customer"
+            label="Business Partner"
             value={tempCustomerFilter}
             onChange={(e) => setTempCustomerFilter(e.target.value)}
-            options={uniqueCustomers.map(c => ({ value: c, label: c === 'All' ? 'All Customers' : c }))}
+            options={uniqueCustomers.map(c => ({ value: c, label: c === 'All' ? 'All Partners' : c }))}
           />
 
           <Input

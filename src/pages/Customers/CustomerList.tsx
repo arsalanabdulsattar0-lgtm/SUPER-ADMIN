@@ -37,20 +37,20 @@ const CustomerList: React.FC = () => {
     <div className="min-h-full p-6 space-y-5" style={{ background: '#F4F7FD' }}>
       {/* Page Header */}
       <PageHeader
-        title="Customers"
-        subtitle="Manage your customer database and relationships."
+        title="Business Partners"
+        subtitle="Manage your business partner database and relationships."
         actions={
           <div className="flex gap-2 w-full sm:w-auto">
             <div className="relative flex-grow sm:flex-grow-0">
               <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
               <input 
                 type="text" 
-                placeholder="Search Customers..."
+                placeholder="Search Business Partners..."
                 className="w-full sm:w-64 bg-white border border-slate-200 rounded-xl py-1.5 pl-9 pr-4 text-xs outline-none focus:ring-2 focus:ring-indigo-500/10"
               />
             </div>
             <Button variant="primary" size="md" icon={Plus}>
-              Add Customer
+              Add Business Partner
             </Button>
           </div>
         }
@@ -98,7 +98,7 @@ const CustomerList: React.FC = () => {
                     {customer.totalInvoiced.replace(/^(Rs\.|PKR|\$)\s*/i, '').trim()}
                   </p>
                 </div>
-                <Button variant="ghost" size="xs" title="View Customer Profile" className="text-blue-650 hover:bg-blue-50 font-bold px-3 py-1.5">
+                <Button variant="ghost" size="xs" title="View Partner Profile" className="text-blue-650 hover:bg-blue-50 font-bold px-3 py-1.5">
                   View Profile
                 </Button>
               </div>

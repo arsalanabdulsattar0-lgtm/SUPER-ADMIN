@@ -59,7 +59,7 @@ const Sidebar: React.FC<Props> = ({
 
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'customers', label: 'Customers', icon: Users },
+    { id: 'customers', label: 'Business Partners', icon: Users },
     { id: 'products', label: 'Inventory', icon: Box },
     {
       id: 'sales',

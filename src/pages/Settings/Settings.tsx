@@ -60,7 +60,7 @@ const Settings: React.FC = () => {
       case 'product':         return <ProductSetupModule brand={brand} />;
       case 'warehouse':       return <WarehouseModule brand={brand} />;
       case 'print-templates': return <PrintTemplatesModule brand={brand} />;
-      case 'code-settings':   return <CodeSettingsModule brand={brand} />;
+      case 'code-settings':   return <CodeSettingsModule brand={brand} onClose={() => setActiveSection(null)} />;
       case 'department':      return <DepartmentModule brand={brand} />;
       default:                return null;
     }
