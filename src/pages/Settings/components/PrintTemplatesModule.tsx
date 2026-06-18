@@ -2510,6 +2510,13 @@ export const PrintTemplatesModule: React.FC<PrintTemplatesModuleProps> = ({ bran
                         const isEditingLabel = editingLabelId === f.field_id;
                         
                         let elementContent = null;
+
+                        // ── Advanced Option Toggles: skip hidden fields ──
+                        if (f.field_name === 'QR Code' && !activeTemplate.qr_enabled) return null;
+                        if (f.field_name === 'Barcode' && !activeTemplate.barcode_enabled) return null;
+                        if (f.field_name === 'Signature' && !activeTemplate.signature_enabled) return null;
+                        if (f.field_name === 'Remarks' && !activeTemplate.remarks_enabled) return null;
+                        if (f.field_name === 'Terms & Conditions' && !activeTemplate.terms_enabled) return null;
                         
                         if (f.field_name === 'Company Logo') {
                           elementContent = activeTemplate.logo_url ? (
@@ -2922,6 +2929,38 @@ export const PrintTemplatesModule: React.FC<PrintTemplatesModuleProps> = ({ bran
                           </div>
                         );
                       })}
+
+                  {/* ── Watermark Background Overlay (Free Layout) ── */}
+                  {activeTemplate.watermark_enabled && (
+                    <div
+                      style={{
+                        position: 'absolute',
+                        inset: 0,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        pointerEvents: 'none',
+                        zIndex: 5,
+                        overflow: 'hidden',
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontSize: '72px',
+                          fontWeight: 900,
+                          color: 'rgba(148,163,184,0.18)',
+                          letterSpacing: '0.15em',
+                          transform: 'rotate(-35deg)',
+                          userSelect: 'none',
+                          whiteSpace: 'nowrap',
+                          textTransform: 'uppercase',
+                          fontFamily: 'sans-serif',
+                        }}
+                      >
+                        ORIGINAL
+                      </span>
+                    </div>
+                  )}
                   </div>
                 </div>
               ) : (
@@ -2938,8 +2977,39 @@ export const PrintTemplatesModule: React.FC<PrintTemplatesModuleProps> = ({ bran
                       marginBottom: `${(previewScale - 1) * contentHeight}px`,
                       flexShrink: 0,
                     }}
-                    className="bg-white border border-slate-350 rounded-lg p-6 shadow-md transition-all duration-150"
+                    className="bg-white border border-slate-350 rounded-lg p-6 shadow-md transition-all duration-150 relative overflow-hidden"
                   >
+                    {/* ── Watermark Background Overlay (Flow Layout) ── */}
+                    {activeTemplate?.watermark_enabled && (
+                      <div
+                        style={{
+                          position: 'absolute',
+                          inset: 0,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          pointerEvents: 'none',
+                          zIndex: 5,
+                          overflow: 'hidden',
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontSize: '72px',
+                            fontWeight: 900,
+                            color: 'rgba(148,163,184,0.18)',
+                            letterSpacing: '0.15em',
+                            transform: 'rotate(-35deg)',
+                            userSelect: 'none',
+                            whiteSpace: 'nowrap',
+                            textTransform: 'uppercase',
+                            fontFamily: 'sans-serif',
+                          }}
+                        >
+                          ORIGINAL
+                        </span>
+                      </div>
+                    )}
                     {activeTemplate?.paper_size === 'Thermal' ? (
                     <div className="flex flex-col gap-4 text-[9px]">
                       {activeSections.filter(sec => sec.is_visible).map((sec) => {

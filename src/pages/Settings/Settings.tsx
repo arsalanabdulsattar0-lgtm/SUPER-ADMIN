@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   User, CreditCard, Palette, Receipt, Users, Building2, Shield, Package, Warehouse, Printer,
-  ChevronDown, Settings2, X, FileText, Binary, FolderOpen
+  ChevronDown, Settings2, X, Binary, FolderOpen
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -17,7 +17,6 @@ import { UserManagementModule } from './components/UserManagementModule';
 import { ProductSetupModule } from './components/ProductSetupModule';
 import { WarehouseModule } from './components/WarehouseModule';
 import { PrintTemplatesModule } from './components/PrintTemplatesModule';
-import { DocumentSettingsModule } from './components/DocumentSettingsModule';
 import { CodeSettingsModule } from './components/CodeSettingsModule';
 import { DepartmentModule } from './components/DepartmentModule';
 
@@ -42,11 +41,10 @@ const Settings: React.FC = () => {
     { id: 'sales',           title: 'Salesperson',       desc: 'Manage salespersons, targets, and commissions.',                            icon: Users },
     { id: 'company',         title: 'Company',           desc: 'Manage company profiles, NTN, STN, PRAL tokens and contacts.',              icon: Building2 },
     { id: 'users',           title: 'User Management',   desc: 'Manage user access, roles, allowed IPs, and company assignments.',          icon: Shield },
-    { id: 'code-settings',   title: 'Code Settings',     desc: 'Define auto/manual sequence prefixes and next numbering branch-wise and company-wise.', icon: Binary },
+    { id: 'code-settings',   title: 'Code Settings',     desc: 'Manage document fields visibility, auto/manual numbering sequences, and formatting grids.', icon: Binary },
     { id: 'product',         title: 'Product Setup',     desc: 'Configure product setup types, serial prefixes, and lookup values.',        icon: Package },
     { id: 'warehouse',       title: 'Warehouse',         desc: 'Manage warehouses, storage locations and inventory distribution.',          icon: Warehouse },
     { id: 'print-templates', title: 'Print Templates',   desc: 'Create and manage customizable print layouts for invoices and documents.',  icon: Printer },
-    { id: 'documents',       title: 'Document Settings', desc: 'Toggle visibility of header fields and table columns for sales invoices and return screens.', icon: FileText },
     { id: 'department',      title: 'Department Settings', desc: 'Manage departments used throughout the ERP system.', icon: FolderOpen },
   ];
 
@@ -62,7 +60,6 @@ const Settings: React.FC = () => {
       case 'product':         return <ProductSetupModule brand={brand} />;
       case 'warehouse':       return <WarehouseModule brand={brand} />;
       case 'print-templates': return <PrintTemplatesModule brand={brand} />;
-      case 'documents':       return <DocumentSettingsModule brand={brand} />;
       case 'code-settings':   return <CodeSettingsModule brand={brand} />;
       case 'department':      return <DepartmentModule brand={brand} />;
       default:                return null;
@@ -186,7 +183,7 @@ const Settings: React.FC = () => {
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: -30 }}
                       transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-                      className="p-6 flex-1 overflow-y-auto pb-12"
+                      className="p-6 pb-6 flex-1 overflow-y-auto"
                       style={{ minHeight: 0 }}
                     >
                       {renderModule(activeSection)}

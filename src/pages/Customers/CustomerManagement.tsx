@@ -17,6 +17,7 @@ import { SALES_PERSONS } from '../../utils/customerData';
 import { DeleteConfirmationModal } from '../../components/ui/DeleteConfirmationModal';
 import { ConfirmModal } from '../../components/ui/ConfirmModal';
 import { AlertModal } from '../../components/ui/AlertModal';
+import { Toast } from '../../components/ui/Toast';
 import { PageHeader, SectionHeader, TableHeader, CardTitle, ModalHeader } from '../../components/ui/Typography';
 
 // ---------------------------------------------------------------------------
@@ -221,16 +222,36 @@ const CustomerManagement: React.FC = () => {
   const [bulkConfirmModal, setBulkConfirmModal] = useState(false);
   const [alertModal, setAlertModal] = useState<{ isOpen: boolean; message: string }>({ isOpen: false, message: '' });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const [toastMessageData, setToastMessageData] = useState<{ isOpen: boolean; messages: string[] }>({ isOpen: false, messages: [] });
 
   const validateForm = () => {
     const errs: Record<string, string> = {};
+    const toastMsgs: string[] = [];
     if (!editing?.name?.trim()) {
       errs.name = 'This field is required';
+      toastMsgs.push('Customer Name is required');
     }
     if (!editing?.email?.trim()) {
       errs.email = 'This field is required';
+      toastMsgs.push('Email Address is required');
     }
     setFormErrors(errs);
+    if (toastMsgs.length > 0) {
+      setToastMessageData({
+        isOpen: true,
+        messages: toastMsgs
+      });
+      setTimeout(() => {
+        const firstInvalid = document.querySelector('[data-invalid="true"]');
+        if (firstInvalid) {
+          firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          const inputEl = firstInvalid.querySelector('input, select, textarea') || firstInvalid;
+          if (inputEl instanceof HTMLElement) {
+            inputEl.focus();
+          }
+        }
+      }, 100);
+    }
     return Object.keys(errs).length === 0;
   };
 
@@ -1566,6 +1587,11 @@ const CustomerManagement: React.FC = () => {
         title="Required Fields Missing"
         message={alertModal.message}
         variant="warning"
+      />
+      <Toast
+        isOpen={toastMessageData.isOpen}
+        onClose={() => setToastMessageData(prev => ({ ...prev, isOpen: false }))}
+        messages={toastMessageData.messages}
       />
     </div>
   );

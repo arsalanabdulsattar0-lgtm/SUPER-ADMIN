@@ -3,6 +3,16 @@ export interface EntityCodeSetting {
   prefix: string;
   nextNumber: number;
   padding: number;
+  formatGrid?: {
+    id: string;
+    type: string;
+    value: string;
+    separator: string;
+  }[];
+  effectiveFrom?: string;
+  effectiveTo?: string;
+  allowManualEntry?: boolean;
+  serialReset?: 'None' | 'Daily' | 'Monthly' | 'Yearly';
 }
 
 export interface BranchCodeSettings {
@@ -16,22 +26,73 @@ export interface BranchCodeSettings {
   product: EntityCodeSetting;
   branch: EntityCodeSetting;
   department: EntityCodeSetting;
+
+  quotation: EntityCodeSetting;
+  delivery_challan: EntityCodeSetting;
+  credit_note: EntityCodeSetting;
+  debit_note: EntityCodeSetting;
+  purchase_order: EntityCodeSetting;
+  purchase_return: EntityCodeSetting;
+  purchase_invoice: EntityCodeSetting;
+  grn: EntityCodeSetting;
+  supplier: EntityCodeSetting;
+  stock_adjustment: EntityCodeSetting;
+  employee: EntityCodeSetting;
+  journal_voucher: EntityCodeSetting;
+  receipt_voucher: EntityCodeSetting;
+  payment_voucher: EntityCodeSetting;
+  company: EntityCodeSetting;
+
+  product_category: EntityCodeSetting;
+  product_brand: EntityCodeSetting;
+  product_unit: EntityCodeSetting;
+  customer_group: EntityCodeSetting;
+  customer_category: EntityCodeSetting;
+  [key: string]: EntityCodeSetting;
 }
 
 export const DEFAULT_ENTITY_SETTINGS: Record<string, EntityCodeSetting> = {
-  sale_invoice: { mode: 'auto', prefix: 'SI-', nextNumber: 1, padding: 1 },
-  sale_return: { mode: 'auto', prefix: 'RTN-', nextNumber: 1, padding: 1 },
-  service_invoice: { mode: 'auto', prefix: 'SRV-', nextNumber: 1, padding: 1 },
-  digital_invoice: { mode: 'auto', prefix: 'DIG-', nextNumber: 1, padding: 1 },
-  warehouse: { mode: 'auto', prefix: 'WH-', nextNumber: 1, padding: 1 },
-  salesperson: { mode: 'auto', prefix: 'SP-', nextNumber: 1, padding: 1 },
-  customer: { mode: 'auto', prefix: 'CUS-', nextNumber: 1, padding: 1 },
-  product: { mode: 'auto', prefix: 'PRD-', nextNumber: 1, padding: 1 },
-  branch: { mode: 'auto', prefix: 'BR-', nextNumber: 1, padding: 1 },
-  department: { mode: 'auto', prefix: 'HR', nextNumber: 1, padding: 1 }
+  sale_invoice: { mode: 'auto', prefix: 'SI-', nextNumber: 1, padding: 5 },
+  sale_return: { mode: 'auto', prefix: 'RTN-', nextNumber: 1, padding: 5 },
+  service_invoice: { mode: 'auto', prefix: 'SRV-', nextNumber: 1, padding: 5 },
+  digital_invoice: { mode: 'auto', prefix: 'DIG-', nextNumber: 1, padding: 5 },
+  warehouse: { mode: 'auto', prefix: 'WH-', nextNumber: 1, padding: 5 },
+  salesperson: { mode: 'auto', prefix: 'SP-', nextNumber: 1, padding: 5 },
+  customer: { mode: 'auto', prefix: 'CUS-', nextNumber: 1, padding: 5 },
+  product: { mode: 'auto', prefix: 'PRD-', nextNumber: 1, padding: 5 },
+  branch: { mode: 'auto', prefix: 'BR-', nextNumber: 1, padding: 5 },
+  department: { mode: 'auto', prefix: 'HR', nextNumber: 1, padding: 5 },
+
+  quotation: { mode: 'auto', prefix: 'QTN-', nextNumber: 1, padding: 5 },
+  delivery_challan: { mode: 'auto', prefix: 'DC-', nextNumber: 1, padding: 5 },
+  credit_note: { mode: 'auto', prefix: 'CN-', nextNumber: 1, padding: 5 },
+  debit_note: { mode: 'auto', prefix: 'DN-', nextNumber: 1, padding: 5 },
+  purchase_order: { mode: 'auto', prefix: 'PO-', nextNumber: 1, padding: 5 },
+  purchase_return: { mode: 'auto', prefix: 'PRTN-', nextNumber: 1, padding: 5 },
+  purchase_invoice: { mode: 'auto', prefix: 'PI-', nextNumber: 1, padding: 5 },
+  grn: { mode: 'auto', prefix: 'GRN-', nextNumber: 1, padding: 5 },
+  supplier: { mode: 'auto', prefix: 'SUP-', nextNumber: 1, padding: 5 },
+  stock_adjustment: { mode: 'auto', prefix: 'SA-', nextNumber: 1, padding: 5 },
+  employee: { mode: 'auto', prefix: 'EMP-', nextNumber: 1, padding: 5 },
+  journal_voucher: { mode: 'auto', prefix: 'JV-', nextNumber: 1, padding: 5 },
+  receipt_voucher: { mode: 'auto', prefix: 'RV-', nextNumber: 1, padding: 5 },
+  payment_voucher: { mode: 'auto', prefix: 'PV-', nextNumber: 1, padding: 5 },
+  company: { mode: 'auto', prefix: 'CO-', nextNumber: 1, padding: 5 },
+
+  product_category: { mode: 'auto', prefix: 'CAT-', nextNumber: 1, padding: 5 },
+  product_brand: { mode: 'auto', prefix: 'BRD-', nextNumber: 1, padding: 5 },
+  product_unit: { mode: 'auto', prefix: 'UNT-', nextNumber: 1, padding: 5 },
+  customer_group: { mode: 'auto', prefix: 'GRP-', nextNumber: 1, padding: 5 },
+  customer_category: { mode: 'auto', prefix: 'CCAT-', nextNumber: 1, padding: 5 }
 };
 
 export const getCodeSettingsForBranch = (companyId: string, branchId: string): BranchCodeSettings => {
+  const result: any = {};
+  
+  Object.keys(DEFAULT_ENTITY_SETTINGS).forEach(key => {
+    result[key] = { ...DEFAULT_ENTITY_SETTINGS[key] };
+  });
+
   try {
     const stored = localStorage.getItem('code_generation_settings');
     if (stored) {
@@ -40,35 +101,20 @@ export const getCodeSettingsForBranch = (companyId: string, branchId: string): B
         const branchSettings = parsed[companyId][branchId] || {};
         const companyLevelSettings = parsed[companyId]['all'] || {};
         
-        return {
-          sale_invoice: { ...DEFAULT_ENTITY_SETTINGS.sale_invoice, ...companyLevelSettings.sale_invoice, ...branchSettings.sale_invoice },
-          sale_return: { ...DEFAULT_ENTITY_SETTINGS.sale_return, ...companyLevelSettings.sale_return, ...branchSettings.sale_return },
-          service_invoice: { ...DEFAULT_ENTITY_SETTINGS.service_invoice, ...companyLevelSettings.service_invoice, ...branchSettings.service_invoice },
-          digital_invoice: { ...DEFAULT_ENTITY_SETTINGS.digital_invoice, ...companyLevelSettings.digital_invoice, ...branchSettings.digital_invoice },
-          warehouse: { ...DEFAULT_ENTITY_SETTINGS.warehouse, ...companyLevelSettings.warehouse, ...branchSettings.warehouse },
-          salesperson: { ...DEFAULT_ENTITY_SETTINGS.salesperson, ...companyLevelSettings.salesperson, ...branchSettings.salesperson },
-          customer: { ...DEFAULT_ENTITY_SETTINGS.customer, ...companyLevelSettings.customer, ...branchSettings.customer },
-          product: { ...DEFAULT_ENTITY_SETTINGS.product, ...companyLevelSettings.product, ...branchSettings.product },
-          branch: { ...DEFAULT_ENTITY_SETTINGS.branch, ...companyLevelSettings.branch, ...branchSettings.branch },
-          department: { ...DEFAULT_ENTITY_SETTINGS.department, ...companyLevelSettings.department, ...branchSettings.department },
-        };
+        Object.keys(DEFAULT_ENTITY_SETTINGS).forEach(key => {
+          result[key] = {
+            ...result[key],
+            ...(companyLevelSettings[key] || {}),
+            ...(branchSettings[key] || {})
+          };
+        });
       }
     }
   } catch (e) {
     console.error('Failed to load code settings', e);
   }
-  return {
-    sale_invoice: { ...DEFAULT_ENTITY_SETTINGS.sale_invoice },
-    sale_return: { ...DEFAULT_ENTITY_SETTINGS.sale_return },
-    service_invoice: { ...DEFAULT_ENTITY_SETTINGS.service_invoice },
-    digital_invoice: { ...DEFAULT_ENTITY_SETTINGS.digital_invoice },
-    warehouse: { ...DEFAULT_ENTITY_SETTINGS.warehouse },
-    salesperson: { ...DEFAULT_ENTITY_SETTINGS.salesperson },
-    customer: { ...DEFAULT_ENTITY_SETTINGS.customer },
-    product: { ...DEFAULT_ENTITY_SETTINGS.product },
-    branch: { ...DEFAULT_ENTITY_SETTINGS.branch },
-    department: { ...DEFAULT_ENTITY_SETTINGS.department }
-  };
+  
+  return result as BranchCodeSettings;
 };
 
 export const generateNextCode = (
@@ -78,11 +124,11 @@ export const generateNextCode = (
 ): string => {
   const branchSettings = getCodeSettingsForBranch(companyId, branchId);
   const setting = branchSettings[entityType];
-  if (setting.mode === 'manual') {
+  if (!setting || setting.mode === 'manual') {
     return '';
   }
-  const formattedNum = String(setting.nextNumber);
-  return `${setting.prefix}${formattedNum}`;
+  const formattedNum = String(setting.nextNumber).padStart(setting.padding || 1, '0');
+  return `${setting.prefix || ''}${formattedNum}`;
 };
 
 export const incrementNextCode = (
@@ -106,11 +152,11 @@ export const incrementNextCode = (
     }
     
     const activeSetting = getCodeSettingsForBranch(companyId, branchId)[entityType];
-    activeSetting.nextNumber = Number(activeSetting.nextNumber || 1) + 1;
-    
-    parsed[companyId][targetBranchId][entityType] = activeSetting;
-    
-    localStorage.setItem('code_generation_settings', JSON.stringify(parsed));
+    if (activeSetting) {
+      activeSetting.nextNumber = Number(activeSetting.nextNumber || 1) + 1;
+      parsed[companyId][targetBranchId][entityType] = activeSetting;
+      localStorage.setItem('code_generation_settings', JSON.stringify(parsed));
+    }
   } catch (e) {
     console.error('Failed to increment next code', e);
   }

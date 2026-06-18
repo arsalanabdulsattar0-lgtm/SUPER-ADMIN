@@ -8,6 +8,7 @@ import { Button } from './Button';
 import { SectionHeader, ModalHeader } from './Typography';
 import type { Product } from '../../pages/Products/ProductList';
 import { AlertModal } from './AlertModal';
+import { Toast } from './Toast';
 import { getCodeSettingsForBranch, generateNextCode, incrementNextCode } from '../../utils/codeSettingsHelper';
 import {
   ProductCategory,
@@ -68,16 +69,36 @@ const InlineProductForm: React.FC<Props> = ({ isOpen, onClose, initialData }) =>
   const [activeTab, setActiveTab] = useState<'general' | 'pricing' | 'tax'>('general');
   const [alertModal, setAlertModal] = useState<{ isOpen: boolean; title: string; message: string }>({ isOpen: false, title: '', message: '' });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const [toastMessageData, setToastMessageData] = useState<{ isOpen: boolean; messages: string[] }>({ isOpen: false, messages: [] });
 
   const validateForm = () => {
     const errs: Record<string, string> = {};
+    const toastMsgs: string[] = [];
     if (!formData.name?.trim()) {
       errs.name = 'This field is required';
+      toastMsgs.push('Product Name is required');
     }
     if (!formData.code?.trim()) {
       errs.code = 'This field is required';
+      toastMsgs.push('Product Code is required');
     }
     setFormErrors(errs);
+    if (toastMsgs.length > 0) {
+      setToastMessageData({
+        isOpen: true,
+        messages: toastMsgs
+      });
+      setTimeout(() => {
+        const firstInvalid = document.querySelector('[data-invalid="true"]');
+        if (firstInvalid) {
+          firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          const inputEl = firstInvalid.querySelector('input, select, textarea') || firstInvalid;
+          if (inputEl instanceof HTMLElement) {
+            inputEl.focus();
+          }
+        }
+      }, 100);
+    }
     return Object.keys(errs).length === 0;
   };
 
@@ -718,6 +739,11 @@ const InlineProductForm: React.FC<Props> = ({ isOpen, onClose, initialData }) =>
       title={alertModal.title}
       message={alertModal.message}
       variant="warning"
+    />
+    <Toast
+      isOpen={toastMessageData.isOpen}
+      onClose={() => setToastMessageData(prev => ({ ...prev, isOpen: false }))}
+      messages={toastMessageData.messages}
     />
     </>
   );

@@ -14,6 +14,9 @@ import { Toggle } from '../../../components/ui/Toggle';
 
 interface DocumentSettingsModuleProps {
   brand: ReturnType<typeof useTheme>['brand'];
+  activeTab?: string;
+  onTabChange?: (tab: string) => void;
+  hideTabs?: boolean;
 }
 
 export interface CustomFieldDefinition {
@@ -241,8 +244,16 @@ const mapDocTypeToTemplateDocType = (docType: string): string[] => {
   return [docType];
 };
 
-export const DocumentSettingsModule: React.FC<DocumentSettingsModuleProps> = ({ brand }) => {
-  const [activeTab, setActiveTab] = useState<string>('Sale Invoice');
+export const DocumentSettingsModule: React.FC<DocumentSettingsModuleProps> = ({
+  brand,
+  activeTab: controlledActiveTab,
+  onTabChange,
+  hideTabs = false
+}) => {
+  const [localActiveTab, setLocalActiveTab] = useState<string>('Sale Invoice');
+  const activeTab = controlledActiveTab !== undefined ? controlledActiveTab : localActiveTab;
+  const setActiveTab = onTabChange !== undefined ? onTabChange : setLocalActiveTab;
+
   const [settings, setSettings] = useState<Record<string, DocumentViewSettings>>({});
   const [savedMessage, setSavedMessage] = useState<boolean>(false);
 
@@ -810,17 +821,17 @@ export const DocumentSettingsModule: React.FC<DocumentSettingsModuleProps> = ({ 
                           {field.label}
                         </span>
                         {field.isCustom && (
-                          <span className="text-[8px] font-black bg-blue-50 text-blue-600 px-1 py-0.2 rounded border border-blue-100 uppercase tracking-wider">
+                          <span className="text-[8px] font-black bg-blue-50 text-blue-600 px-1 py-0.2 rounded border border-blue-100">
                             Custom
                           </span>
                         )}
                         {field.required && (
-                          <span className="text-[8px] font-black bg-amber-50 text-amber-700 px-1 py-0.2 rounded border border-amber-100 uppercase tracking-wider">
+                          <span className="text-[8px] font-black bg-amber-50 text-amber-700 px-1 py-0.2 rounded border border-amber-100">
                             Req
                           </span>
                         )}
                         {!field.active && (
-                          <span className="text-[8px] font-black bg-red-50 text-red-600 px-1 py-0.2 rounded border border-red-100 uppercase tracking-wider">
+                          <span className="text-[8px] font-black bg-red-50 text-red-600 px-1 py-0.2 rounded border border-red-100">
                             Off
                           </span>
                         )}
@@ -876,30 +887,32 @@ export const DocumentSettingsModule: React.FC<DocumentSettingsModuleProps> = ({ 
   return (
     <div className="space-y-6 pb-12">
       {/* ── Document Types Horizontal Tabs ── */}
-      <div className="flex flex-nowrap items-center gap-1 p-1.5 bg-slate-100/80 rounded-2xl border border-slate-200/50 backdrop-blur-sm w-full">
-        {DOC_TYPES.map(type => {
-          const Icon = DOC_TYPE_ICONS[type] || FileText;
-          const isActive = activeTab === type;
-          return (
-            <button
-              key={type}
-              type="button"
-              onClick={() => setActiveTab(type)}
-              className={`flex-1 min-w-0 flex items-center justify-center gap-1.5 px-2 py-2 rounded-xl text-xs font-black transition-all duration-200 cursor-pointer whitespace-nowrap ${
-                isActive
-                  ? 'text-white shadow-sm'
-                  : 'text-slate-500 hover:text-slate-800 hover:bg-white/40'
-              }`}
-              style={{
-                backgroundColor: isActive ? brand.primary : 'transparent',
-              }}
-            >
-              <Icon className={`w-3.5 h-3.5 flex-shrink-0 ${isActive ? 'text-white' : 'text-slate-400'}`} />
-              <span className="truncate">{type}</span>
-            </button>
-          );
-        })}
-      </div>
+      {!hideTabs && (
+        <div className="flex flex-nowrap items-center gap-1 p-1.5 bg-slate-100/80 rounded-2xl border border-slate-200/50 backdrop-blur-sm w-full">
+          {DOC_TYPES.map(type => {
+            const Icon = DOC_TYPE_ICONS[type] || FileText;
+            const isActive = activeTab === type;
+            return (
+              <button
+                key={type}
+                type="button"
+                onClick={() => setActiveTab(type)}
+                className={`flex-1 min-w-0 flex items-center justify-center gap-1.5 px-2 py-2 rounded-xl text-xs font-black transition-all duration-200 cursor-pointer whitespace-nowrap ${
+                  isActive
+                    ? 'text-white shadow-sm'
+                    : 'text-slate-500 hover:text-slate-800 hover:bg-white/40'
+                }`}
+                style={{
+                  backgroundColor: isActive ? brand.primary : 'transparent',
+                }}
+              >
+                <Icon className={`w-3.5 h-3.5 flex-shrink-0 ${isActive ? 'text-white' : 'text-slate-400'}`} />
+                <span className="truncate">{type}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {/* ── Main Content Area ── */}
       <div className="space-y-6">
@@ -926,7 +939,7 @@ export const DocumentSettingsModule: React.FC<DocumentSettingsModuleProps> = ({ 
             return (
               <div className="flex">
                 <div className="w-full lg:w-1/3">
-                  {renderSectionCard('Custom Sections', 'custom', Settings2)}
+                  {renderSectionCard('Custom sections', 'custom', Settings2)}
                 </div>
               </div>
             );
@@ -943,10 +956,10 @@ export const DocumentSettingsModule: React.FC<DocumentSettingsModuleProps> = ({ 
 
           return (
             <div className={gridClass}>
-              {hasHeader && renderSectionCard('Header Fields', 'header', Layout)}
-              {hasColumn && renderSectionCard('Items Table Columns', 'column', Columns)}
-              {hasFooter && renderSectionCard('Footer Fields', 'footer', FileText)}
-              {renderSectionCard('Custom Sections', 'custom', Settings2)}
+              {hasHeader && renderSectionCard('Header fields', 'header', Layout)}
+              {hasColumn && renderSectionCard('Items table columns', 'column', Columns)}
+              {hasFooter && renderSectionCard('Footer fields', 'footer', FileText)}
+              {renderSectionCard('Custom sections', 'custom', Settings2)}
             </div>
           );
         })()}
