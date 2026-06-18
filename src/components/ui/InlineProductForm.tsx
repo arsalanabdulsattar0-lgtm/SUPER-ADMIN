@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FileText, Save, Percent, ChevronLeft, ChevronRight, Package, Tag, Layers, Box } from 'lucide-react';
+import { FileText, Save, Percent, ChevronLeft, ChevronRight, Package, Tag, Layers, CreditCard } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { Input, TextArea, ComboBox, Toggle } from './FormControls';
 import Card from './Card';
@@ -17,7 +17,13 @@ import {
   ProductModel,
   ProductSize,
   ProductUOM,
-  ProductSupplier
+  ProductSupplier,
+  SalesAccountOptions,
+  SalesDiscountAccountOptions,
+  SalesReturnAccountOptions,
+  ExpenseCOGSAccountOptions,
+  PurchaseDiscountAccountOptions,
+  StockAccountOptions
 } from '../../utils/productData';
 
 interface Props {
@@ -187,7 +193,13 @@ const InlineProductForm: React.FC<Props> = ({ isOpen, onClose, initialData }) =>
     is_active: true,
     length: 0,
     width: 0,
-    preferred_supplier_id: ''
+    preferred_supplier_id: '',
+    sales_account: '',
+    sales_discount_account: '',
+    sales_return_account: '',
+    expense_cogs_account: '',
+    purchase_discount_account: '',
+    stock_account: ''
   });
 
   // Reset or populate form when it opens
@@ -243,7 +255,13 @@ const InlineProductForm: React.FC<Props> = ({ isOpen, onClose, initialData }) =>
         is_active: initialData?.is_active ?? true,
         length: initialData?.length || 0,
         width: initialData?.width || 0,
-        preferred_supplier_id: initialData?.preferred_supplier_id || ''
+        preferred_supplier_id: initialData?.preferred_supplier_id || '',
+        sales_account: initialData?.sales_account || '',
+        sales_discount_account: initialData?.sales_discount_account || '',
+        sales_return_account: initialData?.sales_return_account || '',
+        expense_cogs_account: initialData?.expense_cogs_account || '',
+        purchase_discount_account: initialData?.purchase_discount_account || '',
+        stock_account: initialData?.stock_account || ''
       });
     }
   }, [isOpen, initialData]);
@@ -297,7 +315,13 @@ const InlineProductForm: React.FC<Props> = ({ isOpen, onClose, initialData }) =>
         length: formData.length || 0,
         width: formData.width || 0,
         created_at: initialData?.created_at || new Date().toISOString().split('T')[0],
-        preferred_supplier_id: formData.preferred_supplier_id || ''
+        preferred_supplier_id: formData.preferred_supplier_id || '',
+        sales_account: formData.sales_account || '',
+        sales_discount_account: formData.sales_discount_account || '',
+        sales_return_account: formData.sales_return_account || '',
+        expense_cogs_account: formData.expense_cogs_account || '',
+        purchase_discount_account: formData.purchase_discount_account || '',
+        stock_account: formData.stock_account || ''
       };
 
       if (initialData?.id) {
@@ -407,7 +431,7 @@ const InlineProductForm: React.FC<Props> = ({ isOpen, onClose, initialData }) =>
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[201] w-full max-w-4xl bg-white border shadow-none rounded-3xl max-h-[85vh] flex flex-col overflow-hidden"
+            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[201] w-full max-w-4xl bg-white border shadow-none rounded-3xl h-[650px] max-h-[90vh] flex flex-col overflow-hidden"
             style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}
           >
             {/* Header */}
@@ -495,7 +519,7 @@ const InlineProductForm: React.FC<Props> = ({ isOpen, onClose, initialData }) =>
                     className="text-xs mt-2 tracking-wide transition-colors duration-300"
                     style={getStepStyles('pricing').label}
                   >
-                    Financial & Details
+                    Accounts
                   </span>
                 </div>
 
@@ -591,35 +615,57 @@ const InlineProductForm: React.FC<Props> = ({ isOpen, onClose, initialData }) =>
 
               {activeTab === 'pricing' && (
                 <div className="space-y-1.5 animate-fadeIn">
-                  <SectionHeader title="Inventory & Dimensions" icon={Box} />
+                  <SectionHeader title="Accounts" icon={CreditCard} />
                   <Card className="p-4 shadow-none" style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}>
-                    <div className="space-y-4">
-                      {/* Row 1: Stock Info (3 inputs) */}
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                        {docSettings['Stocks (qty)'] && (
-                          <>
-                            <Input variant="compact" label="Opening Qty" type="number" value={formData.opening_qty || ''} onChange={(e) => setFormData({ ...formData, opening_qty: parseFloat(e.target.value) || 0 })} placeholder="0" />
-                            <Input variant="compact" label="Opening Rate" type="number" value={formData.opening_rate || ''} onChange={(e) => setFormData({ ...formData, opening_rate: parseFloat(e.target.value) || 0 })} placeholder="0.00" />
-                          </>
-                        )}
-                        {docSettings['Low Stock Level'] && (
-                          <Input variant="compact" label="Low Stock Level" type="number" value={formData.low_stock_level || ''} onChange={(e) => setFormData({ ...formData, low_stock_level: parseFloat(e.target.value) || 0 })} placeholder="0" />
-                        )}
-                      </div>
-
-                      {/* Row 2: Weight & Dimensions (3 inputs) */}
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                        {docSettings['Weight (kg)'] && (
-                          <Input variant="compact" label="Weight (kg)" type="number" value={formData.weight || ''} onChange={(e) => setFormData({ ...formData, weight: parseFloat(e.target.value) || 0 })} placeholder="0.00" />
-                        )}
-                        <Input variant="compact" label="Length" type="number" value={formData.length || ''} onChange={(e) => setFormData({ ...formData, length: parseFloat(e.target.value) || 0 })} placeholder="0" />
-                        <Input variant="compact" label="Width" type="number" value={formData.width || ''} onChange={(e) => setFormData({ ...formData, width: parseFloat(e.target.value) || 0 })} placeholder="0" />
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                        <Input variant="compact" label="Sale Discount %" type="number" value={formData.sale_discount || ''} onChange={(e) => setFormData({ ...formData, sale_discount: parseFloat(e.target.value) || 0 })} placeholder="0" />
-                        <Input variant="compact" label="Purchase Discount %" type="number" value={formData.purchase_discount || ''} onChange={(e) => setFormData({ ...formData, purchase_discount: parseFloat(e.target.value) || 0 })} placeholder="0" />
-                      </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      <ComboBox
+                        variant="compact"
+                        label="Sales Account"
+                        value={formData.sales_account || ''}
+                        onChange={(val) => setFormData({ ...formData, sales_account: val })}
+                        options={SalesAccountOptions}
+                        placeholder="Select Sales Account"
+                      />
+                      <ComboBox
+                        variant="compact"
+                        label="Sales Discount Account"
+                        value={formData.sales_discount_account || ''}
+                        onChange={(val) => setFormData({ ...formData, sales_discount_account: val })}
+                        options={SalesDiscountAccountOptions}
+                        placeholder="Select Sales Discount Account"
+                      />
+                      <ComboBox
+                        variant="compact"
+                        label="Sales Return Account"
+                        value={formData.sales_return_account || ''}
+                        onChange={(val) => setFormData({ ...formData, sales_return_account: val })}
+                        options={SalesReturnAccountOptions}
+                        placeholder="Select Sales Return Account"
+                      />
+                      <ComboBox
+                        variant="compact"
+                        label="Expense/COGS Account"
+                        value={formData.expense_cogs_account || ''}
+                        onChange={(val) => setFormData({ ...formData, expense_cogs_account: val })}
+                        options={ExpenseCOGSAccountOptions}
+                        placeholder="Select Expense/COGS Account"
+                      />
+                      <ComboBox
+                        variant="compact"
+                        label="Purchase Discount Account"
+                        value={formData.purchase_discount_account || ''}
+                        onChange={(val) => setFormData({ ...formData, purchase_discount_account: val })}
+                        options={PurchaseDiscountAccountOptions}
+                        placeholder="Select Purchase Discount Account"
+                      />
+                      <ComboBox
+                        variant="compact"
+                        label="Stock Account"
+                        value={formData.stock_account || ''}
+                        onChange={(val) => setFormData({ ...formData, stock_account: val })}
+                        options={StockAccountOptions}
+                        placeholder="Select Stock Account"
+                      />
                     </div>
                   </Card>
                 </div>

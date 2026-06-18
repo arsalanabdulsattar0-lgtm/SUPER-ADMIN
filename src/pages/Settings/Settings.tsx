@@ -197,7 +197,8 @@ const Settings: React.FC = () => {
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: 30 }}
                       transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-                      className="p-5"
+                      className="p-5 flex-1 overflow-y-auto custom-scrollbar"
+                      style={{ minHeight: 0 }}
                     >
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         {sections.map((section, i) => {

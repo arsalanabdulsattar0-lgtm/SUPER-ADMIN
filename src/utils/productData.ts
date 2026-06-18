@@ -64,3 +64,36 @@ export const sampleProducts = [
   { id: 'P007', name: 'NVMe SSD 2TB', subtitle: 'SKU: SSD-NVME-2TB · Rs. 180.00' },
   { id: 'P010', name: 'Chassis Airflow ATX', subtitle: 'SKU: CASE-ATX-AF · Rs. 95.00' },
 ];
+
+export const SalesAccountOptions = [
+  { id: 'acc-sales-1', name: 'Product Sales' },
+  { id: 'acc-sales-2', name: 'Service Sales' },
+  { id: 'acc-sales-3', name: 'Digital Goods Sales' },
+];
+
+export const SalesDiscountAccountOptions = [
+  { id: 'acc-sales-disc-1', name: 'Discounts Allowed' },
+  { id: 'acc-sales-disc-2', name: 'Sales Discount Expense' },
+];
+
+export const SalesReturnAccountOptions = [
+  { id: 'acc-sales-ret-1', name: 'Sales Returns & Allowances' },
+  { id: 'acc-sales-ret-2', name: 'Returned Goods Clearing' },
+];
+
+export const ExpenseCOGSAccountOptions = [
+  { id: 'acc-cogs-1', name: 'Cost of Goods Sold' },
+  { id: 'acc-cogs-2', name: 'Operating Expenses' },
+];
+
+export const PurchaseDiscountAccountOptions = [
+  { id: 'acc-purch-disc-1', name: 'Discounts Received' },
+  { id: 'acc-purch-disc-2', name: 'Purchase Discount Income' },
+];
+
+export const StockAccountOptions = [
+  { id: 'acc-stock-1', name: 'Merchandise Inventory' },
+  { id: 'acc-stock-2', name: 'Raw Materials Inventory' },
+  { id: 'acc-stock-3', name: 'Finished Goods Inventory' },
+];
+

@@ -63,6 +63,12 @@ export interface Product {
   width?: number;
   created_at?: string;
   preferred_supplier_id?: string;
+  sales_account?: string;
+  sales_discount_account?: string;
+  sales_return_account?: string;
+  expense_cogs_account?: string;
+  purchase_discount_account?: string;
+  stock_account?: string;
 }
 
 interface Props {
