@@ -31,9 +31,11 @@ const TAB_MODULES = {
     { id: 'customer', label: 'Customer' },
     { id: 'supplier', label: 'Supplier' },
     { id: 'product', label: 'Product' },
-    { id: 'branch', label: 'Branch' }
+    { id: 'branch', label: 'Branch' },
+    { id: 'tax', label: 'Tax' }
   ],
   sales: [] as { id: string; label: string }[],
+  purchases: [] as { id: string; label: string }[],
   customer: [
     { id: 'customer', label: 'Business Partner' }
   ],
@@ -76,6 +78,9 @@ const TAB_MODULE_TYPES: Record<string, TypeItem[]> = {
   branch: [
     { id: 'branch', label: 'Branch' }
   ],
+  tax: [
+    { id: 'tax', label: 'Tax' }
+  ],
   inventory: [
     { id: 'product', label: 'Product', docType: 'Inventory' },
     { id: 'warehouse', label: 'Warehouse' },
@@ -104,12 +109,17 @@ const getDefaultValueForType = (type: string, docType: string) => {
       if (docType === 'sale_return') return 'RTN';
       if (docType === 'service_invoice') return 'SRV';
       if (docType === 'digital_invoice') return 'DIG';
+      if (docType === 'purchase_invoice') return 'PI';
+      if (docType === 'purchase_return') return 'PRTN';
+      if (docType === 'tax') return 'TX';
       return 'PREFIX';
     case 'Document Type':
       if (docType === 'sale_invoice') return 'SI';
       if (docType === 'sale_return') return 'SR';
       if (docType === 'service_invoice') return 'SE';
       if (docType === 'digital_invoice') return 'DI';
+      if (docType === 'purchase_invoice') return 'PI';
+      if (docType === 'purchase_return') return 'PR';
       return 'DOC';
     case 'Branch Abbreviation':
       return 'LHR';
@@ -137,10 +147,31 @@ const getDefaultValueForType = (type: string, docType: string) => {
 };
 
 export const CodeSettingsModule: React.FC<CodeSettingsModuleProps> = ({ brand }) => {
-  const [activeTab, setActiveTab] = useState<'document' | 'setup' | 'sales' | 'customer' | 'inventory'>('document');
+  const [activeTab, setActiveTab] = useState<'document' | 'setup' | 'sales' | 'purchases' | 'customer' | 'inventory'>('document');
   const [activeModule, setActiveModule] = useState<string>('sales');
   const [activeType, setActiveType] = useState<string>('sale_invoice');
   const [salesDocType, setSalesDocType] = useState<string>('Sale Invoice');
+  const [purchasesDocType, setPurchasesDocType] = useState<string>('Purchase Invoice');
+
+  const handleTabSwitch = (tab: 'document' | 'setup' | 'sales' | 'purchases' | 'customer' | 'inventory') => {
+    setActiveTab(tab);
+    if (tab === 'sales' || tab === 'purchases' || tab === 'inventory') return; // these tabs use direct layouts
+
+    if (tab === 'customer') {
+      setActiveModule('customer_settings');
+      return;
+    }
+
+    const modules = TAB_MODULES[tab];
+    if (modules && modules.length > 0) {
+      const firstModule = (modules as ReadonlyArray<{ id: string; label: string }>)[0].id;
+      setActiveModule(firstModule);
+      const types = TAB_MODULE_TYPES[firstModule];
+      if (types && types.length > 0) {
+        setActiveType(types[0].id);
+      }
+    }
+  };
 
   const [selectedCompanyId, setSelectedCompanyId] = useState<string>('');
   const [selectedBranchId, setSelectedBranchId] = useState<string>('');
@@ -154,6 +185,8 @@ export const CodeSettingsModule: React.FC<CodeSettingsModuleProps> = ({ brand })
   const [effectiveTo, setEffectiveTo] = useState<string>('');
   const [allowManualEntry, setAllowManualEntry] = useState<boolean>(false);
   const [serialReset, setSerialReset] = useState<'None' | 'Daily' | 'Monthly' | 'Yearly'>('None');
+  const [taxTypeVal, setTaxTypeVal] = useState<string>('GST');
+  const [provinceVal, setProvinceVal] = useState<string>('Punjab');
 
   // Draft / Regular numbering settings states
   const [draftGrid, setDraftGrid] = useState<{ id: string; type: string; value: string; separator: string }[]>([]);
@@ -274,6 +307,8 @@ export const CodeSettingsModule: React.FC<CodeSettingsModuleProps> = ({ brand })
     setEffectiveTo(setting.effectiveTo || '');
     setAllowManualEntry(!!setting.allowManualEntry);
     setSerialReset(setting.serialReset || 'None');
+    setTaxTypeVal(setting.taxType || 'GST');
+    setProvinceVal(setting.province || 'Punjab');
 
     // Initialize grid
     const initialGrid = getInitialGridForEntity(activeType, setting);
@@ -391,7 +426,9 @@ export const CodeSettingsModule: React.FC<CodeSettingsModuleProps> = ({ brand })
       draftPadding,
       draftAllowManualEntry,
       draftSerialReset,
-      documentNoAsDraftNo
+      documentNoAsDraftNo,
+      taxType: activeType === 'tax' ? taxTypeVal : undefined,
+      province: activeType === 'tax' ? provinceVal : undefined
     };
 
     const newSettings = {
@@ -602,25 +639,7 @@ export const CodeSettingsModule: React.FC<CodeSettingsModuleProps> = ({ brand })
     );
   };
 
-  const handleTabSwitch = (tab: 'document' | 'setup' | 'sales' | 'customer' | 'inventory') => {
-    setActiveTab(tab);
-    if (tab === 'sales' || tab === 'inventory') return; // these tabs use direct layouts
 
-    if (tab === 'customer') {
-      setActiveModule('customer_settings');
-      return;
-    }
-
-    const modules = TAB_MODULES[tab];
-    if (modules && modules.length > 0) {
-      const firstModule = (modules as ReadonlyArray<{ id: string; label: string }>)[0].id;
-      setActiveModule(firstModule);
-      const types = TAB_MODULE_TYPES[firstModule];
-      if (types && types.length > 0) {
-        setActiveType(types[0].id);
-      }
-    }
-  };
 
   const handleModuleSwitch = (moduleId: string) => {
     setActiveModule(moduleId);
@@ -665,6 +684,15 @@ export const CodeSettingsModule: React.FC<CodeSettingsModuleProps> = ({ brand })
           Sales
         </button>
         <button
+          onClick={() => handleTabSwitch('purchases')}
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-black transition-all cursor-pointer border-none outline-none ${activeTab === 'purchases' ? 'bg-white shadow-sm' : 'text-slate-500 hover:text-slate-800'
+            }`}
+          style={activeTab === 'purchases' ? { color: brand.primary } : undefined}
+        >
+          <Settings2 className="w-3.5 h-3.5" />
+          Purchases
+        </button>
+        <button
           onClick={() => handleTabSwitch('customer')}
           className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-black transition-all cursor-pointer border-none outline-none ${activeTab === 'customer' ? 'bg-white shadow-sm' : 'text-slate-500 hover:text-slate-800'
             }`}
@@ -685,7 +713,44 @@ export const CodeSettingsModule: React.FC<CodeSettingsModuleProps> = ({ brand })
       </div>
 
       {/* ── Tab Panels ── */}
-      {activeTab === 'sales' ? (
+      {activeTab === 'purchases' ? (
+        <div className="flex-grow flex gap-6 min-h-0 overflow-hidden">
+          {/* Left Side Panel */}
+          <Card className="w-[180px] p-3 flex flex-col h-full overflow-y-auto border border-[#E2E8F0] shadow-sm shrink-0">
+            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-wider px-2 py-1 mb-2">Screen Types</h4>
+            <div className="space-y-1">
+              {[
+                { id: 'Purchase Invoice', label: 'Purchase Invoice' },
+                { id: 'Purchase Return', label: 'Purchase Return' }
+              ].map(mod => {
+                const isActive = purchasesDocType === mod.id;
+                return (
+                  <button
+                    key={mod.id}
+                    onClick={() => setPurchasesDocType(mod.id)}
+                    className={`w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold transition-all border-none outline-none cursor-pointer ${isActive ? 'text-white' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                      }`}
+                    style={isActive ? { backgroundColor: brand.primary } : undefined}
+                  >
+                    {mod.label}
+                  </button>
+                );
+              })}
+            </div>
+          </Card>
+
+          {/* Right Side Settings Panel */}
+          <div className="flex-1 flex flex-col h-full min-h-0 overflow-hidden">
+            <div className="flex-grow overflow-y-auto custom-scrollbar pr-1 min-h-0">
+              <DocumentSettingsModule
+                brand={brand}
+                activeTab={purchasesDocType}
+                hideTabs={true}
+              />
+            </div>
+          </div>
+        </div>
+      ) : activeTab === 'sales' ? (
         <div className="flex-grow flex gap-6 min-h-0 overflow-hidden">
           {/* Left Side Panel */}
           <Card className="w-[180px] p-3 flex flex-col h-full overflow-y-auto border border-[#E2E8F0] shadow-sm shrink-0">
@@ -790,7 +855,9 @@ export const CodeSettingsModule: React.FC<CodeSettingsModuleProps> = ({ brand })
                         { value: 'sale_invoice', label: 'Sale Invoice' },
                         { value: 'sale_return', label: 'Sale Return' },
                         { value: 'service_invoice', label: 'Service Invoice' },
-                        { value: 'digital_invoice', label: 'Digital Invoice' }
+                        { value: 'digital_invoice', label: 'Digital Invoice' },
+                        { value: 'purchase_invoice', label: 'Purchase Invoice' },
+                        { value: 'purchase_return', label: 'Purchase Return' }
                       ]}
                     />
                   </div>
@@ -934,6 +1001,38 @@ export const CodeSettingsModule: React.FC<CodeSettingsModuleProps> = ({ brand })
                         disabled={mode === 'manual'}
                       />
                     </div>
+                    {activeType === 'tax' && (
+                      <>
+                        <div className="w-36">
+                          <Select
+                            label="Tax Type"
+                            variant="compact"
+                            value={taxTypeVal}
+                            onChange={(e) => setTaxTypeVal(e.target.value)}
+                            options={[
+                              { value: 'GST', label: 'GST' },
+                              { value: 'SST', label: 'SST' },
+                              { value: 'WHT', label: 'WHT' },
+                              { value: 'FED', label: 'FED' }
+                            ]}
+                          />
+                        </div>
+                        <div className="w-36">
+                          <Select
+                            label="Province"
+                            variant="compact"
+                            value={provinceVal}
+                            onChange={(e) => setProvinceVal(e.target.value)}
+                            options={[
+                              { value: 'Punjab', label: 'Punjab' },
+                              { value: 'Sindh', label: 'Sindh' },
+                              { value: 'KPK', label: 'KPK' },
+                              { value: 'Federal', label: 'Federal' }
+                            ]}
+                          />
+                        </div>
+                      </>
+                    )}
                   </div>
 
                   {/* Example */}

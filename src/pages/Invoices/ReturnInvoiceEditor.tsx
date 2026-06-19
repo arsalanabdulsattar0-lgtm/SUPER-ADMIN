@@ -497,6 +497,8 @@ const ReturnInvoiceEditor: React.FC<Props> = ({ data, onChange, onSave, onViewCh
     const colors = ['#2759CD', '#10B981', '#F59E0B', '#8B5CF6', '#EE4932', '#0EA5E9', '#EC4899', '#14B8A6'];
     const randomColor = colors[Math.floor(Math.random() * colors.length)];
 
+    const status = data.status || 'Unposted';
+
     return {
       id: data.invoiceNumber || 'RTN-' + Math.floor(1000 + Math.random() * 9000),
       customer: data.customerName || 'Unnamed Partner',
@@ -506,9 +508,10 @@ const ReturnInvoiceEditor: React.FC<Props> = ({ data, onChange, onSave, onViewCh
       dueDate: data.dueDate || new Date().toISOString().split('T')[0],
       amount: `Rs. ${netPayable.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
       rawAmount: netPayable,
-      status: 'Unposted',
+      status,
       type: 'Sale Return',
-      payment: 'Net 30'
+      payment: 'Net 30',
+      fbrInvoiceNumber: status === 'Posted' ? (data.fbrInvoiceNumber || ('FBR-INV-' + (data.invoiceNumber || ''))) : ''
     };
   };
 
@@ -800,8 +803,23 @@ const ReturnInvoiceEditor: React.FC<Props> = ({ data, onChange, onSave, onViewCh
                   {docSettings.fields['Return Invoice No.'] && (
                     <div className="lg:col-span-2">
                       <Input variant="compact" label="Return Invoice No." className="font-mono text-brand-primary"
-                        value={data.invoiceNumber} onChange={(e) => onChange({ ...data, invoiceNumber: e.target.value })}
+                        value={data.invoiceNumber} onChange={(e) => {
+                          const val = e.target.value;
+                          onChange({ 
+                            ...data, 
+                            invoiceNumber: val,
+                            fbrInvoiceNumber: data.status === 'Posted' ? 'FBR-INV-' + val : ''
+                          });
+                        }}
                         readOnly={codeSetting.mode === 'auto'} />
+                    </div>
+                  )}
+                  {data.status === 'Posted' && (
+                    <div className="lg:col-span-2">
+                      <Input variant="compact" label="FBR Invoice Number" className="font-mono text-slate-500"
+                        value={data.fbrInvoiceNumber || ('FBR-INV-' + (data.invoiceNumber || ''))}
+                        readOnly
+                      />
                     </div>
                   )}
                   {docSettings.fields['Reference Invoice'] && (

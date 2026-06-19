@@ -50,6 +50,8 @@ const DOC_TYPES = [
   'Sale Return',
   'Service Invoice',
   'Digital Invoice',
+  'Purchase Invoice',
+  'Purchase Return',
   'Customer',
   'Supplier',
   'Inventory'
@@ -60,6 +62,8 @@ const DOC_TYPE_ICONS: Record<string, React.ComponentType<any>> = {
   'Sale Return': Undo2,
   'Service Invoice': Wrench,
   'Digital Invoice': Globe,
+  'Purchase Invoice': FileText,
+  'Purchase Return': Undo2,
   'Customer': User,
   'Supplier': User,
   'Inventory': Package
@@ -70,6 +74,8 @@ const DEFAULT_FIELDS: Record<string, string[]> = {
   'Service Invoice': ['Sales Person', 'Department', 'Due Date'],
   'Digital Invoice': ['Sales Person', 'Department', 'Due Date'],
   'Sale Return':     ['Sales Person', 'Department', 'Due Date'],
+  'Purchase Invoice': ['Department', 'Due Date'],
+  'Purchase Return':  ['Department', 'Due Date'],
   'Customer':  [],
   'Supplier':  [],
   'Inventory': []
@@ -80,6 +86,8 @@ const DEFAULT_FOOTER: Record<string, string[]> = {
   'Service Invoice': [],
   'Digital Invoice': [],
   'Sale Return':     [],
+  'Purchase Invoice': [],
+  'Purchase Return':  [],
   'Customer':        [],
   'Supplier':        [],
   'Inventory':       []
@@ -90,6 +98,8 @@ const DEFAULT_COLUMNS: Record<string, string[]> = {
   'Service Invoice': ['Details', 'Discount', 'Tax', 'Further Tax'],
   'Digital Invoice': ['Details', 'Discount', 'Tax', 'Further Tax'],
   'Sale Return':     ['Details', 'Discount', 'Tax', 'Further Tax'],
+  'Purchase Invoice': ['Details', 'Discount', 'Tax', 'Further Tax'],
+  'Purchase Return':  ['Details', 'Discount', 'Tax', 'Further Tax'],
   'Customer':  [],
   'Supplier':  [],
   'Inventory': []
@@ -235,6 +245,8 @@ const mapDocTypeToTemplateDocType = (docType: string): string[] => {
   if (docType === 'Sale Return') return ['Sales Return', 'Sale Return'];
   if (docType === 'Service Invoice') return ['Service Invoice'];
   if (docType === 'Digital Invoice') return ['Digital Invoice'];
+  if (docType === 'Purchase Invoice') return ['Purchase Invoice'];
+  if (docType === 'Purchase Return') return ['Purchase Return'];
   return [docType];
 };
 

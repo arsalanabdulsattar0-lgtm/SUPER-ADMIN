@@ -1,5 +1,10 @@
-import type { CustomerListItem } from '../pages/Customers/CustomerList';
-
+export interface CustomerListItem {
+  name: string;
+  email: string;
+  phone: string;
+  location: string;
+  totalInvoiced: string;
+}
 export const SALES_PERSONS = [
   { id: 's-arsalan', name: 'Arsalan Ahmed' },
   { id: 'sp-1', name: 'Ahmed Raza' },

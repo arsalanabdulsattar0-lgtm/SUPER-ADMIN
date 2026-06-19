@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useMemo } from 'react';
 import Card from '../../components/ui/Card';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { InvoiceData, InvoiceItem } from '../../types';
-import type { Invoice } from './InvoiceList';
+import type { Invoice } from '../../types';
 import {
   Plus,
   Trash2,
@@ -18,14 +18,13 @@ import {
 } from 'lucide-react';
 import { Input, TextArea, Select, ComboBox, ScrollArea } from '../../components/ui/FormControls';
 import { Button } from '../../components/ui/Button';
-import { sampleCustomers } from '../../utils/customerData';
+import { sampleSuppliers } from './PurchaseList';
 import { sampleProducts } from '../../utils/productData';
 import { ConfirmModal } from '../../components/ui/ConfirmModal';
 import { Toast } from '../../components/ui/Toast';
 import { AlertModal } from '../../components/ui/AlertModal';
 import { seedPrintTemplates } from '../../utils/settingsData';
 import { getCodeSettingsForBranch } from '../../utils/codeSettingsHelper';
-import type { BranchCodeSettings } from '../../utils/codeSettingsHelper';
 
 interface Props {
   data: InvoiceData;
@@ -39,10 +38,22 @@ interface Props {
 
 
 
-const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange, onPrint }) => {
+const PurchaseInvoiceEditor: React.FC<Props> = ({ data, onChange, onSave, onViewChange, onPrint }) => {
   const [selectedCustomerId, setSelectedCustomerId] = useState<string>('');
   const [lastAddedId, setLastAddedId] = useState<string | null>(null);
   const [tableSearchQuery, setTableSearchQuery] = useState<string>('');
+
+  const [suppliers] = useState<any[]>(() => {
+    try {
+      const stored = localStorage.getItem('customer_list');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        const filtered = parsed.filter((c: any) => c.bp_type === 'supplier');
+        if (filtered.length > 0) return filtered;
+      }
+    } catch {}
+    return sampleSuppliers;
+  });
 
   const departmentOptions = useMemo(() => {
     try {
@@ -76,22 +87,17 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
       const activeBr = sessionStorage.getItem('active_branch');
       const currentCoId = activeCo ? JSON.parse(activeCo).id : 'co1';
       const currentBrId = activeBr ? JSON.parse(activeBr).id : 'br-1';
-      
-      let key: keyof BranchCodeSettings = 'sale_invoice';
-      if (data.type === 'Service Invoice') key = 'service_invoice';
-      if (data.type === 'Digital Invoice') key = 'digital_invoice';
-      
-      return getCodeSettingsForBranch(currentCoId, currentBrId)[key];
+      return getCodeSettingsForBranch(currentCoId, currentBrId).purchase_invoice;
     } catch {
-      return { mode: 'auto' as const, prefix: 'INV-', nextNumber: 1, padding: 1 };
+      return { mode: 'auto' as const, prefix: 'PI-', nextNumber: 1, padding: 1 };
     }
-  }, [data.type]);
+  }, []);
 
   const docSettings = useMemo(() => {
     try {
       const stored = localStorage.getItem('document_view_settings');
       const allSettings = stored ? JSON.parse(stored) : {};
-      const currentType = data.type || 'Sale Invoice';
+      const currentType = data.type || 'Purchase Invoice';
       const settingsForType = allSettings[currentType] || {};
       
       const defaultFields = {
@@ -350,7 +356,7 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
     return () => clearTimeout(timer);
   }, [selectedTemplateForPdf, templates, data.invoiceNumber]);
 
-  const selectedCustomer = sampleCustomers.find(c => c.id === selectedCustomerId) || null;
+  const selectedCustomer = suppliers.find(c => c.id === selectedCustomerId) || null;
 
   const addItem = () => {
     // Prevent adding new item if there's an existing empty item
@@ -428,7 +434,7 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
       reference: '',
       productCode: '',
       remarks: '',
-      type: 'Sale Invoice',
+      type: 'Purchase Invoice',
       items: [],
       taxRate: 0,
       discountPercentage: 0,
@@ -519,7 +525,7 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
     const status = data.status || 'Unposted';
 
     return {
-      id: data.invoiceNumber || 'INV-' + Math.floor(1000 + Math.random() * 9000),
+      id: data.invoiceNumber || 'PI-' + Math.floor(1000 + Math.random() * 9000),
       customer: data.customerName || 'Unnamed Partner',
       customerInitials: initials,
       customerColor: randomColor,
@@ -529,7 +535,7 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
       rawAmount: netPayable,
       status,
       payment: 'Net 30',
-      type: data.type || 'Sale Invoice',
+      type: data.type || 'Purchase Invoice',
       fbrInvoiceNumber: status === 'Posted' ? (data.fbrInvoiceNumber || ('FBR-INV-' + (data.invoiceNumber || ''))) : ''
     };
   };
@@ -539,7 +545,7 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
   };
 
   const doClose = () => {
-    onViewChange?.('dashboard');
+    onViewChange?.('purchases');
   };
 
 
@@ -638,7 +644,7 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
           style={{ borderColor: '#E2E8F0' }}>
           <div className="space-y-1">
             <h1 className="text-2xl font-black tracking-tight flex items-center gap-4 text-brand-dark">
-              Sales Invoice
+              Purchase Invoice
               <span className="h-8 w-[1px] bg-brand-dark-20" />
               <div className="flex flex-col">
                 <span className="font-medium text-base opacity-40 leading-tight">#{data.invoiceNumber}</span>
@@ -807,10 +813,10 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
                     <div className="lg:col-span-5">
                       <ComboBox
                         variant="compact"
-                        label="Business Partner *"
-                        placeholder="Search Business Partner..."
+                        label="Supplier *"
+                        placeholder="Search Supplier..."
                         value={selectedCustomerId}
-                        options={sampleCustomers}
+                        options={suppliers}
                         minQueryLength={3}
                         error={errors.customer}
                         onChange={(id) => {
@@ -822,7 +828,7 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
                               return copy;
                             });
                           }
-                          const customer = sampleCustomers.find(c => c.id === id);
+                          const customer = suppliers.find(c => c.id === id);
                           if (customer) {
                             onChange({ ...data, customerName: customer.name, customerAddress: customer.fullAddress });
                           }
@@ -884,7 +890,7 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
                       <Input
                         variant="compact"
                         label="Invoice Type"
-                        value="Sale Invoice"
+                        value={data.type || 'Purchase Invoice'}
                         readOnly
                       />
                     </div>
@@ -1735,4 +1741,4 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
   );
 };
 
-export default InvoiceEditorV4;
+export default PurchaseInvoiceEditor;

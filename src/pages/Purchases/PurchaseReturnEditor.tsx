@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useMemo } from 'react';
 import Card from '../../components/ui/Card';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { InvoiceData, InvoiceItem } from '../../types';
-import type { Invoice } from './InvoiceList';
+import type { Invoice } from '../../types';
 import {
   Plus,
   Trash2,
@@ -18,14 +18,13 @@ import {
 } from 'lucide-react';
 import { Input, TextArea, Select, ComboBox, ScrollArea } from '../../components/ui/FormControls';
 import { Button } from '../../components/ui/Button';
-import { sampleCustomers } from '../../utils/customerData';
+import { sampleSuppliers } from './PurchaseList';
 import { sampleProducts } from '../../utils/productData';
 import { ConfirmModal } from '../../components/ui/ConfirmModal';
 import { Toast } from '../../components/ui/Toast';
 import { AlertModal } from '../../components/ui/AlertModal';
 import { seedPrintTemplates } from '../../utils/settingsData';
 import { getCodeSettingsForBranch } from '../../utils/codeSettingsHelper';
-import type { BranchCodeSettings } from '../../utils/codeSettingsHelper';
 
 interface Props {
   data: InvoiceData;
@@ -35,14 +34,22 @@ interface Props {
   onPrint?: (inv: Invoice, templateId?: string) => void;
 }
 
-
-
-
-
-const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange, onPrint }) => {
+const PurchaseReturnEditor: React.FC<Props> = ({ data, onChange, onSave, onViewChange, onPrint }) => {
   const [selectedCustomerId, setSelectedCustomerId] = useState<string>('');
   const [lastAddedId, setLastAddedId] = useState<string | null>(null);
   const [tableSearchQuery, setTableSearchQuery] = useState<string>('');
+
+  const [suppliers] = useState<any[]>(() => {
+    try {
+      const stored = localStorage.getItem('customer_list');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        const filtered = parsed.filter((c: any) => c.bp_type === 'supplier');
+        if (filtered.length > 0) return filtered;
+      }
+    } catch {}
+    return sampleSuppliers;
+  });
 
   const departmentOptions = useMemo(() => {
     try {
@@ -76,32 +83,27 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
       const activeBr = sessionStorage.getItem('active_branch');
       const currentCoId = activeCo ? JSON.parse(activeCo).id : 'co1';
       const currentBrId = activeBr ? JSON.parse(activeBr).id : 'br-1';
-      
-      let key: keyof BranchCodeSettings = 'sale_invoice';
-      if (data.type === 'Service Invoice') key = 'service_invoice';
-      if (data.type === 'Digital Invoice') key = 'digital_invoice';
-      
-      return getCodeSettingsForBranch(currentCoId, currentBrId)[key];
+      return getCodeSettingsForBranch(currentCoId, currentBrId).purchase_return;
     } catch {
-      return { mode: 'auto' as const, prefix: 'INV-', nextNumber: 1, padding: 1 };
+      return { mode: 'auto' as const, prefix: 'PRTN-', nextNumber: 1, padding: 1 };
     }
-  }, [data.type]);
+  }, []);
 
   const docSettings = useMemo(() => {
     try {
       const stored = localStorage.getItem('document_view_settings');
       const allSettings = stored ? JSON.parse(stored) : {};
-      const currentType = data.type || 'Sale Invoice';
+      const currentType = data.type || 'Purchase Return';
       const settingsForType = allSettings[currentType] || {};
       
       const defaultFields = {
         'Customer': true,
         'Issue Date': true,
-        'Invoice ID': true,
-        'Reference': true,
+        'Return Invoice No.': true,
+        'Reference Invoice': true,
         'Customer Address': true,
         'Due Date': true,
-        'Invoice Type': true,
+        'Return Reason': true,
         'Department': true,
         'Sales Person': true,
         'Notes & Special Terms': true,
@@ -116,7 +118,7 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
         'Description': true,
         'Unit': true,
         'Details': true,
-        'Qty': true,
+        'Returned Qty': true,
         'Price': true,
         'Discount': true,
         'Tax': true,
@@ -132,17 +134,17 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
       console.error('Failed to parse document settings', e);
       return {
         fields: {
-          'Customer': true, 'Issue Date': true, 'Invoice ID': true, 'Reference': true,
-          'Customer Address': true, 'Due Date': true, 'Invoice Type': true, 'Department': true, 'Sales Person': true,
+          'Customer': true, 'Issue Date': true, 'Return Invoice No.': true, 'Reference Invoice': true,
+          'Customer Address': true, 'Due Date': true, 'Return Reason': true, 'Department': true, 'Sales Person': true,
           'Notes & Special Terms': true, 'Document Attachments': true, 'Discount (%)': true, 'Shipping Charges': true, 'Round Off': true
         },
         columns: {
           'Product Code': true, 'Description': true, 'Unit': true, 'Details': true,
-          'Qty': true, 'Price': true, 'Discount': true, 'Tax': true, 'Further Tax': true, 'Total': true
+          'Returned Qty': true, 'Price': true, 'Discount': true, 'Tax': true, 'Further Tax': true, 'Total': true
         }
       };
     }
-  }, [data.type]);
+  }, []);
 
   const visibleColsCount = useMemo(() => {
     return [
@@ -151,7 +153,7 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
       docSettings.columns['Description'],
       docSettings.columns['Unit'],
       docSettings.columns['Details'],
-      docSettings.columns['Qty'],
+      docSettings.columns['Returned Qty'],
       docSettings.columns['Price'],
       docSettings.columns['Discount'],
       docSettings.columns['Tax'],
@@ -204,8 +206,6 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
     setFiles(prevFiles => prevFiles.filter((_, idx) => idx !== indexToRemove));
   };
 
-
-
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadSuccess, setUploadSuccess] = useState(false);
@@ -254,7 +254,6 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
     }
   });
 
-
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
@@ -279,7 +278,7 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
     const formatName = labelMap[formatKey];
     
     // Generate CSV content
-    const headers = ['Product Code', 'Description', 'Unit', 'Details', 'Qty', 'Price', 'Discount', 'Tax', 'Further Tax', 'Total'];
+    const headers = ['Product Code', 'Description', 'Unit', 'Details', 'Returned Qty', 'Price', 'Discount', 'Tax', 'Further Tax', 'Total'];
     const rows = data.items.map(item => [
       item.productCode,
       item.description,
@@ -299,7 +298,7 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.setAttribute("href", url);
-    link.setAttribute("download", `Invoice_${formatName}_${data.invoiceNumber || 'draft'}.csv`);
+    link.setAttribute("download", `Return_Invoice_${formatName}_${data.invoiceNumber || 'draft'}.csv`);
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
@@ -315,7 +314,7 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
         const activeT = templates.find(t => t.template_id === selectedTemplateForPdf) || templates[0];
         const opt = {
           margin: 0,
-          filename: `Invoice_${activeT.template_name.replace(/\s+/g, '_')}_${data.invoiceNumber || 'Draft'}.pdf`,
+          filename: `Return_Invoice_${activeT.template_name.replace(/\s+/g, '_')}_${data.invoiceNumber || 'Draft'}.pdf`,
           image: { type: 'jpeg', quality: 0.98 },
           html2canvas: { scale: 2, useCORS: true },
           jsPDF: { 
@@ -350,10 +349,9 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
     return () => clearTimeout(timer);
   }, [selectedTemplateForPdf, templates, data.invoiceNumber]);
 
-  const selectedCustomer = sampleCustomers.find(c => c.id === selectedCustomerId) || null;
+  const selectedCustomer = suppliers.find(c => c.id === selectedCustomerId) || null;
 
   const addItem = () => {
-    // Prevent adding new item if there's an existing empty item
     const hasEmptyItem = data.items.some(item => !item.productCode);
     if (hasEmptyItem) {
       setAlertModal({ isOpen: true, message: 'Please fill in the current product details (Product Code) before adding a new row.' });
@@ -376,7 +374,6 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
     onChange({ ...data, items: [...data.items, newItem] });
     setLastAddedId(id);
 
-    // Auto-scroll to bottom after state update
     setTimeout(() => {
       if (scrollContainerRef.current) {
         scrollContainerRef.current.scrollTo({
@@ -400,15 +397,10 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
 
   const fmt = (n: number) => n.toLocaleString(undefined, { minimumFractionDigits: 2 });
 
-
-
-
   const filteredItems = data.items.filter(item =>
     item.productCode.toLowerCase().includes(tableSearchQuery.toLowerCase()) ||
     item.description.toLowerCase().includes(tableSearchQuery.toLowerCase())
   );
-
-
 
   // ── Action Handlers ──
   const handleNewInvoice = () => {
@@ -417,27 +409,27 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
 
   const doNewInvoice = () => {
     onChange({
-      invoiceNumber: 'INV-' + Math.floor(Math.random() * 100000).toString().padStart(5, '0'),
+      invoiceNumber: 'RTN-' + Math.floor(Math.random() * 100000).toString().padStart(5, '0'),
       date: new Date().toISOString().split('T')[0],
       dueDate: new Date().toISOString().split('T')[0],
-      senderName: '',
-      senderAddress: '',
+      senderName: 'Antigravity Creative Studio',
+      senderAddress: '452 Innovation Blvd, San Francisco, CA 94107\ncontact@antigravity.studio | +1 (555) 012-3456',
       customerName: '',
       customerAddress: '',
-      subject: '',
+      subject: 'Returned Items',
       reference: '',
       productCode: '',
-      remarks: '',
-      type: 'Sale Invoice',
+      remarks: '', // Return Reason
+      type: 'Purchase Return',
       items: [],
-      taxRate: 0,
+      taxRate: 8,
       discountPercentage: 0,
       discountAmount: 0,
       shippingCharges: 0,
       roundOff: 0,
       receivedAmount: 0,
-      bankAccount: '',
-      notes: '',
+      bankAccount: 'chase',
+      notes: 'Return invoice details.',
       salesPerson: '',
       department: ''
     });
@@ -495,12 +487,13 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
     }
 
     if (onSave) {
-      onSave(data);
+      // Force 'Purchase Return' type on save
+      onSave({ ...data, type: 'Purchase Return' });
     } else {
       setAlertModal({
         isOpen: true,
-        title: 'Invoice Saved',
-        message: 'Invoice ' + data.invoiceNumber + ' has been saved successfully!',
+        title: 'Purchase Return Saved',
+        message: 'Purchase Return ' + data.invoiceNumber + ' has been saved successfully!',
         variant: 'info'
       });
     }
@@ -512,14 +505,14 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
     const discountVal = data.discountAmount || (subtotal * data.discountPercentage) / 100;
     const netPayable = subtotal + taxAmount - discountVal + data.shippingCharges + data.roundOff;
 
-    const initials = data.customerName ? data.customerName.split(' ').map(x => x[0]).join('').toUpperCase().slice(0, 2) : 'IV';
+    const initials = data.customerName ? data.customerName.split(' ').map(x => x[0]).join('').toUpperCase().slice(0, 2) : 'RT';
     const colors = ['#2759CD', '#10B981', '#F59E0B', '#8B5CF6', '#EE4932', '#0EA5E9', '#EC4899', '#14B8A6'];
     const randomColor = colors[Math.floor(Math.random() * colors.length)];
 
     const status = data.status || 'Unposted';
 
     return {
-      id: data.invoiceNumber || 'INV-' + Math.floor(1000 + Math.random() * 9000),
+      id: data.invoiceNumber || 'RTN-' + Math.floor(1000 + Math.random() * 9000),
       customer: data.customerName || 'Unnamed Partner',
       customerInitials: initials,
       customerColor: randomColor,
@@ -528,8 +521,8 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
       amount: `Rs. ${netPayable.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
       rawAmount: netPayable,
       status,
+      type: 'Purchase Return',
       payment: 'Net 30',
-      type: data.type || 'Sale Invoice',
       fbrInvoiceNumber: status === 'Posted' ? (data.fbrInvoiceNumber || ('FBR-INV-' + (data.invoiceNumber || ''))) : ''
     };
   };
@@ -539,11 +532,10 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
   };
 
   const doClose = () => {
-    onViewChange?.('dashboard');
+    onViewChange?.('purchases');
   };
 
 
-  // Section header helper
   const SectionHeader = ({ title, badge, className = "", icon: Icon }: { title: string; badge?: string; className?: string; icon?: any }) => (
     <div className={`px-4 py-2.5 flex items-center justify-between text-white bg-brand-primary ${className}`}>
       <div className="flex items-center gap-2">
@@ -559,22 +551,13 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
   );
 
   const getActiveDefaultTemplate = () => {
-    const normType = data.type === 'Sale Return' ? 'Sales Return' : 'Sales Invoice';
+    const normType = (data.type === 'Sale Return' || data.type === 'Purchase Return') ? 'Sales Return' : 'Sales Invoice';
     return templates.find(t => t.is_default && t.is_active && t.document_type === normType) ||
            templates.find(t => t.is_active && t.document_type === normType) ||
            templates[0];
   };
 
-  const getFormatFromTemplateId = (templateId: string) => {
-    if (templateId.includes('-1')) return 'retail';
-    if (templateId.includes('-2')) return 'wologo';
-    if (templateId.includes('-3')) return 'delivery';
-    if (templateId.includes('-4')) return 'tax';
-    return 'retail';
-  };
-
   const activeT = getActiveDefaultTemplate();
-  const activeFormat = activeT ? getFormatFromTemplateId(activeT.template_id) : 'retail';
 
   const activePdfT = selectedTemplateForPdf 
     ? (templates.find(t => t.template_id === selectedTemplateForPdf) || templates[0]) 
@@ -615,7 +598,6 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
         .max-w-7xl {
           max-width: 100% !important;
         }
-        /* Make inputs look like flat text */
         input, textarea, select {
           border: none !important;
           background: transparent !important;
@@ -624,7 +606,6 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
           appearance: none !important;
           color: black !important;
         }
-        /* Hide buttons or interactive elements */
         button, .btn {
           display: none !important;
         }
@@ -638,7 +619,7 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
           style={{ borderColor: '#E2E8F0' }}>
           <div className="space-y-1">
             <h1 className="text-2xl font-black tracking-tight flex items-center gap-4 text-brand-dark">
-              Sales Invoice
+              Purchase Return
               <span className="h-8 w-[1px] bg-brand-dark-20" />
               <div className="flex flex-col">
                 <span className="font-medium text-base opacity-40 leading-tight">#{data.invoiceNumber}</span>
@@ -646,7 +627,6 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
             </h1>
 
             <div className="flex items-center gap-2 flex-wrap">
-              {/* Static Status Label remains on the left */}
               <div className="flex items-center gap-2 rounded-xl border px-3 py-1 bg-slate-50 border-slate-200">
                 <div className="w-1.5 h-1.5 rounded-full bg-slate-400" />
                 <span className="text-[10px] font-bold text-slate-500">Unposted</span>
@@ -662,7 +642,7 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
               className="bg-emerald-500 hover:bg-emerald-600 border-none shadow-sm"
               size="md"
             >
-              New Invoice
+              New Return
             </Button>
 
             <Button
@@ -671,17 +651,13 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
               onClick={handleSave}
               size="md"
             >
-              Save
+              Save Return
             </Button>
 
             {/* Multi-Split Print & Export Buttons */}
             {(() => {
-              const isReturn = data.type === 'Sale Return';
               const splitButtonsConfig = [
-                { id: 'default', label: 'Print', templateId: activeT?.template_id || (isReturn ? 'srt-1' : 'si-1'), formatKey: activeFormat, isAvailable: !!activeT },
-                { id: 'retail', label: 'Retail Print', templateId: isReturn ? 'srt-1' : 'si-1', formatKey: 'retail', isAvailable: templates.find(t => t.template_id === (isReturn ? 'srt-1' : 'si-1'))?.is_active },
-                { id: 'delivery', label: 'Delivery', templateId: isReturn ? 'srt-3' : 'si-3', formatKey: 'delivery', isAvailable: templates.find(t => t.template_id === (isReturn ? 'srt-3' : 'si-3'))?.is_active },
-                { id: 'tax', label: 'Tax Invoice', templateId: isReturn ? 'srt-4' : 'si-4', formatKey: 'tax', isAvailable: templates.find(t => t.template_id === (isReturn ? 'srt-4' : 'si-4'))?.is_active }
+                { id: 'default', label: 'Print', templateId: 'srt-1', formatKey: 'retail', isAvailable: !!activeT }
               ];
 
               return splitButtonsConfig
@@ -799,7 +775,7 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
 
             {/* Left Column: General Information */}
             <Card className="flex-1 relative z-40 p-0" style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}>
-              <SectionHeader title="General Information" badge="Identity Layer" className="rounded-t-xl" icon={FileText} />
+              <SectionHeader title="General Information" badge="Return Details" className="rounded-t-xl" icon={FileText} />
               <div className="p-4 space-y-3">
                 {/* Row 1 */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-3">
@@ -807,10 +783,10 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
                     <div className="lg:col-span-5">
                       <ComboBox
                         variant="compact"
-                        label="Business Partner *"
-                        placeholder="Search Business Partner..."
+                        label="Supplier *"
+                        placeholder="Search Supplier..."
                         value={selectedCustomerId}
-                        options={sampleCustomers}
+                        options={suppliers}
                         minQueryLength={3}
                         error={errors.customer}
                         onChange={(id) => {
@@ -822,7 +798,7 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
                               return copy;
                             });
                           }
-                          const customer = sampleCustomers.find(c => c.id === id);
+                          const customer = suppliers.find(c => c.id === id);
                           if (customer) {
                             onChange({ ...data, customerName: customer.name, customerAddress: customer.fullAddress });
                           }
@@ -836,9 +812,9 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
                         onChange={(e) => onChange({ ...data, date: e.target.value })} />
                     </div>
                   )}
-                  {docSettings.fields['Invoice ID'] && (
+                  {docSettings.fields['Return Invoice No.'] && (
                     <div className="lg:col-span-2">
-                      <Input variant="compact" label="Invoice ID" className="font-mono text-brand-primary"
+                      <Input variant="compact" label="Return Invoice No." className="font-mono text-brand-primary"
                         value={data.invoiceNumber} onChange={(e) => {
                           const val = e.target.value;
                           onChange({ 
@@ -858,9 +834,9 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
                       />
                     </div>
                   )}
-                  {docSettings.fields['Reference'] && (
+                  {docSettings.fields['Reference Invoice'] && (
                     <div className="lg:col-span-2">
-                      <Input variant="compact" label="Reference" placeholder="PO-2026-004" value={data.reference}
+                      <Input variant="compact" label="Purchase Ref" placeholder="e.g. INV-000248" value={data.reference}
                         onChange={(e) => onChange({ ...data, reference: e.target.value })} />
                     </div>
                   )}
@@ -871,22 +847,6 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
                   {docSettings.fields['Customer Address'] && (
                     <div className="lg:col-span-5">
                       <Input variant="compact" label="Partner Address" placeholder="Street, city, country..." value={data.customerAddress || ''} readOnly />
-                    </div>
-                  )}
-                  {docSettings.fields['Due Date'] && (
-                    <div className="lg:col-span-2">
-                      <Input variant="compact" label="Due Date" type="date" value={data.dueDate}
-                        onChange={(e) => onChange({ ...data, dueDate: e.target.value })} />
-                    </div>
-                  )}
-                  {docSettings.fields['Invoice Type'] && (
-                    <div className="lg:col-span-2">
-                      <Input
-                        variant="compact"
-                        label="Invoice Type"
-                        value="Sale Invoice"
-                        readOnly
-                      />
                     </div>
                   )}
                   {docSettings.fields['Department'] && (
@@ -900,11 +860,7 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
                       />
                     </div>
                   )}
-                </div>
-
-                {/* Row 3 – Sales Person */}
-                {docSettings.fields['Sales Person'] && (
-                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 mt-3">
+                  {docSettings.fields['Sales Person'] && (
                     <div className="lg:col-span-2">
                       <Select
                         variant="compact"
@@ -921,8 +877,8 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
                         ]}
                       />
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             </Card>
 
@@ -938,7 +894,6 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
                   className="w-[240px] shrink-0 bg-white rounded-xl border overflow-hidden"
                   style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}
                 >
-                  {/* Header */}
                   <div className="px-3 py-2.5 flex items-center justify-between bg-brand-primary">
                     <span className="text-[11px] font-black text-white tracking-wide flex items-center gap-1.5">
                       <User className="w-3.5 h-3.5 text-white" /> Partner Profile
@@ -949,7 +904,6 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
                       }`}>{selectedCustomer.status}</div>
                   </div>
 
-                  {/* Body */}
                   <div className="p-4 space-y-3 bg-gradient-to-b from-[#EFF5FC]/60 to-white">
                     {[
                       { label: 'NTN', value: selectedCustomer.ntn },
@@ -1076,9 +1030,9 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
                       <th className="px-3 py-2.5 text-left w-10 whitespace-nowrap border-b border-[#E2E8F0]">#</th>
                       {docSettings.columns['Product Code'] && <th className="px-3 py-2.5 text-left w-36 whitespace-nowrap border-b border-[#E2E8F0]">Product Code</th>}
                       {docSettings.columns['Description'] && <th className={`px-3 py-2.5 text-left border-b border-[#E2E8F0] ${descriptionWidth} whitespace-nowrap`}>Description</th>}
-                      {docSettings.columns['Unit'] && <th className={`px-3 py-2.5 text-left ${unitWidth} border-b border-[#E2E8F0] whitespace-nowrap`}>Unit</th>}
+                      {docSettings.columns['Unit'] && <th className={`px-3 py-2.5 text-left ${unitWidth || 'w-16'} border-b border-[#E2E8F0] whitespace-nowrap`}>Unit</th>}
                       {docSettings.columns['Details'] && <th className={`px-3 py-2.5 text-left ${detailsWidth} border-b border-[#E2E8F0] whitespace-nowrap`}>Details</th>}
-                      {docSettings.columns['Qty'] && <th className={`px-3 py-2.5 text-left ${qtyWidth} border-b border-[#E2E8F0] whitespace-nowrap`}>Qty</th>}
+                      {docSettings.columns['Returned Qty'] && <th className={`px-3 py-2.5 text-left ${qtyWidth} border-b border-[#E2E8F0] whitespace-nowrap`}>Returned Qty</th>}
                       {docSettings.columns['Price'] && <th className={`px-3 py-2.5 text-left ${priceWidth} border-b border-[#E2E8F0] whitespace-nowrap`}>Price (Rs.)</th>}
                       {docSettings.columns['Discount'] && <th className={`px-3 py-2.5 text-left ${discountWidth} border-b border-[#E2E8F0] whitespace-nowrap`}>Discount (Rs.)</th>}
                       {docSettings.columns['Tax'] && <th className={`px-3 py-2.5 text-left ${taxWidth} border-b border-[#E2E8F0] whitespace-nowrap`}>Tax (Rs.)</th>}
@@ -1091,12 +1045,12 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
                     <AnimatePresence mode="popLayout">
                       {filteredItems.map((item, idx) => (
                         <motion.tr
-                          key={item.id}
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, scale: 0.98 }}
-                          layout
-                          className="group hover:bg-slate-50/60 transition-colors border-b border-[#E2E8F0] last:border-0"
+                           key={item.id}
+                           initial={{ opacity: 0, y: 10 }}
+                           animate={{ opacity: 1, y: 0 }}
+                           exit={{ opacity: 0, scale: 0.98 }}
+                           layout
+                           className="group hover:bg-slate-50/60 transition-colors border-b border-[#E2E8F0] last:border-0"
                         >
                           <td className="px-3 py-3 text-[10px] font-medium text-black transition-colors text-center">{idx + 1}</td>
                           {docSettings.columns['Product Code'] && (
@@ -1165,7 +1119,7 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
                               />
                             </td>
                           )}
-                          {docSettings.columns['Qty'] && (
+                          {docSettings.columns['Returned Qty'] && (
                             <td className="px-2 py-3">
                               <Input
                                 type="number"
@@ -1273,14 +1227,13 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
                         {summaryColSpan > 0 && (
                           <td colSpan={summaryColSpan} className="px-4 py-3 text-[10px] text-black tracking-widest text-right pr-10 font-bold">Total Summary</td>
                         )}
-                        {docSettings.columns['Qty'] && (
+                        {docSettings.columns['Returned Qty'] && (
                           <td className="px-2 py-3 text-center text-[12px] text-black font-bold">
                             {data.items.reduce((sum, i) => sum + i.quantity, 0)}
                           </td>
                         )}
                         {docSettings.columns['Price'] && (
                           <td className="px-2 py-3 text-right text-[12px] text-black font-bold">
-                            {/* Price total removed as requested */}
                           </td>
                         )}
                         {docSettings.columns['Discount'] && (
@@ -1337,7 +1290,6 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
                 {/* Attachments */}
                 {docSettings.fields['Document Attachments'] && (
                   <Card className="overflow-hidden flex flex-col h-full p-0" style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}>
-
                     <input
                       type="file"
                       ref={fileInputRef}
@@ -1378,7 +1330,6 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
                         </span>
                       </div>
                       <div className="w-full flex-1">
-                        {/* Upload Zone */}
                         <div
                           className={`border border-dashed rounded-[12px] bg-white relative h-[80px] transition-colors flex flex-col ${files.length === 0 ? 'items-center justify-center py-2' : 'items-stretch justify-start p-1'
                             }`}
@@ -1437,12 +1388,8 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
                             </div>
                           )}
                         </div>
-
-                        {/* Right Side: Spacer or extra space if needed */}
-                        <div className="hidden md:block" />
                       </div>
 
-                      {/* Compact Buttons */}
                       <div className="flex justify-end gap-2 pt-0.5 border-t border-slate-50">
                         <Button variant="primary"
                           size="md"
@@ -1462,7 +1409,6 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
             {/* Right: Financial Matrix */}
             <div className="lg:col-span-4 flex flex-col h-full">
               <Card className="overflow-hidden flex flex-col h-full p-0" style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}>
-
                 <div className="p-3 flex-1 flex flex-col gap-2">
                   {/* Discount Section */}
                   {docSettings.fields['Discount (%)'] && (
@@ -1616,18 +1562,16 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
           </div>
           <div className="printable-header-right">
             <h2 className="printable-invoice-label">
-              {activePdfT?.template_id?.includes('-4') ? 'TAX INVOICE' : 'INVOICE'}
+              {activePdfT?.template_id?.includes('-4') ? 'SALE RETURN TAX INVOICE' : 'SALE RETURN INVOICE'}
             </h2>
             <p className="printable-invoice-id">#{data.invoiceNumber}</p>
             <div className="printable-invoice-dates">
               <div><strong>Issue Date:</strong> {data.date}</div>
-              <div><strong>Due Date:</strong> {data.dueDate}</div>
               <div><strong>Status:</strong> Unposted</div>
             </div>
           </div>
         </div>
 
-        {/* Billing Details Block */}
         <div className="printable-billing-grid">
           <div>
             <h3 className="printable-billing-section-title">From</h3>
@@ -1645,12 +1589,10 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
           </div>
         </div>
 
-        {/* Line Items Table */}
-        {/* Line Items Table */}
         <table className="printable-items-table">
           <thead>
             <tr className="printable-table-head-row">
-              {['Code', 'Description', 'Unit', 'Qty', 'Rate (Rs.)', 'Tax (Rs.)', 'Discount (Rs.)', 'Total (Rs.)'].map(h => (
+              {['Code', 'Description', 'Unit', 'Returned Qty', 'Rate (Rs.)', 'Tax (Rs.)', 'Discount (Rs.)', 'Total (Rs.)'].map(h => (
                 <th key={h} style={{ textAlign: (h === 'Description' || h === 'Code') ? 'left' : 'right' }} className="p-3 text-[9px] font-bold tracking-widest text-[#64748b] whitespace-nowrap">{h}</th>
               ))}
             </tr>
@@ -1674,7 +1616,6 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
           </tbody>
         </table>
 
-        {/* Totals */}
         <div className="printable-totals-wrapper">
           <div className="printable-totals-container">
             <div className="printable-totals-row">
@@ -1705,9 +1646,9 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
       isOpen={confirmModal.isOpen && confirmModal.type === 'new'}
       onClose={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
       onConfirm={doNewInvoice}
-      title="Create New Invoice?"
-      message="Are you sure you want to start a new invoice? All unsaved changes on the current invoice will be lost."
-      confirmLabel="Yes, New Invoice"
+      title="Create New Return Invoice?"
+      message="Are you sure you want to start a new return invoice? All unsaved changes on the current return invoice will be lost."
+      confirmLabel="Yes, New Return Invoice"
       variant="warning"
     />
     <ConfirmModal
@@ -1715,11 +1656,11 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
       onClose={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
       onConfirm={doClose}
       title="Discard Changes?"
-      message="Are you sure you want to close the editor? All unsaved changes will be discarded and you will be returned to the dashboard."
+      message="Are you sure you want to close the editor? All unsaved changes will be discarded and you will be returned to the invoices list."
       confirmLabel="Yes, Discard"
       variant="warning"
     />
-     <AlertModal
+    <AlertModal
       isOpen={alertModal.isOpen}
       onClose={() => setAlertModal(prev => ({ ...prev, isOpen: false }))}
       title={alertModal.title || "Required Fields Missing"}
@@ -1735,4 +1676,4 @@ const InvoiceEditorV4: React.FC<Props> = ({ data, onChange, onSave, onViewChange
   );
 };
 
-export default InvoiceEditorV4;
+export default PurchaseReturnEditor;

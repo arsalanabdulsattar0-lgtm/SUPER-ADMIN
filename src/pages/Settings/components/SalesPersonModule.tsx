@@ -601,6 +601,7 @@ export const SalesPersonModule: React.FC<SalesPersonModuleProps> = ({ brand }) =
                     type="date"
                     value={form.createdDate}
                     onChange={e => setForm({ ...form, createdDate: e.target.value })}
+                    readOnly={!!editing}
                   />
                 </div>
                 <div className="flex items-center gap-3 pt-4">

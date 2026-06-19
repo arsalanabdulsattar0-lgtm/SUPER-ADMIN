@@ -199,7 +199,8 @@ const InlineProductForm: React.FC<Props> = ({ isOpen, onClose, initialData }) =>
     sales_return_account: '',
     expense_cogs_account: '',
     purchase_discount_account: '',
-    stock_account: ''
+    stock_account: '',
+    expiry_date: ''
   });
 
   // Reset or populate form when it opens
@@ -261,7 +262,8 @@ const InlineProductForm: React.FC<Props> = ({ isOpen, onClose, initialData }) =>
         sales_return_account: initialData?.sales_return_account || '',
         expense_cogs_account: initialData?.expense_cogs_account || '',
         purchase_discount_account: initialData?.purchase_discount_account || '',
-        stock_account: initialData?.stock_account || ''
+        stock_account: initialData?.stock_account || '',
+        expiry_date: initialData?.expiry_date || ''
       });
     }
   }, [isOpen, initialData]);
@@ -321,7 +323,8 @@ const InlineProductForm: React.FC<Props> = ({ isOpen, onClose, initialData }) =>
         sales_return_account: formData.sales_return_account || '',
         expense_cogs_account: formData.expense_cogs_account || '',
         purchase_discount_account: formData.purchase_discount_account || '',
-        stock_account: formData.stock_account || ''
+        stock_account: formData.stock_account || '',
+        expiry_date: formData.expiry_date || ''
       };
 
       if (initialData?.id) {
@@ -569,6 +572,13 @@ const InlineProductForm: React.FC<Props> = ({ isOpen, onClose, initialData }) =>
                         )}
                         <Input variant="compact" label="MRP ex tax" type="number" value={formData.mrp_ex_tax || ''} onChange={(e) => setFormData({ ...formData, mrp_ex_tax: parseFloat(e.target.value) || 0 })} placeholder="0.00" />
                         <Input variant="compact" label="MRP inc tax" type="number" value={formData.mrp_inc_tax || ''} onChange={(e) => setFormData({ ...formData, mrp_inc_tax: parseFloat(e.target.value) || 0 })} placeholder="0.00" />
+                        <Input
+                          variant="compact"
+                          label="Expiry Date"
+                          type="date"
+                          value={formData.expiry_date || ''}
+                          onChange={(e) => setFormData({ ...formData, expiry_date: e.target.value })}
+                        />
                       </div>
                     </Card>
                   </div>

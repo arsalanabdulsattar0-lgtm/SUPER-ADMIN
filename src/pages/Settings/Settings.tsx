@@ -183,7 +183,7 @@ const Settings: React.FC = () => {
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: -30 }}
                       transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-                      className="p-6 pb-6 flex-1 overflow-y-auto"
+                      className="p-6 pb-6 flex-1 flex flex-col overflow-hidden settings-module-container"
                       style={{ minHeight: 0 }}
                     >
                       {renderModule(activeSection)}

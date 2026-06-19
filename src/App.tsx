@@ -13,11 +13,15 @@ import Dashboard2 from './pages/Invoices/Dashboard/Dashboard2';
 import InvoiceEditorV4 from './pages/Invoices/SaleInvoiceEditor';
 import ReturnInvoiceEditor from './pages/Invoices/ReturnInvoiceEditor';
 import InvoiceListModule from './pages/Invoices/InvoiceList';
+import PurchaseList from './pages/Purchases/PurchaseList';
+import PurchaseInvoiceEditor from './pages/Purchases/PurchaseInvoiceEditor';
+import PurchaseReturnEditor from './pages/Purchases/PurchaseReturnEditor';
 import CustomerManagement from './pages/Customers/CustomerManagement';
 import Settings from './pages/Settings/Settings';
 import Help from './pages/Help/Help';
 import Login from './pages/Auth/Login';
 import ProductList from './pages/Products/ProductList';
+import WarehousesPage from './pages/Products/Warehouses';
 import InlineProductForm from './components/ui/InlineProductForm';
 import { AlertModal } from './components/ui/AlertModal';
 
@@ -61,7 +65,42 @@ const parseCustomCss = (cssString?: string): React.CSSProperties => {
   return styles;
 };
 
-type View = 'dashboard' | 'dashboard1' | 'dashboard2' | 'invoices' | 'add-invoice' | 'add-invoice-v2' | 'add-invoice-v3' | 'add-invoice-v4' | 'return-invoice' | 'customers' | 'products' | 'settings' | 'help';
+type View = 'dashboard' | 'dashboard1' | 'dashboard2' | 'invoices' | 'add-invoice' | 'add-invoice-v2' | 'add-invoice-v3' | 'add-invoice-v4' | 'return-invoice' | 'customers' | 'add-customer' | 'products' | 'warehouses' | 'settings' | 'help' | 'purchases' | 'add-purchase-invoice' | 'purchase-return';
+
+const initialPurchases: Invoice[] = [
+  {
+    id: 'PI-00001',
+    customer: 'Al-Farooq Traders',
+    customerInitials: 'AF',
+    customerColor: '#10B981',
+    issueDate: '2026-06-10',
+    dueDate: '2026-06-24',
+    amount: 'Rs. 45,000.00',
+    rawAmount: 45000,
+    status: 'Posted',
+    payment: 'Net 30',
+    type: 'Purchase Invoice',
+    companyId: 'co1',
+    branchId: 'br-1',
+    fbrInvoiceNumber: 'FBR-PI-00001'
+  },
+  {
+    id: 'PRTN-00002',
+    customer: 'Zeeshan Distributors',
+    customerInitials: 'ZD',
+    customerColor: '#F59E0B',
+    issueDate: '2026-06-15',
+    dueDate: '2026-06-15',
+    amount: 'Rs. 12,000.00',
+    rawAmount: 12000,
+    status: 'Unposted',
+    payment: 'Cash',
+    type: 'Purchase Return',
+    companyId: 'co1',
+    branchId: 'br-1',
+    fbrInvoiceNumber: ''
+  }
+];
 
 function App() {
   const { brand } = useTheme();
@@ -238,6 +277,10 @@ function App() {
           }
         }
 
+        const fbrInvoiceNumber = mappedStatus === 'Posted'
+          ? (inv.fbrInvoiceNumber || ('FBR-INV-' + inv.id))
+          : '';
+
         return {
           ...inv,
           status: mappedStatus,
@@ -247,6 +290,7 @@ function App() {
           customer: inv.customer || inv.client || 'Unknown Customer',
           customerInitials: inv.customerInitials || inv.clientInitials || (inv.customer || inv.client || 'UC').slice(0, 2).toUpperCase(),
           customerColor: inv.customerColor || inv.clientColor || '#16a34a',
+          fbrInvoiceNumber,
         };
       };
 
@@ -350,6 +394,8 @@ function App() {
       productCode: '',
       remarks: '',
       type: type as any,
+      fbrInvoiceNumber: '',
+      status: 'Unposted',
     };
   };
 
@@ -416,6 +462,24 @@ function App() {
     department: ''
   });
 
+  const [purchaseList, setPurchaseList] = useState<Invoice[]>(() => {
+    try {
+      const stored = localStorage.getItem('purchase_list');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed && parsed.length > 0) return parsed;
+      }
+    } catch {}
+    return initialPurchases;
+  });
+
+  const [purchase, setPurchase] = useState<InvoiceData>(() => emptyInvoiceData('Purchase Invoice', 'PI-00001'));
+  const [purchaseReturn, setPurchaseReturn] = useState<InvoiceData>(() => emptyInvoiceData('Purchase Return', 'PRTN-00001'));
+
+  useEffect(() => {
+    try { localStorage.setItem('purchase_list', JSON.stringify(purchaseList)); } catch { /* ignore */ }
+  }, [purchaseList]);
+
   // Save default invoice data to localStorage if not present
   useEffect(() => {
     try {
@@ -479,6 +543,13 @@ function App() {
       return inv.companyId === activeCompany.id && inv.branchId === activeBranch.id;
     });
   }, [invoiceList, activeCompany, activeBranch]);
+
+  const filteredPurchaseList = useMemo(() => {
+    if (!activeCompany || !activeBranch) return [];
+    return purchaseList.filter((inv: any) => {
+      return inv.companyId === activeCompany.id && inv.branchId === activeBranch.id;
+    });
+  }, [purchaseList, activeCompany, activeBranch]);
 
   if (!isLoggedIn) {
     return (
@@ -780,6 +851,9 @@ function App() {
     const colors = ['#2759CD', '#10B981', '#F59E0B', '#8B5CF6', '#EE4932', '#0EA5E9', '#EC4899', '#14B8A6'];
     const randomColor = colors[Math.floor(Math.random() * colors.length)];
 
+    const existingInv = invoiceList.find(x => x.id === data.invoiceNumber);
+    const status = existingInv ? existingInv.status : 'Unposted';
+
     const updatedInvoice: Invoice = {
       id: data.invoiceNumber || 'INV-' + Math.floor(1000 + Math.random() * 9000),
       customer: data.customerName || 'Unnamed Customer',
@@ -789,15 +863,16 @@ function App() {
       dueDate: data.dueDate || new Date().toISOString().split('T')[0],
       amount: `Rs. ${netPayable.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
       rawAmount: netPayable,
-      status: 'Unposted',
+      status,
       payment: 'Net 30',
       type: data.type || 'Sale Invoice',
       companyId: activeCompany?.id || 'co1',
-      branchId: activeBranch?.id || 'br-1'
+      branchId: activeBranch?.id || 'br-1',
+      fbrInvoiceNumber: status === 'Posted' ? (data.fbrInvoiceNumber || ('FBR-INV-' + (data.invoiceNumber || ''))) : ''
     };
 
     try {
-      localStorage.setItem(`invoice_detail_${updatedInvoice.id}`, JSON.stringify(data));
+      localStorage.setItem(`invoice_detail_${updatedInvoice.id}`, JSON.stringify({ ...data, fbrInvoiceNumber: updatedInvoice.fbrInvoiceNumber, status: updatedInvoice.status }));
     } catch { /* ignore */ }
 
     setInvoiceList(prev => {
@@ -836,6 +911,9 @@ function App() {
     const colors = ['#2759CD', '#10B981', '#F59E0B', '#8B5CF6', '#EE4932', '#0EA5E9', '#EC4899', '#14B8A6'];
     const randomColor = colors[Math.floor(Math.random() * colors.length)];
 
+    const existingInv = invoiceList.find(x => x.id === data.invoiceNumber);
+    const status = existingInv ? existingInv.status : 'Unposted';
+
     const updatedInvoice: Invoice = {
       id: data.invoiceNumber || 'RTN-' + Math.floor(1000 + Math.random() * 9000),
       customer: data.customerName || 'Unnamed Customer',
@@ -845,15 +923,16 @@ function App() {
       dueDate: data.dueDate || new Date().toISOString().split('T')[0],
       amount: `Rs. ${netPayable.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
       rawAmount: netPayable,
-      status: 'Unposted',
+      status,
       payment: 'Net 30',
       type: 'Sale Return',
       companyId: activeCompany?.id || 'co1',
-      branchId: activeBranch?.id || 'br-1'
+      branchId: activeBranch?.id || 'br-1',
+      fbrInvoiceNumber: status === 'Posted' ? (data.fbrInvoiceNumber || ('FBR-INV-' + (data.invoiceNumber || ''))) : ''
     };
 
     try {
-      localStorage.setItem(`invoice_detail_${updatedInvoice.id}`, JSON.stringify(data));
+      localStorage.setItem(`invoice_detail_${updatedInvoice.id}`, JSON.stringify({ ...data, fbrInvoiceNumber: updatedInvoice.fbrInvoiceNumber, status: updatedInvoice.status }));
     } catch { /* ignore */ }
 
     setInvoiceList(prev => {
@@ -884,6 +963,9 @@ function App() {
       const stored = localStorage.getItem(`invoice_detail_${id}`);
       if (stored) {
         const parsed = JSON.parse(stored) as InvoiceData;
+        const inv = invoiceList.find(x => x.id === id);
+        parsed.status = parsed.status || inv?.status || 'Unposted';
+        parsed.fbrInvoiceNumber = parsed.status === 'Posted' ? (parsed.fbrInvoiceNumber || inv?.fbrInvoiceNumber || ('FBR-INV-' + id)) : '';
         if (parsed.type === 'Return') {
           setReturnInvoice(parsed);
           setActiveView('return-invoice');
@@ -930,7 +1012,9 @@ function App() {
             bankAccount: '',
             notes: inv.type === 'Return' ? 'Return invoice details.' : `Please include the invoice number ${inv.id} in your wire transfer reference.`,
             salesPerson: '',
-            department: ''
+            department: '',
+            fbrInvoiceNumber: inv.status === 'Posted' ? (inv.fbrInvoiceNumber || ('FBR-INV-' + inv.id)) : '',
+            status: inv.status
           };
           if (inv.type === 'Return') {
             setReturnInvoice(fallback);
@@ -945,6 +1029,196 @@ function App() {
       }
     } catch {
       alert('Failed to load invoice data!');
+    }
+  };
+
+  const handleSavePurchase = (data: InvoiceData) => {
+    const subtotal = data.items.reduce((sum, item) => sum + (item.quantity * item.price) - item.discount + item.tax + item.furtherTax, 0);
+    const taxAmount = (subtotal * data.taxRate) / 100;
+    const discountVal = data.discountAmount || (subtotal * data.discountPercentage) / 100;
+    const netPayable = subtotal + taxAmount - discountVal + data.shippingCharges + data.roundOff;
+
+    const initials = data.customerName ? data.customerName.split(' ').map(x => x[0]).join('').toUpperCase().slice(0, 2) : 'PR';
+    const colors = ['#2759CD', '#10B981', '#F59E0B', '#8B5CF6', '#EE4932', '#0EA5E9', '#EC4899', '#14B8A6'];
+    const randomColor = colors[Math.floor(Math.random() * colors.length)];
+
+    const existingInv = purchaseList.find(x => x.id === data.invoiceNumber);
+    const status = existingInv ? existingInv.status : 'Unposted';
+
+    const updatedPurchase: Invoice = {
+      id: data.invoiceNumber || 'PI-' + Math.floor(1000 + Math.random() * 9000),
+      customer: data.customerName || 'Unnamed Supplier',
+      customerInitials: initials,
+      customerColor: randomColor,
+      issueDate: data.date || new Date().toISOString().split('T')[0],
+      dueDate: data.dueDate || new Date().toISOString().split('T')[0],
+      amount: `Rs. ${netPayable.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+      rawAmount: netPayable,
+      status,
+      payment: 'Net 30',
+      type: data.type || 'Purchase Invoice',
+      companyId: activeCompany?.id || 'co1',
+      branchId: activeBranch?.id || 'br-1',
+      fbrInvoiceNumber: status === 'Posted' ? (data.fbrInvoiceNumber || ('FBR-PI-' + (data.invoiceNumber || ''))) : ''
+    };
+
+    try {
+      localStorage.setItem(`invoice_detail_${updatedPurchase.id}`, JSON.stringify({ ...data, fbrInvoiceNumber: updatedPurchase.fbrInvoiceNumber, status: updatedPurchase.status }));
+    } catch { /* ignore */ }
+
+    setPurchaseList(prev => {
+      const exists = prev.some(x => x.id === updatedPurchase.id);
+      if (exists) {
+        return prev.map(x => x.id === updatedPurchase.id ? updatedPurchase : x);
+      } else {
+        const companyId = activeCompany?.id || 'co1';
+        const branchId = activeBranch?.id || 'br-1';
+        let settingKey: keyof BranchCodeSettings = 'purchase_invoice';
+        const settings = getCodeSettingsForBranch(companyId, branchId)[settingKey];
+        if (settings.mode === 'auto' && data.invoiceNumber) {
+          incrementNextCode(settingKey, companyId, branchId);
+        }
+        return [updatedPurchase, ...prev];
+      }
+    });
+
+    setSuccessModal({
+      isOpen: true,
+      title: 'Purchase Invoice Saved',
+      message: `Purchase Invoice ${updatedPurchase.id} created & saved successfully!`,
+      onConfirm: () => setActiveView('purchases')
+    });
+  };
+
+  const handleSavePurchaseReturn = (data: InvoiceData) => {
+    const subtotal = data.items.reduce((sum, item) => sum + (item.quantity * item.price) - item.discount + item.tax + item.furtherTax, 0);
+    const taxAmount = (subtotal * data.taxRate) / 100;
+    const discountVal = data.discountAmount || (subtotal * data.discountPercentage) / 100;
+    const netPayable = subtotal + taxAmount - discountVal + data.shippingCharges + data.roundOff;
+
+    const initials = data.customerName ? data.customerName.split(' ').map(x => x[0]).join('').toUpperCase().slice(0, 2) : 'PR';
+    const colors = ['#2759CD', '#10B981', '#F59E0B', '#8B5CF6', '#EE4932', '#0EA5E9', '#EC4899', '#14B8A6'];
+    const randomColor = colors[Math.floor(Math.random() * colors.length)];
+
+    const existingInv = purchaseList.find(x => x.id === data.invoiceNumber);
+    const status = existingInv ? existingInv.status : 'Unposted';
+
+    const updatedPurchase: Invoice = {
+      id: data.invoiceNumber || 'PRTN-' + Math.floor(1000 + Math.random() * 9000),
+      customer: data.customerName || 'Unnamed Supplier',
+      customerInitials: initials,
+      customerColor: randomColor,
+      issueDate: data.date || new Date().toISOString().split('T')[0],
+      dueDate: data.dueDate || new Date().toISOString().split('T')[0],
+      amount: `Rs. ${netPayable.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+      rawAmount: netPayable,
+      status,
+      payment: 'Cash',
+      type: data.type || 'Purchase Return',
+      companyId: activeCompany?.id || 'co1',
+      branchId: activeBranch?.id || 'br-1',
+      fbrInvoiceNumber: status === 'Posted' ? (data.fbrInvoiceNumber || ('FBR-PRTN-' + (data.invoiceNumber || ''))) : ''
+    };
+
+    try {
+      localStorage.setItem(`invoice_detail_${updatedPurchase.id}`, JSON.stringify({ ...data, fbrInvoiceNumber: updatedPurchase.fbrInvoiceNumber, status: updatedPurchase.status }));
+    } catch { /* ignore */ }
+
+    setPurchaseList(prev => {
+      const exists = prev.some(x => x.id === updatedPurchase.id);
+      if (exists) {
+        return prev.map(x => x.id === updatedPurchase.id ? updatedPurchase : x);
+      } else {
+        const companyId = activeCompany?.id || 'co1';
+        const branchId = activeBranch?.id || 'br-1';
+        let settingKey: keyof BranchCodeSettings = 'purchase_return';
+        const settings = getCodeSettingsForBranch(companyId, branchId)[settingKey];
+        if (settings.mode === 'auto' && data.invoiceNumber) {
+          incrementNextCode(settingKey, companyId, branchId);
+        }
+        return [updatedPurchase, ...prev];
+      }
+    });
+
+    setSuccessModal({
+      isOpen: true,
+      title: 'Purchase Return Saved',
+      message: `Purchase Return ${updatedPurchase.id} created & saved successfully!`,
+      onConfirm: () => setActiveView('purchases')
+    });
+  };
+
+  const handleEditPurchase = (id: string) => {
+    try {
+      const stored = localStorage.getItem(`invoice_detail_${id}`);
+      if (stored) {
+        const parsed = JSON.parse(stored) as InvoiceData;
+        const inv = purchaseList.find(x => x.id === id);
+        parsed.status = parsed.status || inv?.status || 'Unposted';
+        parsed.fbrInvoiceNumber = parsed.status === 'Posted' ? (parsed.fbrInvoiceNumber || inv?.fbrInvoiceNumber || ('FBR-INV-' + id)) : '';
+        if (parsed.type === 'Purchase Return') {
+          setPurchaseReturn(parsed);
+          setActiveView('purchase-return');
+        } else {
+          setPurchase(parsed);
+          setActiveView('add-purchase-invoice');
+        }
+      } else {
+        const inv = purchaseList.find(i => i.id === id);
+        if (inv) {
+          const fallback: InvoiceData = {
+            invoiceNumber: inv.id,
+            date: inv.issueDate,
+            dueDate: inv.dueDate,
+            senderName: 'Antigravity Creative Studio',
+            senderAddress: '452 Innovation Blvd, San Francisco, CA 94107',
+            customerName: inv.customer,
+            customerAddress: 'Enterprise Supplier Account',
+            subject: inv.type === 'Purchase Return' ? 'Returned Items' : 'Goods Purchased',
+            reference: '',
+            productCode: '',
+            remarks: '',
+            type: inv.type || 'Purchase Invoice',
+            items: [
+              {
+                id: crypto.randomUUID(),
+                productCode: 'BC-001',
+                description: `${inv.type || 'Standard'} Goods & Supplies`,
+                unit: 'Item',
+                unitDetails: '',
+                quantity: 1,
+                price: inv.rawAmount || 0,
+                discount: 0,
+                tax: 0,
+                furtherTax: 0
+              }
+            ],
+            taxRate: 0,
+            discountPercentage: 0,
+            discountAmount: 0,
+            shippingCharges: 0,
+            roundOff: 0,
+            receivedAmount: 0,
+            bankAccount: '',
+            notes: inv.type === 'Purchase Return' ? 'Purchase return details.' : `Please include the purchase number ${inv.id} in payments.`,
+            salesPerson: '',
+            department: '',
+            fbrInvoiceNumber: inv.status === 'Posted' ? (inv.fbrInvoiceNumber || ('FBR-INV-' + inv.id)) : '',
+            status: inv.status
+          };
+          if (inv.type === 'Purchase Return') {
+            setPurchaseReturn(fallback);
+            setActiveView('purchase-return');
+          } else {
+            setPurchase(fallback);
+            setActiveView('add-purchase-invoice');
+          }
+        } else {
+          alert('Purchase not found!');
+        }
+      }
+    } catch {
+      alert('Failed to load purchase data!');
     }
   };
 
@@ -980,6 +1254,20 @@ function App() {
         : '';
       setReturnInvoice(emptyInvoiceData('Sale Return', nextId || 'RTN-' + Math.floor(1000 + Math.random() * 9000)));
       setActiveView('return-invoice');
+    } else if (v === 'add-purchase-invoice') {
+      const settings = getCodeSettingsForBranch(companyId, branchId).purchase_invoice;
+      const nextId = settings.mode === 'auto' 
+        ? generateNextCode('purchase_invoice', companyId, branchId)
+        : '';
+      setPurchase(emptyInvoiceData('Purchase Invoice', nextId || 'PI-' + Math.floor(1000 + Math.random() * 9000)));
+      setActiveView('add-purchase-invoice');
+    } else if (v === 'purchase-return') {
+      const settings = getCodeSettingsForBranch(companyId, branchId).purchase_return;
+      const nextId = settings.mode === 'auto' 
+        ? generateNextCode('purchase_return', companyId, branchId)
+        : '';
+      setPurchaseReturn(emptyInvoiceData('Purchase Return', nextId || 'PRTN-' + Math.floor(1000 + Math.random() * 9000)));
+      setActiveView('purchase-return');
     } else {
       setActiveView(v as View);
     }
@@ -1006,12 +1294,22 @@ function App() {
       case 'invoices':
         return <InvoiceListModule invoiceItems={filteredInvoiceList} setInvoiceItems={setInvoiceList} onViewChange={handleViewChange} onPrintInvoice={handlePrintInvoice} onEditInvoice={handleEditInvoice} />;
       case 'customers':
-        return <CustomerManagement />;
+        return <CustomerManagement onViewChange={handleViewChange} />;
+      case 'add-customer':
+        return <CustomerManagement initialOpenCreate={true} onViewChange={handleViewChange} />;
       case 'products':
         return <ProductList onAddProductClick={() => {
           setProductFormInitialData(undefined);
           setIsProductFormOpen(true);
         }} />;
+      case 'warehouses':
+        return <WarehousesPage />;
+      case 'purchases':
+        return <PurchaseList purchaseItems={filteredPurchaseList} setPurchaseItems={setPurchaseList} onViewChange={handleViewChange} onPrintPurchase={handlePrintInvoice} onEditPurchase={handleEditPurchase} />;
+      case 'add-purchase-invoice':
+        return <PurchaseInvoiceEditor data={purchase} onChange={setPurchase} onSave={handleSavePurchase} onViewChange={handleViewChange} onPrint={handlePrintInvoice} />;
+      case 'purchase-return':
+        return <PurchaseReturnEditor data={purchaseReturn} onChange={setPurchaseReturn} onSave={handleSavePurchaseReturn} onViewChange={handleViewChange} onPrint={handlePrintInvoice} />;
       case 'settings':
         return <Settings />;
       case 'help':
@@ -1507,7 +1805,7 @@ function App() {
               item.field_name === 'Sales Person' ? salesPersonName :
               item.field_name === 'Reference Number' ? (printInvoiceData as any)?.referenceNumber || '' :
               item.field_name === 'Warehouse' ? (printInvoiceData as any)?.warehouse || 'Main Warehouse' :
-              item.field_name === 'FBR Invoice Number' ? ((printInvoiceData as any)?.fbrInvoiceNumber || ('FBR-INV-' + (printInvoiceData?.id || '1092837'))) :
+              item.field_name === 'FBR Invoice Number' ? (printInvoiceData?.status === 'Posted' ? ((printInvoiceData as any)?.fbrInvoiceNumber || ('FBR-INV-' + (printInvoiceData?.id || '1092837'))) : '') :
               item.field_name === 'Payment Terms' ? (printInvoiceData?.payment || (printInvoiceFullData as any)?.paymentTerms || 'Net 30') :
               item.field_name === 'Prepared By' ? (printInvoiceFullData as any)?.preparedBy || 'Prepared By User' :
               item.field_name === 'Received By' ? (printInvoiceFullData as any)?.receivedBy || 'Received By Client' :
@@ -1923,7 +2221,7 @@ function App() {
                           f.field_name === 'Sales Person' ? salesPersonName :
                           f.field_name === 'Reference Number' ? (printInvoiceData as any)?.referenceNumber || '' :
                           f.field_name === 'Warehouse' ? (printInvoiceData as any)?.warehouse || 'Main Warehouse' :
-                          f.field_name === 'FBR Invoice Number' ? ((printInvoiceData as any)?.fbrInvoiceNumber || ('FBR-INV-' + (printInvoiceData?.id || '1092837'))) :
+                          f.field_name === 'FBR Invoice Number' ? (printInvoiceData?.status === 'Posted' ? ((printInvoiceData as any)?.fbrInvoiceNumber || ('FBR-INV-' + (printInvoiceData?.id || '1092837'))) : '') :
                           f.field_name === 'Payment Terms' ? (printInvoiceData?.payment || (printInvoiceFullData as any)?.paymentTerms || 'Net 30') :
                           f.field_name === 'Prepared By' ? (printInvoiceFullData as any)?.preparedBy || 'Prepared By User' :
                           f.field_name === 'Received By' ? (printInvoiceFullData as any)?.receivedBy || 'Received By Client' :
@@ -1934,9 +2232,23 @@ function App() {
                         if (f.field_name === 'Terms & Conditions' && !printTemplate?.terms_enabled) return null;
                         if (!actualVal && f.field_name !== 'Remarks' && f.field_name !== 'Terms & Conditions') return null;
 
+                        let displayLabel = f.custom_label || f.field_name;
+                        if (['Purchase Invoice', 'Purchase Return'].includes(printInvoiceData?.type || '')) {
+                          if (displayLabel === 'Customer Name') displayLabel = 'Supplier Name';
+                          else if (displayLabel === 'Customer Address') displayLabel = 'Supplier Address';
+                          else if (displayLabel === 'Customer NTN') displayLabel = 'Supplier NTN';
+                          else if (displayLabel === 'Customer STRN') displayLabel = 'Supplier STRN';
+                          else if (displayLabel === 'Customer CNIC') displayLabel = 'Supplier CNIC';
+                          else if (displayLabel === 'Customer Code') displayLabel = 'Supplier Code';
+                          else if (displayLabel === 'Customer Email') displayLabel = 'Supplier Email';
+                          else if (displayLabel === 'Invoice Number') displayLabel = 'Purchase Number';
+                          else if (displayLabel === 'Invoice Date') displayLabel = 'Purchase Date';
+                          else if (displayLabel === 'FBR Invoice Number') displayLabel = 'FBR Number';
+                        }
+
                         elementContent = (
                           <div className="w-full">
-                            <strong className="text-slate-400 mr-1" style={{ color: f.color || undefined, fontWeight: f.is_bold ? 'bold' : 'normal' }}>{f.custom_label || f.field_name}: </strong>
+                            <strong className="text-slate-400 mr-1" style={{ color: f.color || undefined, fontWeight: f.is_bold ? 'bold' : 'normal' }}>{displayLabel}: </strong>
                             <span className="text-slate-700" style={{ color: f.color || undefined, fontWeight: f.is_bold ? 'bold' : 'normal' }}>{actualVal}</span>
                           </div>
                         );
@@ -2067,7 +2379,9 @@ function App() {
                       {/* Centered Document Title */}
                       <div className="w-full text-center my-3">
                         <h1 className="text-base font-extrabold tracking-wider text-slate-800 uppercase pb-1 border-b-2 border-slate-700 inline-block">
-                          {printTemplate?.document_type || printInvoiceData?.type || 'Sale Tax Invoice'}
+                          {['Purchase Invoice', 'Purchase Return'].includes(printInvoiceData?.type || '')
+                            ? printInvoiceData?.type
+                            : (printTemplate?.document_type || printInvoiceData?.type || 'Sale Tax Invoice')}
                         </h1>
                       </div>
 
@@ -2100,7 +2414,7 @@ function App() {
                                     item.field_name === 'Sales Person' ? salesPersonName :
                                     item.field_name === 'Reference Number' ? (printInvoiceData as any)?.referenceNumber || '' :
                                     item.field_name === 'Warehouse' ? (printInvoiceData as any)?.warehouse || 'Main Warehouse' :
-                                    item.field_name === 'FBR Invoice Number' ? ((printInvoiceData as any)?.fbrInvoiceNumber || ('FBR-INV-' + (printInvoiceData?.id || '1092837'))) :
+                                    item.field_name === 'FBR Invoice Number' ? (printInvoiceData?.status === 'Posted' ? ((printInvoiceData as any)?.fbrInvoiceNumber || ('FBR-INV-' + (printInvoiceData?.id || '1092837'))) : '') :
                                     item.field_name === 'Payment Terms' ? (printInvoiceData?.payment || (printInvoiceFullData as any)?.paymentTerms || 'Net 30') : '';
                                 }
 

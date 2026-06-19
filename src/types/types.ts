@@ -14,6 +14,7 @@ export interface Invoice {
   type: string;
   companyId?: string;
   branchId?: string;
+  fbrInvoiceNumber?: string;
 }
 
 export interface InvoiceItem {
@@ -53,4 +54,6 @@ export interface InvoiceData {
   notes: string;
   salesPerson: string;
   department: string;
+  fbrInvoiceNumber?: string;
+  status?: InvoiceStatus;
 }

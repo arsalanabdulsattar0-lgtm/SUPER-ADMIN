@@ -12,6 +12,7 @@ import { useTheme } from '../../../context/ThemeContext';
 import { seedTaxes, PROVINCES, TAX_TYPES } from '../../../utils/settingsData';
 import { DeleteConfirmationModal } from '../../../components/ui/DeleteConfirmationModal';
 import { SectionCard } from '../../../components/ui/SectionCard';
+import { generateNextCode, incrementNextCode, getCodeSettingsForBranch } from '../../../utils/codeSettingsHelper';
 
 export interface TaxSetup {
   id: string;
@@ -20,6 +21,7 @@ export interface TaxSetup {
   taxRate: number;
   province: string;
   active: boolean;
+  glAccount?: string;
 }
 
 interface TaxSetupModuleProps {
@@ -27,7 +29,7 @@ interface TaxSetupModuleProps {
 }
 
 const emptyTax = (): Omit<TaxSetup, 'id'> => ({
-  taxCode: '', taxType: 'GST', taxRate: 0, province: 'Punjab', active: true,
+  taxCode: '', taxType: 'GST', taxRate: 0, province: 'Punjab', active: true, glAccount: '',
 });
 
 export const TaxSetupModule: React.FC<TaxSetupModuleProps> = ({ brand }) => {
@@ -46,15 +48,44 @@ export const TaxSetupModule: React.FC<TaxSetupModuleProps> = ({ brand }) => {
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, id: '', name: '' });
 
   const filtered = taxes.filter(t => {
-    const matchSearch = t.taxCode.toLowerCase().includes(search.toLowerCase()) || t.taxType.toLowerCase().includes(search.toLowerCase());
+    const matchSearch = t.taxCode.toLowerCase().includes(search.toLowerCase()) || 
+      t.taxType.toLowerCase().includes(search.toLowerCase()) ||
+      (t.glAccount && t.glAccount.toLowerCase().includes(search.toLowerCase()));
     const matchType = filterType === 'all' || t.taxType === filterType;
     const matchProvince = filterProvince === 'all' || t.province === filterProvince;
     const matchStatus = filterStatus === 'all' || (filterStatus === 'active' ? t.active : !t.active);
     return matchSearch && matchType && matchProvince && matchStatus;
   });
 
-  const openAdd = () => { setEditing(null); setForm(emptyTax()); setShowForm(true); };
-  const openEdit = (t: TaxSetup) => { setEditing(t); setForm({ taxCode: t.taxCode, taxType: t.taxType, taxRate: t.taxRate, province: t.province, active: t.active }); setShowForm(true); };
+  const activeCo = sessionStorage.getItem('active_company');
+  const activeBr = sessionStorage.getItem('active_branch');
+  const currentCoId = activeCo ? JSON.parse(activeCo).id : 'co1';
+  const currentBrId = activeBr ? JSON.parse(activeBr).id : 'br-1';
+
+  const codeSetting = getCodeSettingsForBranch(currentCoId, currentBrId).tax || { mode: 'manual' };
+
+  const openAdd = () => {
+    setEditing(null);
+    const generatedCode = generateNextCode('tax', currentCoId, currentBrId);
+    setForm({
+      ...emptyTax(),
+      taxCode: generatedCode
+    });
+    setShowForm(true);
+  };
+
+  const openEdit = (t: TaxSetup) => {
+    setEditing(t);
+    setForm({
+      taxCode: t.taxCode,
+      taxType: t.taxType,
+      taxRate: t.taxRate,
+      province: t.province,
+      active: t.active,
+      glAccount: t.glAccount || ''
+    });
+    setShowForm(true);
+  };
 
   const handleSave = () => {
     if (!form.taxCode.trim()) return;
@@ -62,6 +93,9 @@ export const TaxSetupModule: React.FC<TaxSetupModuleProps> = ({ brand }) => {
       setTaxes(prev => prev.map(t => t.id === editing.id ? { ...editing, ...form } : t));
     } else {
       setTaxes(prev => [...prev, { id: `t${Date.now()}`, ...form }]);
+      if (codeSetting.mode === 'auto' && form.taxCode) {
+        incrementNextCode('tax', currentCoId, currentBrId);
+      }
     }
     setShowForm(false);
   };
@@ -128,7 +162,7 @@ export const TaxSetupModule: React.FC<TaxSetupModuleProps> = ({ brand }) => {
           <table className="w-full border-collapse">
             <thead className="sticky top-0 z-10 bg-white">
               <tr className="border-b border-[#E2E8F0]">
-                 {['Tax Code', 'Tax Type', 'Tax Rate (%)', 'Province', 'Status', 'Actions'].map((h) => (
+                 {['Tax Code', 'Tax Type', 'Tax Rate (%)', 'Province', 'GL Account', 'Status', 'Actions'].map((h) => (
                   <TableHeader
                     key={h}
                     label={h}
@@ -142,7 +176,7 @@ export const TaxSetupModule: React.FC<TaxSetupModuleProps> = ({ brand }) => {
             <tbody>
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-[12px] text-slate-400">No tax records found.</td>
+                  <td colSpan={7} className="px-4 py-8 text-center text-[12px] text-slate-400">No tax records found.</td>
                 </tr>
               ) : filtered.map((t, i) => (
                 <motion.tr
@@ -156,6 +190,7 @@ export const TaxSetupModule: React.FC<TaxSetupModuleProps> = ({ brand }) => {
                   <td className="px-4 py-3 text-[12px] font-normal text-slate-600">{t.taxType}</td>
                   <td className="px-4 py-3 text-[12px] font-normal text-slate-600">{t.taxRate}%</td>
                   <td className="px-4 py-3 text-[12px] font-normal text-slate-600">{t.province}</td>
+                  <td className="px-4 py-3 font-mono text-[12px] font-normal text-slate-600">{t.glAccount || '-'}</td>
                   <td className="px-4 py-3">
                     {t.active
                       ? <ActiveChip label="Active" size="md" />
@@ -195,6 +230,7 @@ export const TaxSetupModule: React.FC<TaxSetupModuleProps> = ({ brand }) => {
             placeholder="e.g. GST-17"
             value={form.taxCode}
             onChange={e => setForm({ ...form, taxCode: e.target.value })}
+            readOnly={codeSetting.mode === 'auto'}
           />
           <Select
             label="Tax Type"
@@ -218,7 +254,14 @@ export const TaxSetupModule: React.FC<TaxSetupModuleProps> = ({ brand }) => {
             onChange={e => setForm({ ...form, province: e.target.value })}
             options={PROVINCES.map(p => ({ value: p, label: p }))}
           />
-          <div className="col-span-2 flex items-center gap-3 pt-4">
+          <Input
+            label="GL Account"
+            variant="compact"
+            placeholder="e.g. 215001"
+            value={form.glAccount || ''}
+            onChange={e => setForm({ ...form, glAccount: e.target.value })}
+          />
+          <div className="flex items-center gap-3 pt-6">
             <Toggle
               checked={form.active}
               onChange={val => setForm({ ...form, active: val })}

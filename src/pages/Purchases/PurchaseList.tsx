@@ -16,12 +16,27 @@ import type { InvoiceData, InvoiceItem } from '../../types';
 import { DeleteConfirmationModal } from '../../components/ui/DeleteConfirmationModal';
 import { AlertModal } from '../../components/ui/AlertModal';
 import { seedPrintTemplates } from '../../utils/settingsData';
-import { sampleCustomers } from '../../utils/customerData';
+export interface SupplierListItem {
+  id: string;
+  name: string;
+  subtitle: string;
+  fullAddress: string;
+  strn: string;
+  ntn: string;
+  province: string;
+  registrationType: string;
+  creditLimit: number;
+  balance: number;
+  status: string;
+}
 
-// ─── Data ────────────────────────────────────────────────────────────────────
-export type { InvoiceStatus, Invoice } from './invoiceTypes';
-export { initialInvoices } from './invoiceTypes';
-import type { InvoiceStatus, Invoice } from './invoiceTypes';
+export const sampleSuppliers: SupplierListItem[] = [
+  { id: 'sup-1', name: 'Al-Farooq Traders', subtitle: 'Supplier · Karachi, PK', fullAddress: 'Plot 105, Industrial Area, Karachi, PK', strn: 'STRN-SUP-112', ntn: '1122334-5', province: 'Sindh', registrationType: 'Registered', creditLimit: 1000000, balance: 45000, status: 'active' },
+  { id: 'sup-2', name: 'Zeeshan Distributors', subtitle: 'Supplier · Lahore, PK', fullAddress: 'Circular Road, Lahore, PK', strn: 'STRN-SUP-223', ntn: '2233445-6', province: 'Punjab', registrationType: 'Registered', creditLimit: 500000, balance: 12000, status: 'active' },
+  { id: 'sup-3', name: 'Vertex Chemicals', subtitle: 'Supplier · Faisalabad, PK', fullAddress: 'Sargodha Road, Faisalabad, PK', strn: '', ntn: '3344556-7', province: 'Punjab', registrationType: 'Unregistered', creditLimit: 200000, balance: 0, status: 'active' }
+];
+
+import type { InvoiceStatus, Invoice } from '../../types';
 
 // ─── Status Config ────────────────────────────────────────────────────────────
 const statusConfig: Record<InvoiceStatus, { bg: string; text: string; border: string; icon: React.ElementType }> = {
@@ -34,28 +49,28 @@ type SortKey = 'id' | 'fbrInvoiceNumber' | 'customer' | 'issueDate' | 'dueDate' 
 type SortDir = 'asc' | 'desc';
 
 // ─── Component ────────────────────────────────────────────────────────────────
-interface InvoiceListProps {
-  onViewChange?: (view: 'dashboard' | 'invoices' | 'add-invoice' | 'add-invoice-v2' | 'add-invoice-v3' | 'add-invoice-v4' | 'customers' | 'settings' | 'help') => void;
-  invoiceItems: Invoice[];
-  setInvoiceItems: React.Dispatch<React.SetStateAction<Invoice[]>>;
-  onPrintInvoice?: (inv: Invoice, templateId?: string) => void;
-  onEditInvoice?: (id: string) => void;
+interface PurchaseListProps {
+  onViewChange?: (view: string) => void;
+  purchaseItems: Invoice[];
+  setPurchaseItems: React.Dispatch<React.SetStateAction<Invoice[]>>;
+  onPrintPurchase?: (inv: Invoice, templateId?: string) => void;
+  onEditPurchase?: (id: string) => void;
 }
 
-const InvoiceList: React.FC<InvoiceListProps> = ({ onViewChange, invoiceItems, setInvoiceItems, onPrintInvoice, onEditInvoice }) => {
+const PurchaseList: React.FC<PurchaseListProps> = ({ onViewChange, purchaseItems, setPurchaseItems, onPrintPurchase, onEditPurchase }) => {
   const { brand } = useTheme();
 
   // ─── Stats Cards Data ─────────────────────────────────────────────────────────
-  const postedCount = invoiceItems.filter(i => i.status === 'Posted').length;
-  const unpostedCount = invoiceItems.filter(i => i.status === 'Unposted').length;
-  const postedSum = invoiceItems.filter(i => i.status === 'Posted').reduce((sum, i) => sum + (i.rawAmount || 0), 0);
-  const unpostedSum = invoiceItems.filter(i => i.status === 'Unposted').reduce((sum, i) => sum + (i.rawAmount || 0), 0);
+  const postedCount = purchaseItems.filter(i => i.status === 'Posted').length;
+  const unpostedCount = purchaseItems.filter(i => i.status === 'Unposted').length;
+  const postedSum = purchaseItems.filter(i => i.status === 'Posted').reduce((sum, i) => sum + (i.rawAmount || 0), 0);
+  const unpostedSum = purchaseItems.filter(i => i.status === 'Unposted').reduce((sum, i) => sum + (i.rawAmount || 0), 0);
 
   const stats = [
-    { label: 'Total Invoices', value: String(invoiceItems.length), sub: 'Overall volume', icon: FileText, color: brand.primary, bg: brand.surface },
+    { label: 'Total Purchases', value: String(purchaseItems.length), sub: 'Overall volume', icon: FileText, color: brand.primary, bg: brand.surface },
     { label: 'Posted', value: String(postedCount), sub: `Rs. ${postedSum.toLocaleString(undefined, { maximumFractionDigits: 0 })} volume`, icon: CheckCircle, color: '#15803D', bg: '#F0FDF4' },
     { label: 'Unposted', value: String(unpostedCount), sub: `Rs. ${unpostedSum.toLocaleString(undefined, { maximumFractionDigits: 0 })} waiting`, icon: Clock, color: '#C2410C', bg: '#FFF7ED' },
-    { label: 'Total Revenue', value: `Rs. ${postedSum.toLocaleString(undefined, { maximumFractionDigits: 0 })}`, sub: 'From posted invoices', icon: TrendingUp, color: brand.primary, bg: brand.surface },
+    { label: 'Total Expense', value: `Rs. ${postedSum.toLocaleString(undefined, { maximumFractionDigits: 0 })}`, sub: 'From posted purchases', icon: TrendingUp, color: brand.primary, bg: brand.surface },
   ];
 
   const [search, setSearch] = useState('');
@@ -247,14 +262,14 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ onViewChange, invoiceItems, s
     }
   };
 
-  const typeOptions = ['All', 'Sale Invoice', 'Sale Return', 'Service Invoice', 'Digital Invoice'];
+  const typeOptions = ['All', 'Purchase Invoice', 'Purchase Return'];
 
   const handleDelete = (id: string, name: string) => {
     setDeleteModal({ isOpen: true, id, name });
   };
 
   const confirmDelete = () => {
-    setInvoiceItems(prev => prev.filter(x => x.id !== deleteModal.id));
+    setPurchaseItems(prev => prev.filter(x => x.id !== deleteModal.id));
   };
 
   const handleSort = (key: SortKey) => {
@@ -263,27 +278,27 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ onViewChange, invoiceItems, s
     setShowSortPanel(false);
   };
 
-  const uniqueCustomers = (() => {
+  const uniqueSuppliers = (() => {
     try {
-      const stored = localStorage.getItem('customers');
+      const stored = localStorage.getItem('customer_list');
       const list = stored ? JSON.parse(stored) : [];
-      const registryNames = list.map((c: any) => c.name);
+      const registryNames = list.filter((c: any) => c.bp_type === 'supplier').map((c: any) => c.name);
       const allNames = new Set([
         ...registryNames,
-        ...sampleCustomers.map(c => c.name),
-        ...invoiceItems.map(inv => inv.customer)
+        ...sampleSuppliers.map(s => s.name),
+        ...purchaseItems.map(inv => inv.customer)
       ]);
       return ['All', ...Array.from(allNames).sort()];
     } catch {
       const allNames = new Set([
-        ...sampleCustomers.map(c => c.name),
-        ...invoiceItems.map(inv => inv.customer)
+        ...sampleSuppliers.map(s => s.name),
+        ...purchaseItems.map(inv => inv.customer)
       ]);
       return ['All', ...Array.from(allNames).sort()];
     }
   })();
 
-  const filtered = invoiceItems
+  const filtered = purchaseItems
     .filter(inv => {
       const matchSearch = inv.id.toLowerCase().includes(search.toLowerCase()) ||
         inv.customer.toLowerCase().includes(search.toLowerCase()) ||
@@ -336,9 +351,9 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ onViewChange, invoiceItems, s
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
         className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-black tracking-tight" style={{ color: brand.dark }}>Sale List</h1>
+          <h1 className="text-2xl font-black tracking-tight" style={{ color: brand.dark }}>Purchase List</h1>
           <p className="text-[12px] font-medium text-slate-400 mt-0.5">
-            {filtered.length} sales found · Last updated just now
+            {filtered.length} purchases found · Last updated just now
           </p>
         </div>
         <div className="flex items-center gap-2.5">
@@ -370,13 +385,13 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ onViewChange, invoiceItems, s
             )}
           </Button>
           <Button
-            onClick={() => onViewChange?.('add-invoice-v4')}
+            onClick={() => onViewChange?.('add-purchase-invoice')}
             variant="primary"
             size="md"
             icon={Plus}
             className="bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/20"
           >
-            Create Invoice
+            Create Purchase
           </Button>
         </div>
       </motion.div>
@@ -490,9 +505,9 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ onViewChange, invoiceItems, s
                 <thead className="sticky top-0 z-10 bg-white">
                   <tr className="border-b border-[#E2E8F0]">
                     {([
-                      { label: 'Invoice ID', key: 'id', width: 'w-[10%]' },
-                      { label: 'FBR Invoice Number', key: 'fbrInvoiceNumber', width: 'w-[14%]' },
-                      { label: 'Business Partner', key: 'customer', width: 'w-[18%]' },
+                      { label: 'Purchase No', key: 'id', width: 'w-[10%]' },
+                      { label: 'FBR Number', key: 'fbrInvoiceNumber', width: 'w-[14%]' },
+                      { label: 'Supplier', key: 'customer', width: 'w-[18%]' },
                       { label: 'Issue Date', key: 'issueDate', width: 'w-[10%]' },
                       { label: 'Due Date', key: 'dueDate', width: 'w-[10%]' },
                       { label: 'Amount (Rs.)', key: 'amount', width: 'w-[10%]' },
@@ -583,7 +598,7 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ onViewChange, invoiceItems, s
                             <Button onClick={() => handleOpenPreview(inv)}
                               variant="ghost" size="xs" icon={Eye} title="View"
                               className="!px-1 text-blue-600 hover:bg-blue-50" />
-                            <Button onClick={() => onEditInvoice?.(inv.id)}
+                            <Button onClick={() => onEditPurchase?.(inv.id)}
                               variant="ghost" size="xs" icon={Edit3} title="Edit"
                               className="!px-1 text-blue-600 hover:bg-blue-50" />
                             <div className="relative print-dropdown-container">
@@ -607,7 +622,7 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ onViewChange, invoiceItems, s
                                         key={t.template_id}
                                         onClick={(e) => {
                                           e.stopPropagation();
-                                          onPrintInvoice?.(inv, t.template_id);
+                                          onPrintPurchase?.(inv, t.template_id);
                                           setActivePrintRowId(null);
                                         }}
                                         className="w-full text-left px-3 py-2 text-[11px] font-bold hover:bg-slate-50 rounded-lg transition-all flex items-center gap-2 text-brand-dark cursor-pointer border-none"
@@ -621,10 +636,10 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ onViewChange, invoiceItems, s
                               </AnimatePresence>
                             </div>
                             <Button onClick={() => {
-                              const normType = inv.type === 'Sale Return' ? 'Sales Return' : 'Sales Invoice';
+                              const normType = inv.type === 'Purchase Return' ? 'Sales Return' : 'Sales Invoice';
                               const matchingTemplates = templates.filter(t => t.is_active && t.document_type === normType);
                               const defaultTemplate = matchingTemplates.find(t => t.is_default) || matchingTemplates[0] || templates.find(t => t.is_active) || templates[0];
-                              onPrintInvoice?.(inv, defaultTemplate?.template_id);
+                              onPrintPurchase?.(inv, defaultTemplate?.template_id);
                             }}
                               variant="ghost" size="xs" icon={Download} title="Download PDF"
                               className="!px-1 text-blue-600 hover:bg-blue-50" />
@@ -686,7 +701,7 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ onViewChange, invoiceItems, s
       {/* Stunning Glassmorphism Invoice Preview Modal */}
       <AnimatePresence>
         {previewInvoice && (() => {
-          const invoiceObj = invoiceItems.find(inv => inv.id === previewInvoice.invoiceNumber);
+          const invoiceObj = purchaseItems.find(inv => inv.id === previewInvoice.invoiceNumber);
           const status = invoiceObj ? invoiceObj.status : 'Unposted';
           return (
             <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md overflow-y-auto">
@@ -702,7 +717,7 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ onViewChange, invoiceItems, s
                 <div className="flex items-center justify-between px-6 py-4 bg-white border-b flex-shrink-0" style={{ borderColor: brand.dark + '10' }}>
                   <div className="flex items-center gap-2">
                     <h2 className="text-lg font-black text-slate-900 flex items-center gap-2.5" style={{ color: brand.dark }}>
-                      Invoice: {previewInvoice.invoiceNumber}
+                      Purchase: {previewInvoice.invoiceNumber}
                       <span className="text-xs font-black px-2 py-0.5 rounded-md bg-slate-100 text-slate-500 capitalize">{previewInvoice.type}</span>
                       {(() => {
                         const cfg = statusConfig[status] || statusConfig['Unposted'];
@@ -738,8 +753,8 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ onViewChange, invoiceItems, s
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Customer details */}
                         <div className="space-y-3">
-                          <Input variant="compact" label="Partner Name" placeholder="Partner Name" readOnly value={previewInvoice.customerName} />
-                          <TextArea label="Partner Address" placeholder="Partner Address" readOnly value={previewInvoice.customerAddress || ''} className="!rounded-lg text-[11px] py-1.5 px-3 h-14" />
+                          <Input variant="compact" label="Supplier Name" placeholder="Supplier Name" readOnly value={previewInvoice.customerName} />
+                          <TextArea label="Supplier Address" placeholder="Supplier Address" readOnly value={previewInvoice.customerAddress || ''} className="!rounded-lg text-[11px] py-1.5 px-3 h-14" />
                         </div>
                         {/* Sender details */}
                         <div className="space-y-3">
@@ -751,8 +766,8 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ onViewChange, invoiceItems, s
                       <div className={`grid grid-cols-2 sm:grid-cols-3 ${status === 'Posted' ? 'md:grid-cols-7' : 'md:grid-cols-6'} gap-4`}>
                         <Input variant="compact" label="Issue Date" placeholder="Issue Date" readOnly value={previewInvoice.date} />
                         <Input variant="compact" label="Due Date" placeholder="Due Date" readOnly value={previewInvoice.dueDate} />
-                        <Input variant="compact" label="Invoice ID" placeholder="Invoice ID" readOnly value={previewInvoice.invoiceNumber} />
-                        <Input variant="compact" label="Invoice Type" placeholder="Invoice Type" readOnly value={previewInvoice.type} />
+                        <Input variant="compact" label="Purchase ID" placeholder="Purchase ID" readOnly value={previewInvoice.invoiceNumber} />
+                        <Input variant="compact" label="Purchase Type" placeholder="Purchase Type" readOnly value={previewInvoice.type} />
                         <Input variant="compact" label="Reference" placeholder="Reference" readOnly value={previewInvoice.reference || 'N/A'} />
                         <Input variant="compact" label="Subject" placeholder="Subject" readOnly value={previewInvoice.subject || 'Services Rendered'} />
                         {status === 'Posted' && (
@@ -959,7 +974,7 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ onViewChange, invoiceItems, s
                                 payment: 'Net 30',
                                 type: previewInvoice.type
                               };
-                              onPrintInvoice?.(mapped, t.template_id);
+                              onPrintPurchase?.(mapped, t.template_id);
                               setShowPreviewPrintDropdown(false);
                             }}
                             className="w-full text-left px-3 py-2 text-[11px] font-bold hover:bg-slate-50 rounded-lg transition-all flex items-center gap-2 text-brand-dark cursor-pointer border-none"
@@ -982,7 +997,7 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ onViewChange, invoiceItems, s
       <FilterDrawer
         isOpen={showFilterDrawer}
         onClose={() => setShowFilterDrawer(false)}
-        title="Filter Invoices"
+        title="Filter Purchases"
         onReset={handleResetFilters}
         onApply={() => {
           setStatusFilter(tempStatusFilter);
@@ -998,16 +1013,16 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ onViewChange, invoiceItems, s
         <div className="space-y-4">
           <Select
             variant="compact"
-            label="Business Partner"
+            label="Supplier"
             value={tempCustomerFilter}
             onChange={(e) => setTempCustomerFilter(e.target.value)}
-            options={uniqueCustomers.map(c => ({ value: c, label: c === 'All' ? 'All Partners' : c }))}
+            options={uniqueSuppliers.map(c => ({ value: c, label: c === 'All' ? 'All Suppliers' : c }))}
           />
 
           <Input
             variant="compact"
-            label="Sale Inv No"
-            placeholder="Search by invoice number..."
+            label="Purchase No"
+            placeholder="Search by purchase number..."
             value={tempSaleInvNoFilter}
             onChange={(e) => setTempSaleInvNoFilter(e.target.value)}
           />
@@ -1026,7 +1041,7 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ onViewChange, invoiceItems, s
 
           <Select
             variant="compact"
-            label="Invoice Type"
+            label="Purchase Type"
             value={tempTypeFilter}
             onChange={(e) => setTempTypeFilter(e.target.value)}
             options={typeOptions.map(t => ({ value: t, label: t === 'All' ? 'All Types' : t }))}
@@ -1054,9 +1069,9 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ onViewChange, invoiceItems, s
         isOpen={deleteModal.isOpen}
         onClose={() => setDeleteModal(prev => ({ ...prev, isOpen: false }))}
         onConfirm={confirmDelete}
-        title="Delete Invoice?"
+        title="Delete Purchase?"
         itemName={deleteModal.name}
-        warningText="This action cannot be undone and all associated invoice items and records will be permanently deleted."
+        warningText="This action cannot be undone and all associated purchase items and records will be permanently deleted."
       />
 
       <AlertModal
@@ -1070,4 +1085,4 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ onViewChange, invoiceItems, s
   );
 };
 
-export default InvoiceList;
+export default PurchaseList;

@@ -11,9 +11,12 @@ import {
   Menu,
   Box,
   Undo2,
-  ChevronDown
+  List,
+  Warehouse,
+  ShoppingCart,
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
+import SidebarNavButton from './SidebarNavButton';
 
 interface Props {
   activeView: string;
@@ -59,8 +62,36 @@ const Sidebar: React.FC<Props> = ({
 
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'customers', label: 'Business Partners', icon: Users },
-    { id: 'products', label: 'Inventory', icon: Box },
+    {
+      id: 'customers',
+      label: 'Business Partners',
+      icon: Users,
+      isParent: true,
+      subItems: [
+        { id: 'customers', label: 'Business Partner List', icon: List },
+      ]
+    },
+    {
+      id: 'products',
+      label: 'Inventory',
+      icon: Box,
+      isParent: true,
+      subItems: [
+        { id: 'products',    label: 'Product List', icon: List },
+        { id: 'warehouses',  label: 'Product Warehouses',   icon: Warehouse },
+      ]
+    },
+    {
+      id: 'purchases',
+      label: 'Purchase',
+      icon: ShoppingCart,
+      isParent: true,
+      subItems: [
+        { id: 'purchases',             label: 'Purchase List',    icon: FileText },
+        { id: 'add-purchase-invoice',  label: 'Purchase Invoice', icon: FilePlus },
+        { id: 'purchase-return',       label: 'Purchase Return',  icon: Undo2 }
+      ]
+    },
     {
       id: 'sales',
       label: 'Sale',
@@ -81,31 +112,34 @@ const Sidebar: React.FC<Props> = ({
     activeView === 'return-invoice' ||
     activeView === 'add-invoice-v4';
 
+  const isBpActive = activeView === 'customers' || activeView === 'add-customer';
+  const isProductsActive = activeView === 'products' || activeView === 'warehouses';
+  const isPurchaseActive = activeView === 'purchases' || activeView === 'add-purchase-invoice' || activeView === 'purchase-return';
+
   const [salesExpanded, setSalesExpanded] = React.useState(true);
+  const [bpExpanded, setBpExpanded] = React.useState(true);
+  const [productsExpanded, setProductsExpanded] = React.useState(true);
+  const [purchaseExpanded, setPurchaseExpanded] = React.useState(true);
 
   // Auto-expand if active view changes to a sale view
   React.useEffect(() => {
-    if (isSalesActive) {
-      setSalesExpanded(true);
-    }
+    if (isSalesActive) setSalesExpanded(true);
   }, [activeView, isSalesActive]);
 
-  const handleMenuClick = (item: any) => {
-    if (item.isParent) {
-      if (isCurrentlyCollapsed) {
-        if (activeView === 'dashboard') {
-          onToggleSidebar();
-        } else {
-          setIsHovered(true);
-        }
-        setSalesExpanded(true);
-      } else {
-        setSalesExpanded(!salesExpanded);
-      }
-    } else {
-      onViewChange(item.id);
-    }
-  };
+  // Auto-expand if active view changes to a BP view
+  React.useEffect(() => {
+    if (isBpActive) setBpExpanded(true);
+  }, [activeView, isBpActive]);
+
+  // Auto-expand if active view changes to a Products/Warehouses view
+  React.useEffect(() => {
+    if (isProductsActive) setProductsExpanded(true);
+  }, [activeView, isProductsActive]);
+
+  // Auto-expand if active view changes to a purchase view
+  React.useEffect(() => {
+    if (isPurchaseActive) setPurchaseExpanded(true);
+  }, [activeView, isPurchaseActive]);
 
   const bottomItems = [
     { id: 'settings', label: 'Settings', icon: Settings },
@@ -173,179 +207,108 @@ const Sidebar: React.FC<Props> = ({
       </div>
 
       {/* Nav Items */}
-      <nav className={`flex-grow ${isCurrentlyCollapsed ? 'px-1.5' : 'px-2.5'} space-y-1.5 py-4 overflow-y-auto custom-scrollbar`}>
+      <nav className={`flex-grow ${isCurrentlyCollapsed ? 'px-1.5' : 'px-2.5'} space-y-1 py-4 overflow-y-auto custom-scrollbar`}>
         {menuItems.map((item) => {
           if (item.isParent) {
-            const isParentActive =
-              activeView === 'invoices' ||
-              activeView === 'return-invoice' ||
-              activeView === 'add-invoice-v4';
-            const isActive = isParentActive;
+            const isBpParent      = item.id === 'customers';
+            const isProductParent = item.id === 'products';
+            const isPurchaseParent = item.id === 'purchases';
+
+            const isParentActive = isBpParent
+              ? isBpActive
+              : isProductParent
+                ? isProductsActive
+                : isPurchaseParent
+                  ? isPurchaseActive
+                  : (activeView === 'invoices' ||
+                     activeView === 'return-invoice' ||
+                     activeView === 'add-invoice-v4');
+
+            const isExpanded = isBpParent
+              ? bpExpanded
+              : isProductParent
+                ? productsExpanded
+                : isPurchaseParent
+                  ? purchaseExpanded
+                  : salesExpanded;
+
+            const toggleExpand = () => {
+              if (isCurrentlyCollapsed) {
+                if (activeView === 'dashboard') onToggleSidebar();
+                else setIsHovered(true);
+                if (isBpParent)      setBpExpanded(true);
+                else if (isProductParent) setProductsExpanded(true);
+                else if (isPurchaseParent) setPurchaseExpanded(true);
+                else                 setSalesExpanded(true);
+              } else {
+                if (isBpParent)      setBpExpanded(v => !v);
+                else if (isProductParent) setProductsExpanded(v => !v);
+                else if (isPurchaseParent) setPurchaseExpanded(v => !v);
+                else                 setSalesExpanded(v => !v);
+              }
+            };
 
             return (
-              <div key={item.id} className="space-y-1">
-                <button
-                  onClick={() => handleMenuClick(item)}
-                  className={`w-full flex items-center justify-between ${isCurrentlyCollapsed ? 'justify-center px-0 h-8 w-8 mx-auto' : 'gap-2 px-3 py-2'} rounded-xl text-[12px] font-semibold transition-all relative cursor-pointer`}
-                  style={{
-                    backgroundColor: isActive && isCurrentlyCollapsed ? brand.primary : 'transparent',
-                    color: isActive && isCurrentlyCollapsed ? '#FFFFFF' : '#000000',
-                  }}
-                  title={isCurrentlyCollapsed ? item.label : ''}
-                >
-                  {isActive && isCurrentlyCollapsed && (
-                    <div
-                      className="absolute inset-0 rounded-xl z-0"
-                      style={{
-                        backgroundColor: brand.primary,
-                      }}
-                    />
-                  )}
-                  {isActive && !isCurrentlyCollapsed && (
-                    <div
-                      className="absolute inset-0 rounded-xl z-0"
-                      style={{
-                        backgroundColor: `${brand.primary}10`, // Soft background highlight for active parent when expanded
-                      }}
-                    />
-                  )}
-                  <div className="flex items-center gap-2 relative z-10">
-                    <item.icon
-                      className={`${isCurrentlyCollapsed ? 'w-[16px] h-[16px]' : 'w-4 h-4'}`}
-                      style={{ color: isCurrentlyCollapsed && isActive ? '#FFFFFF' : (isActive ? brand.primary : '#000000') }}
-                    />
-                    {!isCurrentlyCollapsed && (
-                      <span className="truncate font-semibold" style={{ color: isActive ? brand.primary : '#000000' }}>{item.label}</span>
-                    )}
-                  </div>
-                  {!isCurrentlyCollapsed && (
-                    <ChevronDown
-                      className="w-3.5 h-3.5 transition-transform duration-200 relative z-10"
-                      style={{
-                        transform: salesExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
-                        color: isActive ? brand.primary : '#6b7280'
-                      }}
-                    />
-                  )}
-                </button>
-
-                {!isCurrentlyCollapsed && (
-                  <motion.div
-                    initial={false}
-                    animate={{ height: salesExpanded ? 'auto' : 0, opacity: salesExpanded ? 1 : 0 }}
-                    transition={{ duration: 0.2, ease: 'easeInOut' }}
-                    className="overflow-hidden space-y-1"
-                  >
-                    {item.subItems.map((subItem) => {
-                      let isSubActive = false;
-                      if (subItem.id === 'invoices') {
-                        isSubActive = activeView === 'invoices';
-                      } else if (subItem.id === 'return-invoice') {
-                        isSubActive = activeView === 'return-invoice';
-                      } else if (subItem.id === 'add-sale-invoice') {
-                        isSubActive = activeView === 'add-invoice-v4' && (invoiceType === 'Sale Invoice' || !invoiceType || (invoiceType !== 'Service Invoice' && invoiceType !== 'Digital Invoice'));
-                      } else if (subItem.id === 'add-service-invoice') {
-                        isSubActive = activeView === 'add-invoice-v4' && invoiceType === 'Service Invoice';
-                      } else if (subItem.id === 'add-digital-invoice') {
-                        isSubActive = activeView === 'add-invoice-v4' && invoiceType === 'Digital Invoice';
-                      }
-
-                      return (
-                        <button
-                          key={subItem.id}
-                          onClick={() => onViewChange(subItem.id)}
-                          className="w-full flex items-center gap-2 pl-8 pr-3 py-1.5 rounded-xl text-[11px] font-semibold transition-all relative cursor-pointer text-left"
-                          style={{
-                            backgroundColor: isSubActive ? `${brand.primary}15` : 'transparent',
-                            color: isSubActive ? brand.primary : '#4b5563',
-                          }}
-                        >
-                          {isSubActive && (
-                            <div
-                              className="absolute left-4 w-1.5 h-1.5 rounded-full"
-                              style={{ backgroundColor: brand.primary }}
-                            />
-                          )}
-                          <span className="truncate">{subItem.label}</span>
-                        </button>
-                      );
-                    })}
-                  </motion.div>
-                )}
-              </div>
+              <SidebarNavButton
+                key={item.id}
+                id={item.id}
+                label={item.label}
+                icon={item.icon}
+                primaryColor={brand.primary}
+                isActive={isParentActive}
+                isCollapsed={isCurrentlyCollapsed}
+                onClick={onViewChange}
+                isParent
+                subItems={item.subItems}
+                isExpanded={isExpanded}
+                onToggleExpand={toggleExpand}
+                isSubItemActive={(subId) => {
+                  if (isBpParent)      return activeView === subId;
+                  if (isProductParent) return activeView === subId;
+                  if (isPurchaseParent) return activeView === subId;
+                  if (subId === 'invoices')             return activeView === 'invoices';
+                  if (subId === 'return-invoice')       return activeView === 'return-invoice';
+                  if (subId === 'add-sale-invoice')     return activeView === 'add-invoice-v4' && (invoiceType === 'Sale Invoice' || !invoiceType || (invoiceType !== 'Service Invoice' && invoiceType !== 'Digital Invoice'));
+                  if (subId === 'add-service-invoice')  return activeView === 'add-invoice-v4' && invoiceType === 'Service Invoice';
+                  if (subId === 'add-digital-invoice')  return activeView === 'add-invoice-v4' && invoiceType === 'Digital Invoice';
+                  return false;
+                }}
+              />
             );
           }
 
-          const isActive = activeView === item.id;
           return (
-            <button
+            <SidebarNavButton
               key={item.id}
-              onClick={() => handleMenuClick(item)}
-              className={`w-full flex items-center ${isCurrentlyCollapsed ? 'justify-center px-0 h-8 w-8 mx-auto' : 'gap-2 px-3 py-2'} rounded-xl text-[12px] font-semibold transition-all relative cursor-pointer`}
-              style={{
-                backgroundColor: isActive ? brand.primary : 'transparent',
-                color: isActive ? '#FFFFFF' : '#000000',
-              }}
-              title={isCurrentlyCollapsed ? item.label : ''}
-            >
-              {isActive && !isCurrentlyCollapsed && (
-                <motion.div
-                  layoutId="active-pill"
-                  className="absolute inset-0 rounded-xl z-0"
-                  style={{
-                    backgroundColor: brand.primary,
-                  }}
-                  transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
-                />
-              )}
-              <item.icon
-                className={`${isCurrentlyCollapsed ? 'w-[16px] h-[16px]' : 'w-4 h-4'} relative z-10`}
-                style={{ color: isActive ? '#FFFFFF' : '#000000' }}
-              />
-              {!isCurrentlyCollapsed && (
-                <span className="relative z-10 truncate" style={{ color: isActive ? '#FFFFFF' : '#000000' }}>{item.label}</span>
-              )}
-            </button>
+              id={item.id}
+              label={item.label}
+              icon={item.icon}
+              primaryColor={brand.primary}
+              isActive={activeView === item.id}
+              isCollapsed={isCurrentlyCollapsed}
+              onClick={onViewChange}
+            />
           );
         })}
       </nav>
 
       {/* Bottom Items */}
       <div
-        className={`py-4 space-y-1.5 ${isCurrentlyCollapsed ? 'px-1.5' : 'px-2.5'}`}
+        className={`py-4 space-y-1 ${isCurrentlyCollapsed ? 'px-1.5' : 'px-2.5'}`}
         style={{ borderTop: `1px solid ${brand.border}` }}
       >
-        {bottomItems.map((item) => {
-          const isActive = activeView === item.id;
-          return (
-            <button
-              key={item.id}
-              onClick={() => onViewChange(item.id)}
-              className={`w-full flex items-center ${isCurrentlyCollapsed ? 'justify-center px-0 h-8 w-8 mx-auto' : 'gap-2 px-3 py-2'} rounded-xl text-[12px] font-semibold transition-all relative cursor-pointer`}
-              style={{
-                backgroundColor: isActive ? brand.primary : 'transparent',
-                color: isActive ? '#FFFFFF' : '#000000',
-              }}
-              title={isCurrentlyCollapsed ? item.label : ''}
-            >
-              {isActive && !isCurrentlyCollapsed && (
-                <motion.div
-                  layoutId="active-pill"
-                  className="absolute inset-0 rounded-xl z-0"
-                  style={{
-                    backgroundColor: brand.primary,
-                  }}
-                  transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
-                />
-              )}
-              <item.icon
-                className={`${isCurrentlyCollapsed ? 'w-[16px] h-[16px]' : 'w-4 h-4'} relative z-10`}
-                style={{ color: isActive ? '#FFFFFF' : '#000000' }}
-              />
-              {!isCurrentlyCollapsed && <span className="relative z-10 truncate" style={{ color: isActive ? '#FFFFFF' : '#000000' }}>{item.label}</span>}
-            </button>
-          );
-        })}
+        {bottomItems.map((item) => (
+          <SidebarNavButton
+            key={item.id}
+            id={item.id}
+            label={item.label}
+            icon={item.icon}
+            primaryColor={brand.primary}
+            isActive={activeView === item.id}
+            isCollapsed={isCurrentlyCollapsed}
+            onClick={onViewChange}
+          />
+        ))}
 
         <button
           onClick={onLogout}

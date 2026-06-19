@@ -27,6 +27,8 @@ export interface EntityCodeSetting {
   draftAllowManualEntry?: boolean;
   draftSerialReset?: 'None' | 'Daily' | 'Monthly' | 'Yearly';
   documentNoAsDraftNo?: boolean;
+  taxType?: string;
+  province?: string;
 }
 
 export interface BranchCodeSettings {
@@ -40,6 +42,7 @@ export interface BranchCodeSettings {
   product: EntityCodeSetting;
   branch: EntityCodeSetting;
   department: EntityCodeSetting;
+  tax: EntityCodeSetting;
 
   quotation: EntityCodeSetting;
   delivery_challan: EntityCodeSetting;
@@ -76,6 +79,7 @@ export const DEFAULT_ENTITY_SETTINGS: Record<string, EntityCodeSetting> = {
   product: { mode: 'auto', prefix: 'PRD-', nextNumber: 1, padding: 5 },
   branch: { mode: 'auto', prefix: 'BR-', nextNumber: 1, padding: 5 },
   department: { mode: 'auto', prefix: 'HR', nextNumber: 1, padding: 5 },
+  tax: { mode: 'auto', prefix: 'TX-', nextNumber: 1, padding: 5 },
 
   quotation: { mode: 'auto', prefix: 'QTN-', nextNumber: 1, padding: 5 },
   delivery_challan: { mode: 'auto', prefix: 'DC-', nextNumber: 1, padding: 5 },

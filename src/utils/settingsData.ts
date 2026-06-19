@@ -6,10 +6,10 @@ export type { Company };
 
 
 export const seedTaxes: TaxSetup[] = [
-  { id: 't1', taxCode: 'GST-17', taxType: 'GST', taxRate: 17, province: 'Punjab',  active: true  },
-  { id: 't2', taxCode: 'SST-16', taxType: 'SST', taxRate: 16, province: 'Sindh',   active: true  },
-  { id: 't3', taxCode: 'WHT-10', taxType: 'WHT', taxRate: 10, province: 'KPK',     active: false },
-  { id: 't4', taxCode: 'FED-5',  taxType: 'FED', taxRate: 5,  province: 'Federal', active: true  },
+  { id: 't1', taxCode: 'GST-17', taxType: 'GST', taxRate: 17, province: 'Punjab',  active: true,  glAccount: '215001' },
+  { id: 't2', taxCode: 'SST-16', taxType: 'SST', taxRate: 16, province: 'Sindh',   active: true,  glAccount: '215002' },
+  { id: 't3', taxCode: 'WHT-10', taxType: 'WHT', taxRate: 10, province: 'KPK',     active: false, glAccount: '215003' },
+  { id: 't4', taxCode: 'FED-5',  taxType: 'FED', taxRate: 5,  province: 'Federal', active: true,  glAccount: '215004' },
 ];
 
 export const seedSalespeople: SalesPerson[] = [
