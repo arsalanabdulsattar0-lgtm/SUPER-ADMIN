@@ -100,3 +100,11 @@ input[type="number"] {
   min-height: 0 !important;
   max-height: none !important;
 }
+
+/* Ensure date picker inputs, calendar indicators, and select elements have pointer cursors */
+input[type="date"], select {
+  cursor: pointer !important;
+}
+input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer !important;
+}

@@ -149,9 +149,9 @@ export const ComboBox: React.FC<ComboBoxProps> = ({
       )}
 
       <div className="relative">
-        <div
+         <div
           className={`
-            relative flex items-center transition-all border overflow-hidden
+            relative flex items-center transition-all border overflow-hidden cursor-pointer
             ${isCompact ? 'rounded-lg h-7' : 'rounded-xl h-7'}
             ${error ? 'border-red-500' : ''}
             ${isOpen ? 'combobox-container-open' : 'combobox-container-base'}
@@ -166,7 +166,7 @@ export const ComboBox: React.FC<ComboBoxProps> = ({
             ref={inputRef}
             type="text"
             className={`
-              flex-1 bg-transparent border-none outline-none font-normal text-[#304166] 
+              flex-1 bg-transparent border-none outline-none font-normal text-[#304166] cursor-pointer
               placeholder:text-slate-400 placeholder:font-normal pl-2.5 pr-9 py-0 ${isCompact ? 'text-[11px]' : 'text-sm'}
             `}
             placeholder={placeholder}

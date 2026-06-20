@@ -808,7 +808,7 @@ const PurchaseReturnEditor: React.FC<Props> = ({ data, onChange, onSave, onViewC
                   )}
                   {docSettings.fields['Issue Date'] && (
                     <div className="lg:col-span-2">
-                      <Input variant="compact" label="Issue Date" type="date" value={data.date}
+                      <Input variant="compact" label="Purchase Date" type="date" value={data.date}
                         onChange={(e) => onChange({ ...data, date: e.target.value })} />
                     </div>
                   )}
@@ -846,7 +846,7 @@ const PurchaseReturnEditor: React.FC<Props> = ({ data, onChange, onSave, onViewC
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-3">
                   {docSettings.fields['Customer Address'] && (
                     <div className="lg:col-span-5">
-                      <Input variant="compact" label="Partner Address" placeholder="Street, city, country..." value={data.customerAddress || ''} readOnly />
+                      <Input variant="compact" label="Address" placeholder="Street, city, country..." value={data.customerAddress || ''} readOnly />
                     </div>
                   )}
                   {docSettings.fields['Department'] && (
@@ -884,54 +884,59 @@ const PurchaseReturnEditor: React.FC<Props> = ({ data, onChange, onSave, onViewC
 
             {/* Right Column: Independent Client Profile Card */}
             <AnimatePresence mode="wait">
-              {selectedCustomer ? (
-                <motion.div
-                  key={selectedCustomer.id}
-                  initial={{ opacity: 0, x: 20, scale: 0.95 }}
-                  animate={{ opacity: 1, x: 0, scale: 1 }}
-                  exit={{ opacity: 0, x: 20, scale: 0.95 }}
-                  transition={{ duration: 0.25, ease: "easeOut" }}
-                  className="w-[240px] shrink-0 bg-white rounded-xl border overflow-hidden"
-                  style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}
-                >
-                  <div className="px-3 py-2.5 flex items-center justify-between bg-brand-primary">
-                    <span className="text-[11px] font-black text-white tracking-wide flex items-center gap-1.5">
-                      <User className="w-3.5 h-3.5 text-white" /> Partner Profile
-                    </span>
-                    <div className={`px-2 py-0.5 rounded-full text-[8px] font-black tracking-wider ${selectedCustomer.status === 'active' ? 'invoice-badge-active' :
-                      selectedCustomer.status === 'overdue' ? 'invoice-badge-overdue' :
-                        'invoice-badge-inactive'
-                      }`}>{selectedCustomer.status}</div>
-                  </div>
-
-                  <div className="p-4 space-y-3 bg-gradient-to-b from-[#EFF5FC]/60 to-white">
-                    {[
-                      { label: 'NTN', value: selectedCustomer.ntn },
-                      { label: 'STRN', value: selectedCustomer.strn },
-                      { label: 'Province', value: (selectedCustomer as any).province },
-                      { label: 'Registration', value: (selectedCustomer as any).registrationType },
-                    ].map(row => (
-                      <div key={row.label} className="flex items-center justify-between">
-                        <span className="text-[9px] font-bold text-slate-400 tracking-wider">{row.label}</span>
-                        <span className="text-[10px] font-semibold font-mono text-slate-700">{row.value}</span>
-                      </div>
-                    ))}
-
-                    <div className="h-[1px] bg-slate-200/60 my-1" />
-
-                    <div className="flex items-center justify-between">
-                      <span className="text-[9px] font-bold text-slate-400 tracking-wider">Credit Limit (Rs.)</span>
-                      <span className="text-[11px] font-semibold text-brand-primary">{selectedCustomer.creditLimit.toLocaleString()}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-[9px] font-bold text-slate-400 tracking-wider">Current Balance (Rs.)</span>
-                      <span className={`text-[11px] font-semibold ${selectedCustomer.balance > 0 ? 'text-red-500' : 'text-emerald-500'}`}>
-                        {selectedCustomer.balance > 0 ? `${selectedCustomer.balance.toLocaleString()}` : 'Clear'}
+              {selectedCustomer ? (() => {
+                const creditLimit = selectedCustomer.creditLimit !== undefined ? selectedCustomer.creditLimit : (selectedCustomer.credit_limit || 0);
+                const balance = selectedCustomer.balance !== undefined ? selectedCustomer.balance : (selectedCustomer.opening_balance || 0);
+                const status = selectedCustomer.status || (selectedCustomer.is_active ? 'active' : 'inactive');
+                return (
+                  <motion.div
+                    key={selectedCustomer.id}
+                    initial={{ opacity: 0, x: 20, scale: 0.95 }}
+                    animate={{ opacity: 1, x: 0, scale: 1 }}
+                    exit={{ opacity: 0, x: 20, scale: 0.95 }}
+                    transition={{ duration: 0.25, ease: "easeOut" }}
+                    className="w-[240px] shrink-0 bg-white rounded-xl border overflow-hidden"
+                    style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}
+                  >
+                    <div className="px-3 py-2.5 flex items-center justify-between bg-brand-primary">
+                      <span className="text-[11px] font-black text-white tracking-wide flex items-center gap-1.5">
+                        <User className="w-3.5 h-3.5 text-white" /> Partner Profile
                       </span>
+                      <div className={`px-2 py-0.5 rounded-full text-[8px] font-black tracking-wider ${status === 'active' ? 'invoice-badge-active' :
+                        status === 'overdue' ? 'invoice-badge-overdue' :
+                          'invoice-badge-inactive'
+                        }`}>{status}</div>
                     </div>
-                  </div>
-                </motion.div>
-              ) : (
+
+                    <div className="p-4 space-y-3 bg-gradient-to-b from-[#EFF5FC]/60 to-white">
+                      {[
+                        { label: 'NTN', value: selectedCustomer.ntn },
+                        { label: 'STRN', value: selectedCustomer.strn },
+                        { label: 'Province', value: (selectedCustomer as any).province },
+                        { label: 'Registration', value: (selectedCustomer as any).registrationType },
+                      ].map(row => (
+                        <div key={row.label} className="flex items-center justify-between">
+                          <span className="text-[9px] font-bold text-slate-400 tracking-wider">{row.label}</span>
+                          <span className="text-[10px] font-semibold font-mono text-slate-700">{row.value}</span>
+                        </div>
+                      ))}
+
+                      <div className="h-[1px] bg-slate-200/60 my-1" />
+
+                      <div className="flex items-center justify-between">
+                        <span className="text-[9px] font-bold text-slate-400 tracking-wider">Credit Limit (Rs.)</span>
+                        <span className="text-[11px] font-semibold text-brand-primary">{creditLimit.toLocaleString()}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-[9px] font-bold text-slate-400 tracking-wider">Current Balance (Rs.)</span>
+                        <span className={`text-[11px] font-semibold ${balance > 0 ? 'text-red-500' : 'text-emerald-500'}`}>
+                          {balance > 0 ? `${balance.toLocaleString()}` : 'Clear'}
+                        </span>
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })() : (
                 <motion.div
                   key="empty"
                   initial={{ opacity: 0 }}
@@ -1566,7 +1571,7 @@ const PurchaseReturnEditor: React.FC<Props> = ({ data, onChange, onSave, onViewC
             </h2>
             <p className="printable-invoice-id">#{data.invoiceNumber}</p>
             <div className="printable-invoice-dates">
-              <div><strong>Issue Date:</strong> {data.date}</div>
+              <div><strong>Purchase Date:</strong> {data.date}</div>
               <div><strong>Status:</strong> Unposted</div>
             </div>
           </div>

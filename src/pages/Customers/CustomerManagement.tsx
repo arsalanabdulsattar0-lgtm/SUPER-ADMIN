@@ -4,7 +4,7 @@ import {
   Plus, Search, Trash2, Edit2, LayoutGrid, List,
   SlidersHorizontal, ArrowUpDown, X, Eye,
   CheckCircle, Clock, ChevronLeft, ChevronRight,
-  User, ShieldCheck, MapPin, Globe, CreditCard, Printer
+  User, ShieldCheck, MapPin, Globe, CreditCard, Printer, Save
 } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Input, TextArea, ScrollArea, ComboBox, Select, Toggle } from '../../components/ui/FormControls';
@@ -88,8 +88,8 @@ const CustomerManagement: React.FC<CustomerManagementProps> = ({ initialOpenCrea
       };
       
       const defaultColumns = {
-        'Partner Details': true,
-        'Partner Type': true,
+        'Business Partner Details': true,
+        'Business Partner Type': true,
         'Phone Number': true,
         'City': true,
         'Credit Limit (Rs.)': true,
@@ -100,7 +100,7 @@ const CustomerManagement: React.FC<CustomerManagementProps> = ({ initialOpenCrea
       
       const mergedColumns = { ...defaultColumns, ...settingsForType.columns };
       if (settingsForType.columns && settingsForType.columns['Customer Details'] !== undefined) {
-        mergedColumns['Partner Details'] = settingsForType.columns['Customer Details'];
+        mergedColumns['Business Partner Details'] = settingsForType.columns['Customer Details'];
       }
       
       return {
@@ -117,7 +117,7 @@ const CustomerManagement: React.FC<CustomerManagementProps> = ({ initialOpenCrea
           'CNIC Number': true, 'WHT Category': true, 'Total Balance': true, 'Salesperson': true
         },
         columns: {
-          'Partner Details': true, 'Partner Type': true, 'Phone Number': true, 'City': true,
+          'Business Partner Details': true, 'Business Partner Type': true, 'Phone Number': true, 'City': true,
           'Credit Limit (Rs.)': true, 'Total Balance (Rs.)': true, 'Tax Status': true, 'Status': true
         }
       };
@@ -142,11 +142,15 @@ const CustomerManagement: React.FC<CustomerManagementProps> = ({ initialOpenCrea
   const [selectedActiveStatus, setSelectedActiveStatus] = useState<'all' | 'active' | 'inactive'>('all');
   const [selectedSalesPerson, setSelectedSalesPerson] = useState<string>('all');
   const [selectedBpType, setSelectedBpType] = useState<string>('all');
+  const [selectedFromBp, setSelectedFromBp] = useState<string>('all');
+  const [selectedToBp, setSelectedToBp] = useState<string>('all');
   const [tempFilerStatus, setTempFilerStatus] = useState<string>('all');
   const [tempWalkinStatus, setTempWalkinStatus] = useState<string>('all');
   const [tempActiveStatus, setTempActiveStatus] = useState<'all' | 'active' | 'inactive'>('all');
   const [tempSalesPerson, setTempSalesPerson] = useState<string>('all');
   const [tempBpType, setTempBpType] = useState<string>('all');
+  const [tempFromBp, setTempFromBp] = useState<string>('all');
+  const [tempToBp, setTempToBp] = useState<string>('all');
   const [sortKey, setSortKey] = useState<'name' | 'email' | 'credit_limit' | 'opening_balance' | 'status'>('name');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
 
@@ -177,11 +181,12 @@ const CustomerManagement: React.FC<CustomerManagementProps> = ({ initialOpenCrea
       const activeBr = sessionStorage.getItem('active_branch');
       const currentCoId = activeCo ? JSON.parse(activeCo).id : 'co1';
       const currentBrId = activeBr ? JSON.parse(activeBr).id : 'br-1';
-      return getCodeSettingsForBranch(currentCoId, currentBrId).customer;
+      const type = editing?.bp_type === 'supplier' ? 'supplier' : 'customer';
+      return getCodeSettingsForBranch(currentCoId, currentBrId)[type];
     } catch {
       return { mode: 'auto' as const, prefix: 'BP-', nextNumber: 1, padding: 4 };
     }
-  }, [editing !== null]);
+  }, [editing?.bp_type, editing !== null]);
   const [viewingCustomer, setViewingCustomer] = useState<Customer | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [activeTab, setActiveTab] = useState<'general' | 'settings' | 'accounting'>('general');
@@ -324,52 +329,60 @@ const CustomerManagement: React.FC<CustomerManagementProps> = ({ initialOpenCrea
   useEffect(() => {
     try {
       const stored = localStorage.getItem('customer_list');
-      const seededFlag = localStorage.getItem('customers_seeded_v7');
+      const seededFlag = localStorage.getItem('customers_seeded_v8');
       const parsed = stored ? JSON.parse(stored) : null;
       if (parsed && parsed.length > 0 && seededFlag === 'true') {
         setCustomers(parsed);
       } else {
         // Seed 30 sample customers
-        const sample: Customer[] = Array.from({ length: 30 }, (_, i) => ({
-          id: crypto.randomUUID(),
-          customer_id: `BP-${String(i + 1).padStart(4, '0')}`,
-          name: i === 0 ? 'BlueRitt Technologies'
-            : i === 1 ? 'Acme Corp'
-              : i === 2 ? 'Global Solutions'
-                : i === 3 ? 'Starlight Media'
-                  : i === 4 ? 'Ahmed Traders'
-                    : `Customer Account ${i + 1}`,
-          email: i === 0 ? 'billing@blueritt.com'
-            : i === 1 ? 'finance@acme.com'
-              : i === 2 ? 'hello@globalsol.com'
-                : i === 3 ? 'accounts@starlight.io'
-                  : i === 4 ? 'ahmed@traders.com'
-                    : `customer${i + 1}@example.com`,
-          phone: `+1 555 010${i.toString().padStart(2, '0')}`,
-          mobile: `+92 300 020${i.toString().padStart(2, '0')}`,
-          website: `www.customer${i + 1}.com`,
-          is_walkin: i % 4 === 3,
-          is_filer: i % 3 === 0,
-          credit_limit: 1000 + (i * 500),
-          opening_balance: i % 5 === 0 ? (i * 120) : 0,
-          opening_date: new Date().toISOString().split('T')[0],
-          payment_term_days: 30,
-          discount_percent: i % 4 === 1 ? 5 : 0,
-          address: `Office Suite ${100 + i}, Tech Park Boulevard`,
-          city: i % 3 === 0 ? 'Karachi' : i % 3 === 1 ? 'Lahore' : 'Islamabad',
-          province: i % 3 === 0 ? 'Sindh' : i % 3 === 1 ? 'Punjab' : 'Federal',
-          country: 'Pakistan',
-          ntn: i % 2 === 0 ? `NTN-${854721 + i}` : '',
-          stn: i % 3 === 0 ? `STN-${369852 + i}` : '',
-          cnic: `42101-${1234567 + i}-1`,
-          wht_type: i % 3 === 0 ? 'Active' : 'Exempt',
-          is_active: i % 3 !== 2,
-          sales_person_id: `sp-${(i % 5) + 1}`,
-          bp_type: i % 4 === 0 ? 'supplier' : 'customer',
-        }));
+        let customerSeq = 1;
+        let supplierSeq = 1;
+        const sample: Customer[] = Array.from({ length: 30 }, (_, i) => {
+          const isSupplier = i % 4 === 0;
+          const customer_id = isSupplier
+            ? `SUP-${String(supplierSeq++).padStart(4, '0')}`
+            : `BP-${String(customerSeq++).padStart(4, '0')}`;
+          return {
+            id: crypto.randomUUID(),
+            customer_id,
+            name: i === 0 ? 'BlueRitt Technologies'
+              : i === 1 ? 'Acme Corp'
+                : i === 2 ? 'Global Solutions'
+                  : i === 3 ? 'Starlight Media'
+                    : i === 4 ? 'Ahmed Traders'
+                      : `Customer Account ${i + 1}`,
+            email: i === 0 ? 'billing@blueritt.com'
+              : i === 1 ? 'finance@acme.com'
+                : i === 2 ? 'hello@globalsol.com'
+                  : i === 3 ? 'accounts@starlight.io'
+                    : i === 4 ? 'ahmed@traders.com'
+                      : `customer${i + 1}@example.com`,
+            phone: `+1 555 010${i.toString().padStart(2, '0')}`,
+            mobile: `+92 300 020${i.toString().padStart(2, '0')}`,
+            website: `www.customer${i + 1}.com`,
+            is_walkin: i % 4 === 3,
+            is_filer: i % 3 === 0,
+            credit_limit: 1000 + (i * 500),
+            opening_balance: i % 5 === 0 ? (i * 120) : 0,
+            opening_date: new Date().toISOString().split('T')[0],
+            payment_term_days: 30,
+            discount_percent: i % 4 === 1 ? 5 : 0,
+            address: `Office Suite ${100 + i}, Tech Park Boulevard`,
+            city: i % 3 === 0 ? 'Karachi' : i % 3 === 1 ? 'Lahore' : 'Islamabad',
+            province: i % 3 === 0 ? 'Sindh' : i % 3 === 1 ? 'Punjab' : 'Federal',
+            country: 'Pakistan',
+            ntn: i % 2 === 0 ? `NTN-${854721 + i}` : '',
+            stn: i % 3 === 0 ? `STN-${369852 + i}` : '',
+            cnic: `42101-${1234567 + i}-1`,
+            wht_type: i % 3 === 0 ? 'Active' : 'Exempt',
+            is_active: i % 3 !== 2,
+            sales_person_id: `sp-${(i % 5) + 1}`,
+            bp_type: isSupplier ? 'supplier' : 'customer',
+          };
+        });
         setCustomers(sample);
         persist(sample);
-        localStorage.setItem('customers_seeded_v7', 'true');
+        localStorage.setItem('customers_seeded_v8', 'true');
       }
     } catch { /* ignore */ }
   }, []);
@@ -401,10 +414,11 @@ const CustomerManagement: React.FC<CustomerManagementProps> = ({ initialOpenCrea
     const currentCoId = activeCo ? JSON.parse(activeCo).id : 'co1';
     const currentBrId = activeBr ? JSON.parse(activeBr).id : 'br-1';
     
-    const settings = getCodeSettingsForBranch(currentCoId, currentBrId).customer;
+    const defaultType = selectedBpType === 'supplier' ? 'supplier' : 'customer';
+    const settings = getCodeSettingsForBranch(currentCoId, currentBrId)[defaultType];
     let nextId = '';
     if (settings.mode === 'auto') {
-      nextId = generateNextCode('customer', currentCoId, currentBrId);
+      nextId = generateNextCode(defaultType, currentCoId, currentBrId);
     } else {
       nextId = '';
     }
@@ -434,7 +448,7 @@ const CustomerManagement: React.FC<CustomerManagementProps> = ({ initialOpenCrea
       wht_type: '',
       is_active: true,
       sales_person_id: '',
-      bp_type: 'customer',
+      bp_type: defaultType,
     });
     setShowModal(true);
   };
@@ -480,9 +494,10 @@ const CustomerManagement: React.FC<CustomerManagementProps> = ({ initialOpenCrea
       const activeBr = sessionStorage.getItem('active_branch');
       const currentCoId = activeCo ? JSON.parse(activeCo).id : 'co1';
       const currentBrId = activeBr ? JSON.parse(activeBr).id : 'br-1';
-      const settings = getCodeSettingsForBranch(currentCoId, currentBrId).customer;
+      const type = editing.bp_type === 'supplier' ? 'supplier' : 'customer';
+      const settings = getCodeSettingsForBranch(currentCoId, currentBrId)[type];
       if (settings.mode === 'auto' && editing.customer_id) {
-        incrementNextCode('customer', currentCoId, currentBrId);
+        incrementNextCode(type, currentCoId, currentBrId);
       }
     }
     setCustomers(newList);
@@ -540,11 +555,15 @@ const CustomerManagement: React.FC<CustomerManagementProps> = ({ initialOpenCrea
     setSelectedActiveStatus('all');
     setSelectedSalesPerson('all');
     setSelectedBpType('all');
+    setSelectedFromBp('all');
+    setSelectedToBp('all');
     setTempFilerStatus('all');
     setTempWalkinStatus('all');
     setTempActiveStatus('all');
     setTempSalesPerson('all');
     setTempBpType('all');
+    setTempFromBp('all');
+    setTempToBp('all');
     setSortKey('name');
     setSortDir('asc');
     setSearch('');
@@ -557,6 +576,25 @@ const CustomerManagement: React.FC<CustomerManagementProps> = ({ initialOpenCrea
     else { setSortKey(key); setSortDir('asc'); }
     setShowSortPanel(false);
   };
+
+  const bpOptions = useMemo(() => {
+    const list = tempBpType === 'all'
+      ? customers
+      : customers.filter(c => (c.bp_type || 'customer') === tempBpType);
+      
+    const sorted = [...list]
+      .sort((a, b) => {
+        const ac = a.customer_id || '';
+        const bc = b.customer_id || '';
+        return ac.localeCompare(bc, undefined, { numeric: true, sensitivity: 'base' });
+      })
+      .map(c => ({
+        id: c.customer_id || c.id,
+        name: `${c.customer_id || 'No Code'} - ${c.name}`
+      }));
+      
+    return [{ id: 'all', name: 'All Partners' }, ...sorted];
+  }, [customers, tempBpType]);
 
   // Filter & Sort Logic
   const filteredCustomers = useMemo(() => {
@@ -591,7 +629,17 @@ const CustomerManagement: React.FC<CustomerManagementProps> = ({ initialOpenCrea
         selectedBpType === 'all' ||
         (c.bp_type || 'customer') === selectedBpType;
 
-      return matchQuery && matchFiler && matchWalkin && matchActive && matchSalesPerson && matchBpType;
+      const code = c.customer_id || c.id || '';
+      
+      const matchFromBp =
+        selectedFromBp === 'all' ||
+        code.localeCompare(selectedFromBp, undefined, { numeric: true, sensitivity: 'base' }) >= 0;
+
+      const matchToBp =
+        selectedToBp === 'all' ||
+        code.localeCompare(selectedToBp, undefined, { numeric: true, sensitivity: 'base' }) <= 0;
+
+      return matchQuery && matchFiler && matchWalkin && matchActive && matchSalesPerson && matchBpType && matchFromBp && matchToBp;
     });
 
     result = [...result].sort((a, b) => {
@@ -610,7 +658,7 @@ const CustomerManagement: React.FC<CustomerManagementProps> = ({ initialOpenCrea
     });
 
     return result;
-  }, [customers, search, selectedFilerStatus, selectedWalkinStatus, selectedActiveStatus, selectedSalesPerson, selectedBpType, sortKey, sortDir]);
+  }, [customers, search, selectedFilerStatus, selectedWalkinStatus, selectedActiveStatus, selectedSalesPerson, selectedBpType, selectedFromBp, selectedToBp, sortKey, sortDir]);
 
   const totalPages = Math.ceil(filteredCustomers.length / perPage);
   const paginatedCustomers = filteredCustomers.slice((currentPage - 1) * perPage, currentPage * perPage);
@@ -622,36 +670,144 @@ const CustomerManagement: React.FC<CustomerManagementProps> = ({ initialOpenCrea
   const totalBalance = customers.reduce((acc, c) => acc + (c.opening_balance || 0), 0);
 
   const stats = [
-    { label: 'Total Partners', value: totalCount.toString(), sub: `${totalCount} partner database`, icon: User, color: brand.primary, bg: brand.surface },
-    { label: 'Tax Filers', value: filersCount.toString(), sub: `${totalCount > 0 ? ((filersCount / totalCount) * 100).toFixed(0) : 0}% of partner base`, icon: CheckCircle, color: '#15803D', bg: '#F0FDF4' },
+    { label: 'Total Business Partners', value: totalCount.toString(), sub: `${totalCount} business partner database`, icon: User, color: brand.primary, bg: brand.surface },
+    { label: 'Tax Filers', value: filersCount.toString(), sub: `${totalCount > 0 ? ((filersCount / totalCount) * 100).toFixed(0) : 0}% of business partner base`, icon: CheckCircle, color: '#15803D', bg: '#F0FDF4' },
     { label: 'Walk-in Accounts', value: walkinCount.toString(), sub: `${walkinCount} retail accounts`, icon: Clock, color: '#C2410C', bg: '#FFF7ED' },
     { label: 'Total Balance', value: `Rs. ${totalBalance.toLocaleString()}`, sub: 'Total outstanding balance', icon: CreditCard, color: '#BE123C', bg: '#FFF1F2' },
   ];
 
   const sortOptions: { key: 'name' | 'email' | 'credit_limit' | 'opening_balance' | 'status'; label: string }[] = [
-    { key: 'name', label: 'Partner Name' },
+    { key: 'name', label: 'Business Partner Name' },
     { key: 'email', label: 'Email Address' },
     { key: 'status', label: 'Status' },
     { key: 'credit_limit', label: 'Credit Limit' },
     { key: 'opening_balance', label: 'Total Balance' },
   ];
 
+  // ── Print Handler ──
+  const handlePrint = () => {
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-');
+    const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+    // Get company name from session
+    let companyName = 'Company';
+    try {
+      const ac = sessionStorage.getItem('active_company');
+      if (ac) companyName = JSON.parse(ac).name || companyName;
+    } catch {}
+
+    // Title based on selected type
+    const typeLabel = selectedBpType === 'supplier' ? 'Supplier' : selectedBpType === 'customer' ? 'Customer' : 'Business Partner';
+    const reportTitle = `${typeLabel} Balances`;
+
+    // From / To codes
+    const fromCode = selectedFromBp !== 'all' ? selectedFromBp : (filteredCustomers.length > 0 ? (filteredCustomers[0].customer_id || filteredCustomers[0].id) : '');
+    const toCode   = selectedToBp !== 'all' ? selectedToBp : (filteredCustomers.length > 0 ? (filteredCustomers[filteredCustomers.length - 1].customer_id || filteredCustomers[filteredCustomers.length - 1].id) : '');
+
+    // Total balance
+    const totalBal = filteredCustomers.reduce((sum, c) => sum + (c.opening_balance || 0), 0);
+
+    const rows = filteredCustomers.map((c, i) => {
+      const code = c.customer_id || c.id || '';
+      const company = c.name || '';
+      const address = [c.address, c.city].filter(Boolean).join(', ');
+      const contact = (c as any).contact_person || '';
+      const phone = c.phone || c.mobile || '';
+      const creditLimit = (c.credit_limit || 0).toLocaleString(undefined, { minimumFractionDigits: 0 });
+      const balance = (c.opening_balance || 0).toLocaleString(undefined, { minimumFractionDigits: 2 });
+      const bg = i % 2 === 0 ? '' : 'background:#f9f9f9';
+      return `<tr style="${bg}">
+        <td>${code}</td>
+        <td>${company}</td>
+        <td>${address}</td>
+        <td>${contact}</td>
+        <td>${phone}</td>
+        <td style="text-align:right">${creditLimit}</td>
+        <td style="text-align:right">${balance}</td>
+      </tr>`;
+    }).join('');
+
+    const html = `<!DOCTYPE html><html><head><title>${reportTitle}</title><style>
+      * { margin:0; padding:0; box-sizing:border-box; }
+      body { font-family: Arial, sans-serif; font-size: 11px; color: #000; padding: 20px 30px; }
+      .header { text-align: center; margin-bottom: 10px; }
+      .header h1 { font-size: 16px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+      .header h2 { font-size: 13px; font-weight: bold; margin-top: 2px; }
+      .meta { display: flex; justify-content: space-between; align-items: flex-start; margin: 10px 0 6px; }
+      .meta-left { font-size: 11px; }
+      .meta-left span { font-weight: bold; }
+      .meta-right { text-align: right; font-size: 11px; line-height: 1.6; }
+      .meta-right span { font-weight: bold; }
+      table { width: 100%; border-collapse: collapse; margin-top: 4px; }
+      thead tr { border-top: 1.5px solid #000; border-bottom: 1.5px solid #000; }
+      thead th { padding: 5px 6px; font-size: 11px; font-weight: bold; text-align: left; }
+      thead th:nth-child(6), thead th:nth-child(7) { text-align: right; }
+      tbody td { padding: 4px 6px; font-size: 11px; vertical-align: top; }
+      .total-row td { border-top: 1.5px solid #000; font-weight: bold; padding: 5px 6px; text-align: right; }
+      .total-row td:first-child { text-align: left; }
+      @media print { body { padding: 10px 20px; } }
+    </style></head><body>
+      <div class="header">
+        <h1>${companyName}</h1>
+        <h2>${reportTitle}</h2>
+      </div>
+      <div class="meta">
+        <div class="meta-left">
+          <span>${typeLabel} From:</span> ${fromCode} &nbsp;&nbsp; To &nbsp; ${toCode}
+        </div>
+        <div class="meta-right">
+          <span>Date:</span> ${dateStr}<br/>
+          <span>Time:</span> ${timeStr}
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>${typeLabel} ID</th>
+            <th>Company</th>
+            <th>Address</th>
+            <th>Contact</th>
+            <th>Phone</th>
+            <th>Credit Limit</th>
+            <th>Balance</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+        <tfoot>
+          <tr class="total-row">
+            <td colspan="6"></td>
+            <td>${totalBal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+          </tr>
+        </tfoot>
+      </table>
+    </body></html>`;
+
+    const win = window.open('', '_blank', 'width=900,height=700');
+    if (win) {
+      win.document.write(html);
+      win.document.close();
+      win.focus();
+      setTimeout(() => win.print(), 500);
+    }
+  };
+
 
 
   return (
     <div className="min-h-full p-6 space-y-5" style={{ background: '#F4F7FD' }}>
 
-      {/* â”€â”€ Page Header â”€â”€ */}
+      {/* -- Page Header -- */}
       <PageHeader
         title="Business Partner List"
-        subtitle={`${filteredCustomers.length} partners found Â· Last updated just now`}
+        subtitle={`${filteredCustomers.length} business partners found · Last updated just now`}
         actions={
           <>
             <Button
               variant="white"
               size="md"
               icon={Printer}
-              onClick={() => window.print()}
+              onClick={handlePrint}
             >
               Print
             </Button>
@@ -723,16 +879,16 @@ const CustomerManagement: React.FC<CustomerManagementProps> = ({ initialOpenCrea
         {/* â”€â”€ Solid Header Bar â”€â”€ */}
         <div className="px-4 py-2.5 flex items-center justify-between text-white"
           style={{ backgroundColor: brand.primary }}>
-          <CardTitle title="Partner Records" count={filteredCustomers.length} countLabel="partners" />
+          <CardTitle title="Business Partner Records" count={filteredCustomers.length} countLabel="business partners" />
 
-          {/* Search inside header bar */}
+          {/* â”€â”€ Search inside header bar â”€â”€ */}
           <div className="flex items-center gap-2 print-hidden">
             <div className="relative">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-white/60" />
               <input
                 value={search}
                 onChange={e => { setSearch(e.target.value); setCurrentPage(1); }}
-                placeholder="Search Partners..."
+                placeholder="Search Business Partners..."
                 className="h-7 pl-7 pr-3 rounded-lg text-[11px] font-medium border outline-none w-52"
                 style={{ background: 'rgba(255,255,255,0.12)', borderColor: 'rgba(255,255,255,0.2)', color: 'white' }}
               />
@@ -763,7 +919,7 @@ const CustomerManagement: React.FC<CustomerManagementProps> = ({ initialOpenCrea
                         style={{ color: sortKey === opt.key ? brand.primary : brand.dark }}>
                         {opt.label}
                         {sortKey === opt.key && (
-                          <span>{sortDir === 'asc' ? 'â†‘' : 'â†“'}</span>
+                          <span>{sortDir === 'asc' ? '↑' : '↓'}</span>
                         )}
                       </button>
                     ))}
@@ -802,7 +958,7 @@ const CustomerManagement: React.FC<CustomerManagementProps> = ({ initialOpenCrea
               className="bg-slate-900 text-white px-6 py-3 border-t border-slate-800 flex items-center justify-between"
             >
               <span className="text-xs font-bold text-slate-400">
-                <strong className="text-white text-sm mr-1">{selectedCustomerIds.length}</strong> partners selected
+                <strong className="text-white text-sm mr-1">{selectedCustomerIds.length}</strong> business partners selected
               </span>
 
               <div className="flex items-center gap-2 flex-wrap">
@@ -880,8 +1036,8 @@ const CustomerManagement: React.FC<CustomerManagementProps> = ({ initialOpenCrea
                             />
                           </th>
                           {([
-                            { label: 'Partner Details', key: 'name', width: 'w-[24%]' },
-                            { label: 'Partner Type', key: 'status', width: 'w-[12%]' },
+                            { label: 'Business Partner Details', key: 'name', width: 'w-[24%]' },
+                            { label: 'Business Partner Type', key: 'status', width: 'w-[12%]' },
                             { label: 'Phone Number', key: 'email', width: 'w-[13%]' },
                             { label: 'City', key: null, width: 'w-[11%]' },
                             { label: 'Credit Limit (Rs.)', key: 'credit_limit', width: 'w-[15%]' },
@@ -927,7 +1083,7 @@ const CustomerManagement: React.FC<CustomerManagementProps> = ({ initialOpenCrea
                               </td>
 
                               {/* Partner Details (Name + ID) */}
-                              {docSettings.columns['Partner Details'] && (
+                              {docSettings.columns['Business Partner Details'] && (
                                 <td className="px-2 py-2">
                                   <div className="flex items-center gap-2">
                                     <div className="w-12 h-6 rounded-lg flex items-center justify-center bg-slate-100 border border-slate-200 text-black text-[9px] font-mono font-medium flex-shrink-0">
@@ -942,7 +1098,7 @@ const CustomerManagement: React.FC<CustomerManagementProps> = ({ initialOpenCrea
                               )}
 
                               {/* Partner Type */}
-                              {docSettings.columns['Partner Type'] && (
+                              {docSettings.columns['Business Partner Type'] && (
                                 <td className="px-2 py-2">
                                   <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-bold capitalize ${
                                     cust.bp_type === 'supplier'
@@ -1017,7 +1173,7 @@ const CustomerManagement: React.FC<CustomerManagementProps> = ({ initialOpenCrea
                           <tr>
                             <td colSpan={2 + Object.values(docSettings.columns).filter(Boolean).length} className="py-16 text-center">
                               <User className="w-10 h-10 mx-auto mb-3 text-slate-200" />
-                              <p className="text-[13px] font-medium text-slate-400">No partners found</p>
+                              <p className="text-[13px] font-medium text-slate-400">No business partners found</p>
                               <p className="text-[11px] text-slate-300 mt-1">Try adjusting your filters or search query</p>
                             </td>
                           </tr>
@@ -1114,7 +1270,7 @@ const CustomerManagement: React.FC<CustomerManagementProps> = ({ initialOpenCrea
           <div className="px-4 py-3 border-t flex items-center justify-between print-hidden"
             style={{ borderColor: brand.dark + '08', background: brand.surface + '60' }}>
             <p className="text-[11px] font-medium text-black">
-              Showing {(currentPage - 1) * perPage + 1}â€“{Math.min(currentPage * perPage, filteredCustomers.length)} of {filteredCustomers.length}
+              Showing {(currentPage - 1) * perPage + 1}-{Math.min(currentPage * perPage, filteredCustomers.length)} of {filteredCustomers.length}
             </p>
             <div className="flex items-center gap-1">
               <Button onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
@@ -1160,7 +1316,7 @@ const CustomerManagement: React.FC<CustomerManagementProps> = ({ initialOpenCrea
               <div className="flex-grow overflow-y-auto px-6 py-5 space-y-5 custom-scrollbar">
                 {/* SECTION 1: Customer Contact & Location */}
                 <div className="space-y-1.5">
-                  <SectionHeader title="Partner Contact & Location" icon={MapPin} />
+                  <SectionHeader title="Business Partner Contact & Location" icon={MapPin} />
                   <Card className="p-4" style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}>
                     <div className="grid grid-cols-2 gap-4">
                       {viewSettings.fields['Email Address'] && <Input variant="compact" label="Email Address" readOnly value={viewingCustomer.email || 'N/A'} />}
@@ -1188,9 +1344,9 @@ const CustomerManagement: React.FC<CustomerManagementProps> = ({ initialOpenCrea
                       {viewSettings.fields['Payment Terms'] && <Input variant="compact" label="Payment Terms" readOnly value={`${viewingCustomer.payment_term_days} days`} />}
                       {viewSettings.fields['Default Discount'] && <Input variant="compact" label="Discount Percent" readOnly value={`${viewingCustomer.discount_percent}%`} />}
                       {viewSettings.fields['Salesperson'] && <Input variant="compact" label="Sales Person" readOnly value={salesPersonsList.find(sp => sp.id === viewingCustomer.sales_person_id)?.name || 'N/A'} />}
-                      {viewSettings.fields['Walk-in Customer'] && <Input variant="compact" label="Walk-in Partner" readOnly value={viewingCustomer.is_walkin ? 'Yes' : 'No'} />}
+                      {viewSettings.fields['Walk-in Customer'] && <Input variant="compact" label="Walk-in Business Partner" readOnly value={viewingCustomer.is_walkin ? 'Yes' : 'No'} />}
                       {viewSettings.fields['Tax Filer'] && <Input variant="compact" label="Tax Filer" readOnly value={viewingCustomer.is_filer ? 'Filer' : 'Non-Filer'} />}
-                      <Input variant="compact" label="Partner Type" readOnly value={viewingCustomer.bp_type || 'customer'} className="capitalize" />
+                      <Input variant="compact" label="Business Partner Type" readOnly value={viewingCustomer.bp_type || 'customer'} className="capitalize" />
                       <Input variant="compact" label="Status" readOnly value={viewingCustomer.is_active ? 'Active' : 'Inactive'} />
                     </div>
                   </Card>
@@ -1220,7 +1376,7 @@ const CustomerManagement: React.FC<CustomerManagementProps> = ({ initialOpenCrea
                     openEdit(viewingCustomer);
                   }}
                 >
-                  Edit Partner Profile
+                  Edit Business Partner Profile
                 </Button>
                 <Button
                   variant="primary"
@@ -1347,28 +1503,91 @@ const CustomerManagement: React.FC<CustomerManagementProps> = ({ initialOpenCrea
                       <SectionHeader title="Basic Contact Information" icon={User} className="text-slate-700" />
                       <Card className="p-4" style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}>
                         <div className="grid grid-cols-3 gap-3">
-                          <Input variant="compact" label="Partner Code" value={editing.customer_id || ''} onChange={(e) => setEditing({ ...editing, customer_id: e.target.value })} placeholder="e.g. BP-0001" readOnly={codeSetting.mode === 'auto'} />
-                          <Input
-                            variant="compact"
-                            label="Partner Name *"
-                            value={editing.name}
-                            onChange={(e) => {
-                              setEditing({ ...editing, name: e.target.value });
-                              if (e.target.value.trim()) setFormErrors(prev => ({ ...prev, name: '' }));
-                            }}
-                            error={formErrors.name}
-                            placeholder="e.g. Acme Corporation"
-                          />
-                          <Select
-                            variant="compact"
-                            label="Partner Type *"
-                            value={editing.bp_type || 'customer'}
-                            onChange={(e) => setEditing({ ...editing, bp_type: e.target.value as any })}
-                            options={[
-                              { value: 'customer', label: 'Customer' },
-                              { value: 'supplier', label: 'Supplier' }
-                            ]}
-                          />
+                          {codeSetting.mode === 'auto' ? (
+                            <>
+                              <Input variant="compact" label="Business Partner Code" value={editing.customer_id || ''} onChange={(e) => setEditing({ ...editing, customer_id: e.target.value })} placeholder="e.g. BP-0001" readOnly={true} />
+                              <Input
+                                variant="compact"
+                                label="Business Partner Name *"
+                                value={editing.name}
+                                onChange={(e) => {
+                                  setEditing({ ...editing, name: e.target.value });
+                                  if (e.target.value.trim()) setFormErrors(prev => ({ ...prev, name: '' }));
+                                }}
+                                error={formErrors.name}
+                                placeholder="e.g. Acme Corporation"
+                              />
+                              <Select
+                                variant="compact"
+                                label="Business Partner Type *"
+                                value={editing.bp_type || 'customer'}
+                                onChange={(e) => {
+                                  const newType = e.target.value as 'customer' | 'supplier';
+                                  const activeCo = sessionStorage.getItem('active_company');
+                                  const activeBr = sessionStorage.getItem('active_branch');
+                                  const currentCoId = activeCo ? JSON.parse(activeCo).id : 'co1';
+                                  const currentBrId = activeBr ? JSON.parse(activeBr).id : 'br-1';
+                                  const settings = getCodeSettingsForBranch(currentCoId, currentBrId)[newType];
+                                  const isExisting = customers.some(c => c.id === editing.id);
+                                  let nextId = editing.customer_id;
+                                  if (!isExisting) {
+                                    if (settings.mode === 'auto') {
+                                      nextId = generateNextCode(newType, currentCoId, currentBrId);
+                                    } else {
+                                      nextId = '';
+                                    }
+                                  }
+                                  setEditing({ ...editing, bp_type: newType, customer_id: nextId });
+                                }}
+                                options={[
+                                  { value: 'customer', label: 'Customer' },
+                                  { value: 'supplier', label: 'Supplier' }
+                                ]}
+                              />
+                            </>
+                          ) : (
+                            <>
+                              <Input
+                                variant="compact"
+                                label="Business Partner Name *"
+                                value={editing.name}
+                                onChange={(e) => {
+                                  setEditing({ ...editing, name: e.target.value });
+                                  if (e.target.value.trim()) setFormErrors(prev => ({ ...prev, name: '' }));
+                                }}
+                                error={formErrors.name}
+                                placeholder="e.g. Acme Corporation"
+                              />
+                              <Input variant="compact" label="Business Partner Code" value={editing.customer_id || ''} onChange={(e) => setEditing({ ...editing, customer_id: e.target.value })} placeholder="e.g. BP-0001" readOnly={false} />
+                              <Select
+                                variant="compact"
+                                label="Business Partner Type *"
+                                value={editing.bp_type || 'customer'}
+                                onChange={(e) => {
+                                  const newType = e.target.value as 'customer' | 'supplier';
+                                  const activeCo = sessionStorage.getItem('active_company');
+                                  const activeBr = sessionStorage.getItem('active_branch');
+                                  const currentCoId = activeCo ? JSON.parse(activeCo).id : 'co1';
+                                  const currentBrId = activeBr ? JSON.parse(activeBr).id : 'br-1';
+                                  const settings = getCodeSettingsForBranch(currentCoId, currentBrId)[newType];
+                                  const isExisting = customers.some(c => c.id === editing.id);
+                                  let nextId = editing.customer_id;
+                                  if (!isExisting) {
+                                    if (settings.mode === 'auto') {
+                                      nextId = generateNextCode(newType, currentCoId, currentBrId);
+                                    } else {
+                                      nextId = '';
+                                    }
+                                  }
+                                  setEditing({ ...editing, bp_type: newType, customer_id: nextId });
+                                }}
+                                options={[
+                                  { value: 'customer', label: 'Customer' },
+                                  { value: 'supplier', label: 'Supplier' }
+                                ]}
+                              />
+                            </>
+                          )}
                           {editSettings.fields['Email Address'] && (
                             <Input
                               variant="compact"
@@ -1498,7 +1717,18 @@ const CustomerManagement: React.FC<CustomerManagementProps> = ({ initialOpenCrea
                     Cancel
                   </Button>
 
-                  {activeTab !== 'accounting' ? (
+                  <Button
+                    type="button"
+                    variant="primary"
+                    size="md"
+                    icon={Save}
+                    onClick={handleSave}
+                    className="bg-emerald-500 hover:bg-emerald-600 shadow-none text-white"
+                  >
+                    {customers.some(c => c.id === editing.id) ? 'Save Changes' : 'Add Business Partner'}
+                  </Button>
+
+                  {activeTab !== 'accounting' && (
                     <Button
                       type="button"
                       variant="primary"
@@ -1516,10 +1746,6 @@ const CustomerManagement: React.FC<CustomerManagementProps> = ({ initialOpenCrea
                       style={{ backgroundColor: brand.primary }}
                     >
                       Next
-                    </Button>
-                  ) : (
-                    <Button variant="primary" size="md" onClick={handleSave} className="bg-emerald-500 hover:bg-emerald-600 shadow-none">
-                      Save Business Partner
                     </Button>
                   )}
                 </div>
@@ -1540,6 +1766,8 @@ const CustomerManagement: React.FC<CustomerManagementProps> = ({ initialOpenCrea
           setSelectedActiveStatus(tempActiveStatus);
           setSelectedSalesPerson(tempSalesPerson);
           setSelectedBpType(tempBpType);
+          setSelectedFromBp(tempFromBp);
+          setSelectedToBp(tempToBp);
           setCurrentPage(1);
           setShowFilterDrawer(false);
         }}
@@ -1547,29 +1775,41 @@ const CustomerManagement: React.FC<CustomerManagementProps> = ({ initialOpenCrea
 
         {/* Partner Type */}
         <div className="space-y-1.5">
-          <label className="block text-[11px] font-bold text-slate-500">Partner type</label>
-          <div className="grid grid-cols-3 gap-1 bg-slate-100/60 p-0.5 rounded-lg border border-slate-200/30">
-            {[
-              { key: 'all', label: 'All' },
-              { key: 'customer', label: 'Customer' },
-              { key: 'supplier', label: 'Supplier' }
-            ].map(opt => {
-              const isActive = tempBpType === opt.key;
-              return (
-                <button
-                  key={opt.key}
-                  onClick={() => setTempBpType(opt.key)}
-                  className={`py-1 rounded text-[11px] font-bold transition-all text-center cursor-pointer outline-none ${isActive
-                    ? 'bg-white shadow-xs border border-slate-200/40'
-                    : 'text-slate-500 hover:text-slate-800 bg-transparent border border-transparent'
-                    }`}
-                  style={{ color: isActive ? brand.primary : undefined }}
-                >
-                  {opt.label}
-                </button>
-              );
-            })}
-          </div>
+          <label className="block text-[11px] font-bold text-slate-500">Partner Type</label>
+          <Select
+            variant="compact"
+            value={tempBpType}
+            onChange={e => setTempBpType(e.target.value)}
+            options={[
+              { value: 'all', label: 'All Types' },
+              { value: 'customer', label: 'Customer' },
+              { value: 'supplier', label: 'Supplier' },
+            ]}
+          />
+        </div>
+
+        {/* BP Range From */}
+        <div className="space-y-1.5">
+          <label className="block text-[11px] font-bold text-slate-500">From Partner</label>
+          <ComboBox
+            value={tempFromBp}
+            onChange={val => setTempFromBp(val || 'all')}
+            options={bpOptions}
+            placeholder="Select Start Partner..."
+            variant="compact"
+          />
+        </div>
+
+        {/* BP Range To */}
+        <div className="space-y-1.5">
+          <label className="block text-[11px] font-bold text-slate-500">To Partner</label>
+          <ComboBox
+            value={tempToBp}
+            onChange={val => setTempToBp(val || 'all')}
+            options={bpOptions}
+            placeholder="Select End Partner..."
+            variant="compact"
+          />
         </div>
 
         {/* Tax Status */}

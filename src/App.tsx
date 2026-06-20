@@ -22,6 +22,7 @@ import Help from './pages/Help/Help';
 import Login from './pages/Auth/Login';
 import ProductList from './pages/Products/ProductList';
 import WarehousesPage from './pages/Products/Warehouses';
+import { ProductBatchPage } from './pages/Products/ProductBatchPage';
 import InlineProductForm from './components/ui/InlineProductForm';
 import { AlertModal } from './components/ui/AlertModal';
 
@@ -65,7 +66,7 @@ const parseCustomCss = (cssString?: string): React.CSSProperties => {
   return styles;
 };
 
-type View = 'dashboard' | 'dashboard1' | 'dashboard2' | 'invoices' | 'add-invoice' | 'add-invoice-v2' | 'add-invoice-v3' | 'add-invoice-v4' | 'return-invoice' | 'customers' | 'add-customer' | 'products' | 'warehouses' | 'settings' | 'help' | 'purchases' | 'add-purchase-invoice' | 'purchase-return';
+type View = 'dashboard' | 'dashboard1' | 'dashboard2' | 'invoices' | 'add-invoice' | 'add-invoice-v2' | 'add-invoice-v3' | 'add-invoice-v4' | 'return-invoice' | 'customers' | 'add-customer' | 'products' | 'warehouses' | 'product-batches' | 'settings' | 'help' | 'purchases' | 'add-purchase-invoice' | 'purchase-return';
 
 const initialPurchases: Invoice[] = [
   {
@@ -1304,6 +1305,8 @@ function App() {
         }} />;
       case 'warehouses':
         return <WarehousesPage />;
+      case 'product-batches':
+        return <ProductBatchPage />;
       case 'purchases':
         return <PurchaseList purchaseItems={filteredPurchaseList} setPurchaseItems={setPurchaseList} onViewChange={handleViewChange} onPrintPurchase={handlePrintInvoice} onEditPurchase={handleEditPurchase} />;
       case 'add-purchase-invoice':

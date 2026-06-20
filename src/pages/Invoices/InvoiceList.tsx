@@ -315,7 +315,7 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ onViewChange, invoiceItems, s
   const sortOptions: { key: SortKey; label: string }[] = [
     { key: 'id', label: 'Invoice ID' },
     { key: 'fbrInvoiceNumber', label: 'FBR Invoice Number' },
-    { key: 'customer', label: 'Partner Name' },
+    { key: 'customer', label: 'Business Partner Name' },
     { key: 'issueDate', label: 'Issue Date' },
     { key: 'dueDate', label: 'Due Date' },
     { key: 'amount', label: 'Amount' },
@@ -738,8 +738,8 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ onViewChange, invoiceItems, s
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Customer details */}
                         <div className="space-y-3">
-                          <Input variant="compact" label="Partner Name" placeholder="Partner Name" readOnly value={previewInvoice.customerName} />
-                          <TextArea label="Partner Address" placeholder="Partner Address" readOnly value={previewInvoice.customerAddress || ''} className="!rounded-lg text-[11px] py-1.5 px-3 h-14" />
+                          <Input variant="compact" label="Business Partner Name" placeholder="Business Partner Name" readOnly value={previewInvoice.customerName} />
+                          <TextArea label="Address" placeholder="Address" readOnly value={previewInvoice.customerAddress || ''} className="!rounded-lg text-[11px] py-1.5 px-3 h-14" />
                         </div>
                         {/* Sender details */}
                         <div className="space-y-3">

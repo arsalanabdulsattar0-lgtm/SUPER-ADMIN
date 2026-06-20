@@ -330,7 +330,7 @@ const PurchaseList: React.FC<PurchaseListProps> = ({ onViewChange, purchaseItems
   const sortOptions: { key: SortKey; label: string }[] = [
     { key: 'id', label: 'Invoice ID' },
     { key: 'fbrInvoiceNumber', label: 'FBR Invoice Number' },
-    { key: 'customer', label: 'Partner Name' },
+    { key: 'customer', label: 'Business Partner Name' },
     { key: 'issueDate', label: 'Issue Date' },
     { key: 'dueDate', label: 'Due Date' },
     { key: 'amount', label: 'Amount' },

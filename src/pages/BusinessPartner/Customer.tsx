@@ -4,7 +4,7 @@ import {
   Plus, Search, Trash2, Edit2, LayoutGrid, List,
   SlidersHorizontal, ArrowUpDown, X, Eye,
   CheckCircle, Clock, ChevronLeft, ChevronRight,
-  User, ShieldCheck, MapPin, Globe, CreditCard, Printer
+  User, ShieldCheck, MapPin, Globe, CreditCard, Printer, Save
 } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Input, TextArea, ScrollArea, ComboBox, Select, Toggle } from '../../components/ui/FormControls';
@@ -77,7 +77,7 @@ const CustomerComponent: React.FC = () => {
       };
       
       const defaultColumns = {
-        'Partner Details': true,
+        'Business Partner Details': true,
         'Phone Number': true,
         'City': true,
         'Credit Limit (Rs.)': true,
@@ -88,7 +88,7 @@ const CustomerComponent: React.FC = () => {
       
       const mergedColumns = { ...defaultColumns, ...settingsForType.columns };
       if (settingsForType.columns && settingsForType.columns['Customer Details'] !== undefined) {
-        mergedColumns['Partner Details'] = settingsForType.columns['Customer Details'];
+        mergedColumns['Business Partner Details'] = settingsForType.columns['Customer Details'];
       }
       
       return {
@@ -105,7 +105,7 @@ const CustomerComponent: React.FC = () => {
           'CNIC Number': true, 'WHT Category': true, 'Total Balance': true, 'Salesperson': true
         },
         columns: {
-          'Partner Details': true, 'Phone Number': true, 'City': true,
+          'Business Partner Details': true, 'Phone Number': true, 'City': true,
           'Credit Limit (Rs.)': true, 'Total Balance (Rs.)': true, 'Tax Status': true, 'Status': true
         }
       };
@@ -145,6 +145,18 @@ const CustomerComponent: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'general' | 'settings' | 'accounting'>('general');
   const [editing, setEditing] = useState<Customer | null>(null);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+
+  const codeSetting = useMemo(() => {
+    try {
+      const activeCo = sessionStorage.getItem('active_company');
+      const activeBr = sessionStorage.getItem('active_branch');
+      const currentCoId = activeCo ? JSON.parse(activeCo).id : 'co1';
+      const currentBrId = activeBr ? JSON.parse(activeBr).id : 'br-1';
+      return getCodeSettingsForBranch(currentCoId, currentBrId).customer;
+    } catch {
+      return { mode: 'manual', prefix: 'CUS-', digits: 4, nextNumber: 1 };
+    }
+  }, [showModal]);
 
   // Details Drawer States
   const [viewingCustomer, setViewingCustomer] = useState<Customer | null>(null);
@@ -199,7 +211,7 @@ const CustomerComponent: React.FC = () => {
   useEffect(() => {
     try {
       const stored = localStorage.getItem('customer_list');
-      const seededFlag = localStorage.getItem('customers_seeded_v7');
+      const seededFlag = localStorage.getItem('customers_seeded_v8');
       const parsed = stored ? JSON.parse(stored) : null;
       if (parsed && parsed.length > 0 && seededFlag === 'true') {
         setCustomers(parsed);
@@ -712,7 +724,7 @@ const CustomerComponent: React.FC = () => {
                             />
                           </th>
                           {([
-                            { label: 'Partner Details', key: 'name', width: 'w-[22%]' },
+                            { label: 'Business Partner Details', key: 'name', width: 'w-[22%]' },
                             { label: 'Phone Number', key: 'email', width: 'w-[15%]' },
                             { label: 'City', key: null, width: 'w-[13%]' },
                             { label: 'Credit Limit (Rs.)', key: 'credit_limit', width: 'w-[13%]' },
@@ -758,7 +770,7 @@ const CustomerComponent: React.FC = () => {
                               </td>
 
                               {/* Customer Details */}
-                              {customerSettings.columns['Partner Details'] && (
+                              {customerSettings.columns['Business Partner Details'] && (
                                 <td className="px-4 py-3">
                                   <div className="flex items-center gap-2.5">
                                     <div className="w-14 h-7 rounded-lg flex items-center justify-center bg-slate-100 border border-slate-200 text-black text-[10px] font-mono font-medium flex-shrink-0">
@@ -1123,24 +1135,51 @@ const CustomerComponent: React.FC = () => {
                       <SectionHeader title="Basic Information" icon={User} className="text-slate-700" />
                       <Card className="p-4" style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}>
                         <div className="grid grid-cols-2 gap-4">
-                          <Input
-                            variant="compact"
-                            label="Customer ID / Code"
-                            value={editing.customer_id || ''}
-                            onChange={(e) => setEditing({ ...editing, customer_id: e.target.value })}
-                            placeholder="e.g. CUST-0001 (Auto-generated if empty)"
-                          />
-                          <Input
-                            variant="compact"
-                            label="Customer Name *"
-                            value={editing.name}
-                            onChange={(e) => {
-                              setEditing({ ...editing, name: e.target.value });
-                              if (e.target.value.trim()) setFormErrors(prev => ({ ...prev, name: '' }));
-                            }}
-                            error={formErrors.name}
-                            placeholder="e.g. Acme Corporation"
-                          />
+                          {codeSetting.mode === 'auto' ? (
+                            <>
+                              <Input
+                                variant="compact"
+                                label="Customer ID / Code"
+                                value={editing.customer_id || ''}
+                                onChange={(e) => setEditing({ ...editing, customer_id: e.target.value })}
+                                placeholder="e.g. CUST-0001 (Auto-generated if empty)"
+                                readOnly={true}
+                              />
+                              <Input
+                                variant="compact"
+                                label="Customer Name *"
+                                value={editing.name}
+                                onChange={(e) => {
+                                  setEditing({ ...editing, name: e.target.value });
+                                  if (e.target.value.trim()) setFormErrors(prev => ({ ...prev, name: '' }));
+                                }}
+                                error={formErrors.name}
+                                placeholder="e.g. Acme Corporation"
+                              />
+                            </>
+                          ) : (
+                            <>
+                              <Input
+                                variant="compact"
+                                label="Customer Name *"
+                                value={editing.name}
+                                onChange={(e) => {
+                                  setEditing({ ...editing, name: e.target.value });
+                                  if (e.target.value.trim()) setFormErrors(prev => ({ ...prev, name: '' }));
+                                }}
+                                error={formErrors.name}
+                                placeholder="e.g. Acme Corporation"
+                              />
+                              <Input
+                                variant="compact"
+                                label="Customer ID / Code"
+                                value={editing.customer_id || ''}
+                                onChange={(e) => setEditing({ ...editing, customer_id: e.target.value })}
+                                placeholder="e.g. CUST-0001 (Auto-generated if empty)"
+                                readOnly={false}
+                              />
+                            </>
+                          )}
                           {customerSettings.fields['Email Address'] && (
                             <Input
                               variant="compact"
@@ -1189,7 +1228,7 @@ const CustomerComponent: React.FC = () => {
                       <Card className="p-4" style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}>
                         <div className="space-y-4">
                           <div className="flex items-center gap-6 flex-wrap pt-1">
-                            {customerSettings.fields['Walk-in Customer'] && <Toggle checked={editing.is_walkin} onChange={(v) => setEditing({ ...editing, is_walkin: v })} label="Walk-in Retail Partner" />}
+                            {customerSettings.fields['Walk-in Customer'] && <Toggle checked={editing.is_walkin} onChange={(v) => setEditing({ ...editing, is_walkin: v })} label="Walk-in Retail Business Partner" />}
                             {customerSettings.fields['Tax Filer'] && <Toggle checked={editing.is_filer} onChange={(v) => setEditing({ ...editing, is_filer: v })} label="Registered Tax Filer" />}
                             <Toggle checked={editing.is_active} onChange={(v) => setEditing({ ...editing, is_active: v })} label="Active Account Status" />
                           </div>
@@ -1262,13 +1301,23 @@ const CustomerComponent: React.FC = () => {
                     </Button>
                   )}
                 </div>
-
                 <div className="flex items-center gap-3">
                   <Button variant="white" size="md" onClick={closeModal}>
                     Cancel
                   </Button>
 
-                  {activeTab !== 'accounting' ? (
+                  <Button
+                    type="button"
+                    variant="primary"
+                    size="md"
+                    icon={Save}
+                    onClick={handleSave}
+                    className="bg-emerald-500 hover:bg-emerald-600 shadow-none text-white"
+                  >
+                    {customers.some(c => c.id === editing.id) ? 'Save Changes' : 'Add Customer'}
+                  </Button>
+
+                  {activeTab !== 'accounting' && (
                     <Button
                       type="button"
                       variant="primary"
@@ -1286,10 +1335,6 @@ const CustomerComponent: React.FC = () => {
                       style={{ backgroundColor: brand.primary }}
                     >
                       Next
-                    </Button>
-                  ) : (
-                    <Button variant="primary" size="md" onClick={handleSave} className="bg-emerald-500 hover:bg-emerald-600 shadow-none">
-                      Save Customer
                     </Button>
                   )}
                 </div>

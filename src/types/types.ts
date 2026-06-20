@@ -28,6 +28,7 @@ export interface InvoiceItem {
   discount: number;
   tax: number;
   furtherTax: number;
+  batchNo?: string;
 }
 
 export interface InvoiceData {

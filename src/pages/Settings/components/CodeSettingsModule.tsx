@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import Card from '../../../components/ui/Card';
+import { SectionCard } from '../../../components/ui/SectionCard';
 import { useTheme } from '../../../context/ThemeContext';
 import { Input, Select, Toggle } from '../../../components/ui/FormControls';
 import { Button } from '../../../components/ui/Button';
@@ -377,7 +378,11 @@ export const CodeSettingsModule: React.FC<CodeSettingsModuleProps> = ({ brand })
 
     let result = '';
     grid.forEach(row => {
-      result += (row.value || '') + (row.separator || '');
+      if (row.value) {
+        result += row.value + (row.separator || '');
+      } else if (row.type === 'Serial') {
+        result += row.value || '';
+      }
     });
     return result;
   }, [grid, mode]);
@@ -395,7 +400,9 @@ export const CodeSettingsModule: React.FC<CodeSettingsModuleProps> = ({ brand })
     const prefixParts = grid.filter(row => row.type !== 'Serial');
     let prefix = '';
     prefixParts.forEach(row => {
-      prefix += (row.value || '') + (row.separator || '');
+      if (row.value) {
+        prefix += row.value + (row.separator || '');
+      }
     });
 
     const draftSerialRow = draftGrid.find(row => row.type === 'Serial');
@@ -405,7 +412,9 @@ export const CodeSettingsModule: React.FC<CodeSettingsModuleProps> = ({ brand })
     const draftPrefixParts = draftGrid.filter(row => row.type !== 'Serial');
     let draftPrefix = '';
     draftPrefixParts.forEach(row => {
-      draftPrefix += (row.value || '') + (row.separator || '');
+      if (row.value) {
+        draftPrefix += row.value + (row.separator || '');
+      }
     });
 
     const updatedSetting: EntityCodeSetting = {
@@ -495,21 +504,22 @@ export const CodeSettingsModule: React.FC<CodeSettingsModuleProps> = ({ brand })
     };
 
     return (
-      <div className="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-xs">
-        <table className="w-full border-collapse border border-slate-200">
+      <div className="border border-slate-200/60 rounded-xl overflow-hidden bg-white shadow-xs">
+        <table className="w-full border-collapse">
           <thead>
-            <tr className="bg-slate-50 border-b border-slate-200">
-              <th className="px-4 py-2.5 text-left text-[10px] font-black text-slate-400 w-12 border border-slate-200">Sr#</th>
-              <th className="px-4 py-2.5 text-left text-[10px] font-black text-slate-400 w-44 border border-slate-200">Number Format Type</th>
-              <th className="px-4 py-2.5 text-left text-[10px] font-black text-slate-400 w-48 border border-slate-200">Value</th>
-              <th className="px-4 py-2.5 text-left text-[10px] font-black text-slate-400 w-24 border border-slate-200">Separator</th>
-              <th className="px-4 py-2 text-center text-[10px] font-black text-slate-400 w-20 border border-slate-200">
+            <tr className="bg-slate-50/80 border-b border-slate-200/60">
+              <th className="px-4 py-3 text-left text-[10px] font-bold text-slate-400 uppercase tracking-wider w-12">Sr#</th>
+              <th className="px-4 py-3 text-left text-[10px] font-bold text-slate-400 uppercase tracking-wider w-44">Number Format Type</th>
+              <th className="px-4 py-3 text-left text-[10px] font-bold text-slate-400 uppercase tracking-wider w-48">Value</th>
+              <th className="px-4 py-3 text-left text-[10px] font-bold text-slate-400 uppercase tracking-wider w-24">Separator</th>
+              <th className="px-4 py-3 text-center text-[10px] font-bold text-slate-400 uppercase tracking-wider w-24">
                 <Button
                   variant="primary"
-                  size="sm"
+                  size="xs"
                   onClick={addRow}
                   icon={Plus}
                   style={{ backgroundColor: brand.primary }}
+                  className="rounded-lg h-7"
                 >
                   Add
                 </Button>
@@ -527,11 +537,12 @@ export const CodeSettingsModule: React.FC<CodeSettingsModuleProps> = ({ brand })
               return (
                 <tr
                   key={row.id}
-                  className="border-b border-slate-100 last:border-0 hover:bg-slate-50/40"
-                  style={isEditing ? { backgroundColor: '#e2f0d9' } : undefined}
+                  className={`border-b border-slate-100 last:border-0 hover:bg-slate-50/40 transition-colors ${
+                    isEditing ? 'bg-blue-50/30' : ''
+                  }`}
                 >
-                  <td className="px-4 py-2 text-[12px] font-normal text-slate-600 border border-slate-200">{idx + 1}</td>
-                  <td className="px-4 py-2 text-[12px] border border-slate-200">
+                  <td className="px-4 py-2.5 text-[11.5px] font-normal text-slate-500">{idx + 1}</td>
+                  <td className="px-4 py-2.5 text-[11.5px] font-medium text-slate-700">
                     {isEditing ? (
                       <Select
                         variant="compact"
@@ -552,7 +563,7 @@ export const CodeSettingsModule: React.FC<CodeSettingsModuleProps> = ({ brand })
                       row.type
                     )}
                   </td>
-                  <td className="px-4 py-2 text-[12px] border border-slate-200">
+                  <td className="px-4 py-2.5 text-[11.5px] font-normal text-slate-700">
                     {isEditing ? (
                       <Input
                         variant="compact"
@@ -566,7 +577,7 @@ export const CodeSettingsModule: React.FC<CodeSettingsModuleProps> = ({ brand })
                       row.value
                     )}
                   </td>
-                  <td className="px-4 py-2 text-[12px] border border-slate-200">
+                  <td className="px-4 py-2.5 text-[11.5px] font-normal text-slate-600">
                     {isEditing ? (
                       <Select
                         variant="compact"
@@ -586,37 +597,37 @@ export const CodeSettingsModule: React.FC<CodeSettingsModuleProps> = ({ brand })
                       row.separator || 'None'
                     )}
                   </td>
-                  <td className="px-4 py-2 text-center border border-slate-200">
+                  <td className="px-4 py-2.5 text-center">
                     {isEditing ? (
                       <div className="flex items-center justify-center gap-1.5">
                         <button
                           type="button"
                           onClick={() => saveEdit(row.id)}
-                          className="p-1 rounded bg-emerald-500 text-white hover:bg-emerald-600 border-none cursor-pointer flex items-center justify-center"
+                          className="p-1.5 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 hover:text-emerald-700 border-none cursor-pointer flex items-center justify-center transition-colors"
                         >
                           <Check className="w-3.5 h-3.5" />
                         </button>
                         <button
                           type="button"
                           onClick={cancelEdit}
-                          className="p-1 rounded bg-red-500 text-white hover:bg-red-600 border-none cursor-pointer flex items-center justify-center"
+                          className="p-1.5 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 hover:text-rose-700 border-none cursor-pointer flex items-center justify-center transition-colors"
                         >
                           <X className="w-3.5 h-3.5" />
                         </button>
                       </div>
                     ) : (
-                      <div className="flex items-center justify-center gap-1.5">
+                      <div className="flex items-center justify-center gap-1">
                         <button
                           type="button"
                           onClick={() => startEdit(row)}
-                          className="p-1 bg-transparent text-slate-400 hover:text-slate-600 border-none cursor-pointer flex items-center justify-center transition-colors"
+                          className="p-1.5 rounded-lg bg-transparent text-slate-400 hover:bg-slate-50 hover:text-slate-700 border-none cursor-pointer flex items-center justify-center transition-colors"
                         >
                           <Edit2 className="w-3.5 h-3.5" />
                         </button>
                         <button
                           type="button"
                           onClick={() => deleteRow(row.id)}
-                          className="p-1 bg-transparent text-red-400 hover:text-red-600 border-none cursor-pointer flex items-center justify-center transition-colors"
+                          className="p-1.5 rounded-lg bg-transparent text-rose-400 hover:bg-rose-50 hover:text-rose-600 border-none cursor-pointer flex items-center justify-center transition-colors"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -628,7 +639,7 @@ export const CodeSettingsModule: React.FC<CodeSettingsModuleProps> = ({ brand })
             })}
             {currentGrid.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-[12px] text-slate-400 font-medium border border-slate-200">
+                <td colSpan={5} className="px-4 py-8 text-center text-[12px] text-slate-400 font-medium border-b border-transparent">
                   No numbering segments configured. Click + to add.
                 </td>
               </tr>
@@ -658,7 +669,7 @@ export const CodeSettingsModule: React.FC<CodeSettingsModuleProps> = ({ brand })
       <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl border border-slate-200/50 backdrop-blur-sm self-start shrink-0">
         <button
           onClick={() => handleTabSwitch('document')}
-          className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-black transition-all cursor-pointer border-none outline-none ${activeTab === 'document' ? 'bg-white shadow-sm' : 'text-slate-500 hover:text-slate-800'
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer border-none outline-none ${activeTab === 'document' ? 'bg-white shadow-sm font-bold text-slate-800' : 'text-slate-500 hover:text-slate-800'
             }`}
           style={activeTab === 'document' ? { color: brand.primary } : undefined}
         >
@@ -667,7 +678,7 @@ export const CodeSettingsModule: React.FC<CodeSettingsModuleProps> = ({ brand })
         </button>
         <button
           onClick={() => handleTabSwitch('setup')}
-          className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-black transition-all cursor-pointer border-none outline-none ${activeTab === 'setup' ? 'bg-white shadow-sm' : 'text-slate-500 hover:text-slate-800'
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer border-none outline-none ${activeTab === 'setup' ? 'bg-white shadow-sm font-bold text-slate-800' : 'text-slate-500 hover:text-slate-800'
             }`}
           style={activeTab === 'setup' ? { color: brand.primary } : undefined}
         >
@@ -676,7 +687,7 @@ export const CodeSettingsModule: React.FC<CodeSettingsModuleProps> = ({ brand })
         </button>
         <button
           onClick={() => handleTabSwitch('sales')}
-          className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-black transition-all cursor-pointer border-none outline-none ${activeTab === 'sales' ? 'bg-white shadow-sm' : 'text-slate-500 hover:text-slate-800'
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer border-none outline-none ${activeTab === 'sales' ? 'bg-white shadow-sm font-bold text-slate-800' : 'text-slate-500 hover:text-slate-800'
             }`}
           style={activeTab === 'sales' ? { color: brand.primary } : undefined}
         >
@@ -685,7 +696,7 @@ export const CodeSettingsModule: React.FC<CodeSettingsModuleProps> = ({ brand })
         </button>
         <button
           onClick={() => handleTabSwitch('purchases')}
-          className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-black transition-all cursor-pointer border-none outline-none ${activeTab === 'purchases' ? 'bg-white shadow-sm' : 'text-slate-500 hover:text-slate-800'
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer border-none outline-none ${activeTab === 'purchases' ? 'bg-white shadow-sm font-bold text-slate-800' : 'text-slate-500 hover:text-slate-800'
             }`}
           style={activeTab === 'purchases' ? { color: brand.primary } : undefined}
         >
@@ -694,7 +705,7 @@ export const CodeSettingsModule: React.FC<CodeSettingsModuleProps> = ({ brand })
         </button>
         <button
           onClick={() => handleTabSwitch('customer')}
-          className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-black transition-all cursor-pointer border-none outline-none ${activeTab === 'customer' ? 'bg-white shadow-sm' : 'text-slate-500 hover:text-slate-800'
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer border-none outline-none ${activeTab === 'customer' ? 'bg-white shadow-sm font-bold text-slate-800' : 'text-slate-500 hover:text-slate-800'
             }`}
           style={activeTab === 'customer' ? { color: brand.primary } : undefined}
         >
@@ -703,7 +714,7 @@ export const CodeSettingsModule: React.FC<CodeSettingsModuleProps> = ({ brand })
         </button>
         <button
           onClick={() => handleTabSwitch('inventory')}
-          className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-black transition-all cursor-pointer border-none outline-none ${activeTab === 'inventory' ? 'bg-white shadow-sm' : 'text-slate-500 hover:text-slate-800'
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer border-none outline-none ${activeTab === 'inventory' ? 'bg-white shadow-sm font-bold text-slate-800' : 'text-slate-500 hover:text-slate-800'
             }`}
           style={activeTab === 'inventory' ? { color: brand.primary } : undefined}
         >
@@ -833,80 +844,18 @@ export const CodeSettingsModule: React.FC<CodeSettingsModuleProps> = ({ brand })
         </div>
       ) : activeTab === 'document' ? (
         // Document tab: Custom full-width numbering editor, no left side panel!
-        <Card className="w-full flex flex-col flex-grow border border-[#E2E8F0] shadow-sm rounded-2xl overflow-hidden bg-white p-0 min-h-0">
-          <div className="flex flex-col h-full overflow-hidden">
-            {/* Scrollable content area */}
-            <div className="flex-grow overflow-y-auto p-6 space-y-6 custom-scrollbar min-h-0">
-              
-              {/* Screen Type & Effective Dates in a single row */}
-              <div className="flex flex-wrap items-center gap-x-8 gap-y-4 shrink-0">
-                <div className="flex items-center gap-3">
-                  <span className="text-xs font-bold text-slate-700">Screen Type</span>
-                  <div className="w-52">
-                    <Select
-                      variant="compact"
-                      value={activeType}
-                      onChange={(e) => {
-                        setActiveType(e.target.value);
-                        setEditingRowId(null);
-                        setEditingRowData(null);
-                      }}
-                      options={[
-                        { value: 'sale_invoice', label: 'Sale Invoice' },
-                        { value: 'sale_return', label: 'Sale Return' },
-                        { value: 'service_invoice', label: 'Service Invoice' },
-                        { value: 'digital_invoice', label: 'Digital Invoice' },
-                        { value: 'purchase_invoice', label: 'Purchase Invoice' },
-                        { value: 'purchase_return', label: 'Purchase Return' }
-                      ]}
-                    />
-                  </div>
-                </div>
-
-              </div>
-
-              {/* Grid Table */}
-              <div className="relative">
-                {renderGridTable('regular')}
-              </div>
-
-              {/* Example + Toggle — column stacked, flush below table */}
-              <div className="flex flex-col gap-1">
-                <div className="text-xs text-slate-500">
-                  Example: <span className="font-mono text-xs text-slate-600 ml-1">{livePreview}</span>
-                </div>
-                <div className="flex items-center gap-6">
-                  <Toggle
-                    checked={allowManualEntry}
-                    onChange={(checked) => setAllowManualEntry(checked)}
-                    label="Allow Manual Entry"
-                    compact={true}
-                  />
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-slate-600">Serial Number Reset</span>
-                    <div className="w-28">
-                      <Select
-                        variant="compact"
-                        value={serialReset}
-                        onChange={(e) => setSerialReset(e.target.value as any)}
-                        options={[
-                          { value: 'None', label: 'None' },
-                          { value: 'Monthly', label: 'Monthly' },
-                          { value: 'Yearly', label: 'Yearly' }
-                        ]}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-            </div>
-
-            {/* Footer Bar */}
+        <SectionCard
+          title="Document Code Settings"
+          icon={<Settings2 className="w-3.5 h-3.5 text-white" />}
+          brand={brand}
+          className="w-full flex flex-col flex-grow overflow-hidden min-h-0"
+          bodyClassName="flex-grow overflow-y-auto p-6 space-y-6 custom-scrollbar min-h-0"
+          footer={
+            /* Footer Bar */
             <div className="px-6 py-2.5 bg-slate-100 border-t border-slate-200 flex items-center justify-between shrink-0">
               <div className="flex gap-2 items-center">
                 {savedMessage && (
-                  <div className="text-[12px] font-black text-emerald-600 flex items-center gap-1.5 font-sans">
+                  <div className="text-[12px] font-semibold text-emerald-600 flex items-center gap-1.5 font-sans">
                     <Check className="w-4 h-4" /> Settings saved successfully
                   </div>
                 )}
@@ -923,8 +872,71 @@ export const CodeSettingsModule: React.FC<CodeSettingsModuleProps> = ({ brand })
                 </Button>
               </div>
             </div>
+          }
+        >
+          {/* Document Type & Effective Dates in a single row */}
+          <div className="flex flex-wrap items-center gap-x-8 gap-y-4 shrink-0">
+            <div className="flex items-center gap-3">
+              <span className="text-xs font-bold text-slate-700">Document Type</span>
+              <div className="w-52">
+                <Select
+                  variant="compact"
+                  value={activeType}
+                  onChange={(e) => {
+                    setActiveType(e.target.value);
+                    setEditingRowId(null);
+                    setEditingRowData(null);
+                  }}
+                  options={[
+                    { value: 'sale_invoice', label: 'Sale Invoice' },
+                    { value: 'sale_return', label: 'Sale Return' },
+                    { value: 'service_invoice', label: 'Service Invoice' },
+                    { value: 'digital_invoice', label: 'Digital Invoice' },
+                    { value: 'purchase_invoice', label: 'Purchase Invoice' },
+                    { value: 'purchase_return', label: 'Purchase Return' }
+                  ]}
+                />
+              </div>
+            </div>
           </div>
-        </Card>
+
+          <div className="space-y-1.5">
+            {/* Grid Table */}
+            <div className="relative">
+              {renderGridTable('regular')}
+            </div>
+
+            {/* Example + Toggle — column stacked, flush below table */}
+            <div className="flex flex-col gap-1">
+              <div className="text-xs text-slate-500">
+                Example: <span className="font-mono text-xs text-slate-600 ml-1">{livePreview}</span>
+              </div>
+              <div className="flex items-center gap-6">
+                <Toggle
+                  checked={allowManualEntry}
+                  onChange={(checked) => setAllowManualEntry(checked)}
+                  label="Allow Manual Entry"
+                  compact={true}
+                />
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-slate-600">Serial Number Reset</span>
+                  <div className="w-28">
+                    <Select
+                      variant="compact"
+                      value={serialReset}
+                      onChange={(e) => setSerialReset(e.target.value as any)}
+                      options={[
+                        { value: 'None', label: 'None' },
+                        { value: 'Monthly', label: 'Monthly' },
+                        { value: 'Yearly', label: 'Yearly' }
+                      ]}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </SectionCard>
       ) : (
         <div className="flex-grow flex gap-6 min-h-0 overflow-hidden">
 
@@ -938,7 +950,7 @@ export const CodeSettingsModule: React.FC<CodeSettingsModuleProps> = ({ brand })
                   <button
                     key={mod.id}
                     onClick={() => handleModuleSwitch(mod.id)}
-                    className={`w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold transition-all border-none outline-none cursor-pointer ${isActive ? 'text-white' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                    className={`w-full text-left px-3 py-2.5 rounded-xl text-xs font-semibold transition-all border-none outline-none cursor-pointer ${isActive ? 'text-white' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
                       }`}
                     style={isActive ? { backgroundColor: brand.primary } : undefined}
                   >
@@ -950,139 +962,137 @@ export const CodeSettingsModule: React.FC<CodeSettingsModuleProps> = ({ brand })
           </Card>
 
           {/* Right Side: Reusable Configuration Area */}
-          <Card className="flex-1 p-0 flex flex-col border border-[#E2E8F0] shadow-sm bg-white overflow-hidden">
-
-            {/* Scrollable content */}
-            <div className="flex-1 overflow-y-auto custom-scrollbar p-6">
-              <div className="space-y-5">
-
-                {/* Code Setup Guidelines box — 60% width */}
-                <div className="w-[75%] flex gap-3 p-4 rounded-xl border border-slate-200 bg-slate-50">
-                  <Info className="w-4 h-4 shrink-0 mt-0.5" style={{ color: brand.primary }} />
-                  <div className="space-y-1.5">
-                    <p className="text-[12px] font-black" style={{ color: brand.dark }}>Code setup guidelines</p>
-                    <ul className="space-y-1">
-                      {[
-                        'Prefix is used to identify document codes. Maximum 4 characters allowed.',
-                        'Start Serial defines the starting number for generated codes. Maximum 7 digits allowed.',
-                      ].map((line) => (
-                        <li key={line} className="flex items-start gap-1.5">
-                          <span className="text-[10px] font-black mt-0.5" style={{ color: brand.primary }}>•</span>
-                          <span className="text-[11px] font-normal text-slate-500 leading-relaxed">{line}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+          <SectionCard
+            title={`${activeModule.charAt(0).toUpperCase() + activeModule.slice(1)} Numbering Settings`}
+            icon={<Binary className="w-3.5 h-3.5 text-white" />}
+            brand={brand}
+            className="flex-1 min-h-0 overflow-hidden"
+            bodyClassName="flex-grow overflow-y-auto p-6 space-y-5 custom-scrollbar min-h-0"
+            footer={
+              /* Standard footer bar */
+              <div className="px-6 py-2.5 bg-slate-100 border-t border-slate-200 flex items-center justify-between shrink-0">
+                <div className="flex gap-2 items-center">
+                  {savedMessage && (
+                    <div className="text-[12px] font-semibold text-emerald-600 flex items-center gap-1.5 font-sans">
+                      <Check className="w-4 h-4" /> Settings saved successfully
+                    </div>
+                  )}
                 </div>
+                <div className="flex gap-3">
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={handleSaveSettings}
+                    icon={Save}
+                    style={{ backgroundColor: brand.primary }}
+                  >
+                    Save
+                  </Button>
+                </div>
+              </div>
+            }
+          >
+            {/* Code Setup Guidelines box — 60% width */}
+            <div className="w-[75%] flex gap-3 p-4 rounded-xl border border-slate-200 bg-slate-50">
+              <Info className="w-4 h-4 shrink-0 mt-0.5" style={{ color: brand.primary }} />
+              <div className="space-y-1.5">
+                <p className="text-[12px] font-black" style={{ color: brand.dark }}>Code setup guidelines</p>
+                <ul className="space-y-1">
+                  {[
+                    'Prefix is used to identify document codes. Maximum 4 characters allowed.',
+                    'Start Serial defines the starting number for generated codes. Maximum 7 digits allowed.',
+                  ].map((line) => (
+                    <li key={line} className="flex items-start gap-1.5">
+                      <span className="text-[10px] font-black mt-0.5" style={{ color: brand.primary }}>•</span>
+                      <span className="text-[11px] font-normal text-slate-500 leading-relaxed">{line}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
 
-                {/* Form fields + Example + Toggle — grouped tightly */}
-                <div className="flex flex-col gap-1">
-                  {/* Fields */}
-                  <div className={`flex gap-3 transition-opacity duration-200 ${
-                    mode === 'manual' ? 'opacity-40 pointer-events-none select-none' : 'opacity-100'
-                  }`}>
-                    <div className="w-36">
-                      <Input
-                        label="Prefix"
-                        variant="compact"
-                        value={prefixValue}
-                        onChange={(e) => setPrefixValue(e.target.value)}
-                        placeholder="e.g. SP-"
-                        disabled={mode === 'manual'}
-                      />
-                    </div>
-                    <div className="w-36">
-                      <Input
-                        label="Start serial"
-                        variant="compact"
-                        value={serialValue}
-                        onChange={(e) => setSerialValue(e.target.value)}
-                        placeholder="e.g. 00001"
-                        disabled={mode === 'manual'}
-                      />
-                    </div>
-                    {activeType === 'tax' && (
-                      <>
-                        <div className="w-36">
-                          <Select
-                            label="Tax Type"
-                            variant="compact"
-                            value={taxTypeVal}
-                            onChange={(e) => setTaxTypeVal(e.target.value)}
-                            options={[
-                              { value: 'GST', label: 'GST' },
-                              { value: 'SST', label: 'SST' },
-                              { value: 'WHT', label: 'WHT' },
-                              { value: 'FED', label: 'FED' }
-                            ]}
-                          />
-                        </div>
-                        <div className="w-36">
-                          <Select
-                            label="Province"
-                            variant="compact"
-                            value={provinceVal}
-                            onChange={(e) => setProvinceVal(e.target.value)}
-                            options={[
-                              { value: 'Punjab', label: 'Punjab' },
-                              { value: 'Sindh', label: 'Sindh' },
-                              { value: 'KPK', label: 'KPK' },
-                              { value: 'Federal', label: 'Federal' }
-                            ]}
-                          />
-                        </div>
-                      </>
-                    )}
-                  </div>
-
-                  {/* Example */}
-                  <div className="text-xs text-slate-500">
-                    Example: <span className="font-mono text-xs text-slate-600 ml-1">{livePreview}</span>
-                  </div>
-
-                  {/* Allow Manual Entry toggle */}
-                  <Toggle
-                    checked={mode === 'manual'}
-                    onChange={(val) => setMode(val ? 'manual' : 'auto')}
-                    label="Allow Manual Entry"
-                    compact={true}
+            {/* Form fields + Example + Toggle — grouped tightly */}
+            <div className="flex flex-col gap-1">
+              {/* Fields */}
+              <div className={`flex gap-3 transition-opacity duration-200 ${
+                mode === 'manual' ? 'opacity-40 pointer-events-none select-none' : 'opacity-100'
+              }`}>
+                <div className="w-36">
+                  <Input
+                    label="Prefix"
+                    variant="compact"
+                    value={prefixValue}
+                    onChange={(e) => setPrefixValue(e.target.value)}
+                    placeholder="e.g. SP-"
+                    disabled={mode === 'manual'}
                   />
                 </div>
-
-                {/* Tips box */}
-                <div className="w-[75%] flex items-center gap-2 px-4 py-3 rounded-xl border border-blue-100 bg-blue-50/60">
-                  <span className="text-sm leading-none shrink-0">💡</span>
-                  <span className="text-[11px] font-normal text-slate-500 leading-relaxed">
-                    <span className="font-medium text-slate-600">Tips: </span>After the first transaction is created, these settings cannot be modified.
-                  </span>
+                <div className="w-36">
+                  <Input
+                    label="Start serial"
+                    variant="compact"
+                    value={serialValue}
+                    onChange={(e) => setSerialValue(e.target.value)}
+                    placeholder="e.g. 00001"
+                    disabled={mode === 'manual'}
+                  />
                 </div>
-
-              </div>
-            </div>
-
-            {/* Standard footer bar */}
-            <div className="px-6 py-2.5 bg-slate-100 border-t border-slate-200 flex items-center justify-between shrink-0">
-              <div className="flex gap-2 items-center">
-                {savedMessage && (
-                  <div className="text-[12px] font-black text-emerald-600 flex items-center gap-1.5 font-sans">
-                    <Check className="w-4 h-4" /> Settings saved successfully
-                  </div>
+                {activeType === 'tax' && (
+                  <>
+                    <div className="w-36">
+                      <Select
+                        label="Tax Type"
+                        variant="compact"
+                        value={taxTypeVal}
+                        onChange={(e) => setTaxTypeVal(e.target.value)}
+                        options={[
+                          { value: 'GST', label: 'GST' },
+                          { value: 'SST', label: 'SST' },
+                          { value: 'WHT', label: 'WHT' },
+                          { value: 'FED', label: 'FED' }
+                        ]}
+                      />
+                    </div>
+                    <div className="w-36">
+                      <Select
+                        label="Province"
+                        variant="compact"
+                        value={provinceVal}
+                        onChange={(e) => setProvinceVal(e.target.value)}
+                        options={[
+                          { value: 'Punjab', label: 'Punjab' },
+                          { value: 'Sindh', label: 'Sindh' },
+                          { value: 'KPK', label: 'KPK' },
+                          { value: 'Federal', label: 'Federal' }
+                        ]}
+                      />
+                    </div>
+                  </>
                 )}
               </div>
-              <div className="flex gap-3">
-                <Button
-                  variant="primary"
-                  size="sm"
-                  onClick={handleSaveSettings}
-                  icon={Save}
-                  style={{ backgroundColor: brand.primary }}
-                >
-                  Save
-                </Button>
+
+              {/* Example */}
+              <div className="text-xs text-slate-500">
+                Example: <span className="font-mono text-xs text-slate-600 ml-1">{livePreview}</span>
               </div>
+
+              {/* Allow Manual Entry toggle */}
+              <Toggle
+                checked={mode === 'manual'}
+                onChange={(val) => setMode(val ? 'manual' : 'auto')}
+                label="Allow Manual Entry"
+                compact={true}
+              />
             </div>
 
-          </Card>
+            {/* Tips box */}
+            <div className="w-[75%] flex items-center gap-2 px-4 py-3 rounded-xl border border-blue-100 bg-blue-50/60">
+              <span className="text-sm leading-none shrink-0">💡</span>
+              <span className="text-[11px] font-normal text-slate-500 leading-relaxed">
+                <span className="font-medium text-slate-600">Tips: </span>After the first transaction is created, these settings cannot be modified.
+              </span>
+            </div>
+          </SectionCard>
 
         </div>
       )}

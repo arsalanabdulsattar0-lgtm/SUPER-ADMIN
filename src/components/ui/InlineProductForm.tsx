@@ -538,29 +538,59 @@ const InlineProductForm: React.FC<Props> = ({ isOpen, onClose, initialData }) =>
                     <SectionHeader title="Basic Information" icon={Tag} />
                     <Card className="p-4 shadow-none" style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                        <Input
-                          variant="compact"
-                          label="Product Name *"
-                          value={formData.name}
-                          onChange={(e) => {
-                            setFormData({ ...formData, name: e.target.value });
-                            if (e.target.value.trim()) setFormErrors(prev => ({ ...prev, name: '' }));
-                          }}
-                          error={formErrors.name}
-                          placeholder="e.g. Logic board pro v4"
-                        />
-                        <Input
-                          variant="compact"
-                          label="Product Code *"
-                          value={formData.code}
-                          onChange={(e) => {
-                            setFormData({ ...formData, code: e.target.value });
-                            if (e.target.value.trim()) setFormErrors(prev => ({ ...prev, code: '' }));
-                          }}
-                          error={formErrors.code}
-                          placeholder="e.g. PRD-0001"
-                          readOnly={codeSetting.mode === 'auto'}
-                        />
+                        {codeSetting.mode === 'auto' ? (
+                          <>
+                            <Input
+                              variant="compact"
+                              label="Product Code *"
+                              value={formData.code}
+                              onChange={(e) => {
+                                setFormData({ ...formData, code: e.target.value });
+                                if (e.target.value.trim()) setFormErrors(prev => ({ ...prev, code: '' }));
+                              }}
+                              error={formErrors.code}
+                              placeholder="e.g. PRD-0001"
+                              readOnly={true}
+                            />
+                            <Input
+                              variant="compact"
+                              label="Product Name *"
+                              value={formData.name}
+                              onChange={(e) => {
+                                setFormData({ ...formData, name: e.target.value });
+                                if (e.target.value.trim()) setFormErrors(prev => ({ ...prev, name: '' }));
+                              }}
+                              error={formErrors.name}
+                              placeholder="e.g. Logic board pro v4"
+                            />
+                          </>
+                        ) : (
+                          <>
+                            <Input
+                              variant="compact"
+                              label="Product Name *"
+                              value={formData.name}
+                              onChange={(e) => {
+                                setFormData({ ...formData, name: e.target.value });
+                                if (e.target.value.trim()) setFormErrors(prev => ({ ...prev, name: '' }));
+                              }}
+                              error={formErrors.name}
+                              placeholder="e.g. Logic board pro v4"
+                            />
+                            <Input
+                              variant="compact"
+                              label="Product Code *"
+                              value={formData.code}
+                              onChange={(e) => {
+                                setFormData({ ...formData, code: e.target.value });
+                                if (e.target.value.trim()) setFormErrors(prev => ({ ...prev, code: '' }));
+                              }}
+                              error={formErrors.code}
+                              placeholder="e.g. PRD-0001"
+                              readOnly={false}
+                            />
+                          </>
+                        )}
                         {docSettings['Unit Of Measure'] && (
                           <ComboBox variant="compact" label="UOM" value={formData.uom_id || ''} onChange={(val) => setFormData({ ...formData, uom_id: val })} options={ProductUOM} placeholder="Select UOM" />
                         )}
@@ -758,7 +788,18 @@ const InlineProductForm: React.FC<Props> = ({ isOpen, onClose, initialData }) =>
                   Cancel
                 </Button>
 
-                {activeTab !== 'pricing' ? (
+                <Button
+                  type="button"
+                  variant="primary"
+                  size="md"
+                  icon={Save}
+                  onClick={handleSave}
+                  className="bg-emerald-500 hover:bg-emerald-600 shadow-none text-white"
+                >
+                  {initialData?.id ? 'Save Changes' : 'Add Product'}
+                </Button>
+
+                {activeTab !== 'pricing' && (
                   <Button
                     type="button"
                     variant="primary"
@@ -769,17 +810,6 @@ const InlineProductForm: React.FC<Props> = ({ isOpen, onClose, initialData }) =>
                     style={{ backgroundColor: brand.primary }}
                   >
                     Next
-                  </Button>
-                ) : (
-                  <Button
-                    type="button"
-                    variant="primary"
-                    size="md"
-                    icon={Save}
-                    onClick={handleSave}
-                    className="bg-emerald-500 hover:bg-emerald-600 shadow-none text-white"
-                  >
-                    {initialData?.id ? 'Save Changes' : 'Add Product'}
                   </Button>
                 )}
               </div>

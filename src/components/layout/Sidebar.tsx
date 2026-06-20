@@ -14,6 +14,7 @@ import {
   List,
   Warehouse,
   ShoppingCart,
+  Binary,
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import SidebarNavButton from './SidebarNavButton';
@@ -79,6 +80,7 @@ const Sidebar: React.FC<Props> = ({
       subItems: [
         { id: 'products',    label: 'Product List', icon: List },
         { id: 'warehouses',  label: 'Product Warehouses',   icon: Warehouse },
+        { id: 'product-batches', label: 'Product Batch', icon: Binary },
       ]
     },
     {
@@ -113,32 +115,52 @@ const Sidebar: React.FC<Props> = ({
     activeView === 'add-invoice-v4';
 
   const isBpActive = activeView === 'customers' || activeView === 'add-customer';
-  const isProductsActive = activeView === 'products' || activeView === 'warehouses';
+  const isProductsActive = activeView === 'products' || activeView === 'warehouses' || activeView === 'product-batches';
   const isPurchaseActive = activeView === 'purchases' || activeView === 'add-purchase-invoice' || activeView === 'purchase-return';
 
-  const [salesExpanded, setSalesExpanded] = React.useState(true);
-  const [bpExpanded, setBpExpanded] = React.useState(true);
-  const [productsExpanded, setProductsExpanded] = React.useState(true);
-  const [purchaseExpanded, setPurchaseExpanded] = React.useState(true);
+  const [salesExpanded, setSalesExpanded] = React.useState(isSalesActive);
+  const [bpExpanded, setBpExpanded] = React.useState(isBpActive);
+  const [productsExpanded, setProductsExpanded] = React.useState(isProductsActive);
+  const [purchaseExpanded, setPurchaseExpanded] = React.useState(isPurchaseActive);
 
   // Auto-expand if active view changes to a sale view
   React.useEffect(() => {
-    if (isSalesActive) setSalesExpanded(true);
+    if (isSalesActive) {
+      setSalesExpanded(true);
+      setBpExpanded(false);
+      setProductsExpanded(false);
+      setPurchaseExpanded(false);
+    }
   }, [activeView, isSalesActive]);
 
   // Auto-expand if active view changes to a BP view
   React.useEffect(() => {
-    if (isBpActive) setBpExpanded(true);
+    if (isBpActive) {
+      setBpExpanded(true);
+      setSalesExpanded(false);
+      setProductsExpanded(false);
+      setPurchaseExpanded(false);
+    }
   }, [activeView, isBpActive]);
 
   // Auto-expand if active view changes to a Products/Warehouses view
   React.useEffect(() => {
-    if (isProductsActive) setProductsExpanded(true);
+    if (isProductsActive) {
+      setProductsExpanded(true);
+      setSalesExpanded(false);
+      setBpExpanded(false);
+      setPurchaseExpanded(false);
+    }
   }, [activeView, isProductsActive]);
 
   // Auto-expand if active view changes to a purchase view
   React.useEffect(() => {
-    if (isPurchaseActive) setPurchaseExpanded(true);
+    if (isPurchaseActive) {
+      setPurchaseExpanded(true);
+      setSalesExpanded(false);
+      setBpExpanded(false);
+      setProductsExpanded(false);
+    }
   }, [activeView, isPurchaseActive]);
 
   const bottomItems = [
@@ -236,15 +258,32 @@ const Sidebar: React.FC<Props> = ({
               if (isCurrentlyCollapsed) {
                 if (activeView === 'dashboard') onToggleSidebar();
                 else setIsHovered(true);
-                if (isBpParent)      setBpExpanded(true);
-                else if (isProductParent) setProductsExpanded(true);
-                else if (isPurchaseParent) setPurchaseExpanded(true);
-                else                 setSalesExpanded(true);
+                setBpExpanded(isBpParent);
+                setProductsExpanded(isProductParent);
+                setPurchaseExpanded(isPurchaseParent);
+                setSalesExpanded(!isBpParent && !isProductParent && !isPurchaseParent);
               } else {
-                if (isBpParent)      setBpExpanded(v => !v);
-                else if (isProductParent) setProductsExpanded(v => !v);
-                else if (isPurchaseParent) setPurchaseExpanded(v => !v);
-                else                 setSalesExpanded(v => !v);
+                if (isBpParent) {
+                  setBpExpanded(v => !v);
+                  setProductsExpanded(false);
+                  setPurchaseExpanded(false);
+                  setSalesExpanded(false);
+                } else if (isProductParent) {
+                  setProductsExpanded(v => !v);
+                  setBpExpanded(false);
+                  setPurchaseExpanded(false);
+                  setSalesExpanded(false);
+                } else if (isPurchaseParent) {
+                  setPurchaseExpanded(v => !v);
+                  setBpExpanded(false);
+                  setProductsExpanded(false);
+                  setSalesExpanded(false);
+                } else {
+                  setSalesExpanded(v => !v);
+                  setBpExpanded(false);
+                  setProductsExpanded(false);
+                  setPurchaseExpanded(false);
+                }
               }
             };
 

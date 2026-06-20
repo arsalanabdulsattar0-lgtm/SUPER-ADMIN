@@ -120,6 +120,7 @@ const PurchaseInvoiceEditor: React.FC<Props> = ({ data, onChange, onSave, onView
       const defaultColumns = {
         'Product Code': true,
         'Description': true,
+        'Batch No': true,
         'Unit': true,
         'Details': true,
         'Qty': true,
@@ -155,6 +156,7 @@ const PurchaseInvoiceEditor: React.FC<Props> = ({ data, onChange, onSave, onView
       true, // '#'
       docSettings.columns['Product Code'],
       docSettings.columns['Description'],
+      docSettings.columns['Batch No'],
       docSettings.columns['Unit'],
       docSettings.columns['Details'],
       docSettings.columns['Qty'],
@@ -171,10 +173,40 @@ const PurchaseInvoiceEditor: React.FC<Props> = ({ data, onChange, onSave, onView
     return [
       docSettings.columns['Product Code'],
       docSettings.columns['Description'],
+      docSettings.columns['Batch No'],
       docSettings.columns['Unit'],
       docSettings.columns['Details']
     ].filter(Boolean).length;
   }, [docSettings]);
+
+  // Load all warehouse stock for batch lookups
+  const allWarehouseStock = useMemo(() => {
+    try {
+      const stored = localStorage.getItem('location_wise_stock');
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  }, []);
+
+  // Build merged product options: real products_list first, then sampleProducts as fallback
+  const mergedProductOptions = useMemo(() => {
+    try {
+      const stored = localStorage.getItem('products_list');
+      const realProds: any[] = stored ? JSON.parse(stored) : [];
+      if (realProds.length > 0) {
+        return realProds.map((p: any) => ({
+          id: p.code,           // use product CODE as id → matches product_code in stock
+          name: p.code,         // shown in product code column
+          subtitle: p.name,     // shown as description
+          cost: p.cost || 0,
+          sale_price: p.sale_price || 0,
+        }));
+      }
+    } catch {}
+    // fallback to sampleProducts
+    return sampleProducts.map(p => ({ ...p, cost: 0, sale_price: 0 }));
+  }, []);
 
   // Modal state
   const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; type: 'new' | 'close' }>({ isOpen: false, type: 'new' });
@@ -201,8 +233,9 @@ const PurchaseInvoiceEditor: React.FC<Props> = ({ data, onChange, onSave, onView
   const taxWidth = isSidebarCollapsed ? 'w-24' : 'w-20';
   const furtherTaxWidth = isSidebarCollapsed ? 'w-32' : 'w-28';
   const totalWidth = isSidebarCollapsed ? 'w-24' : 'w-20';
+  const batchWidth = isSidebarCollapsed ? 'w-36' : 'w-32';
   const descriptionWidth = '';
-  const tableMinW = isSidebarCollapsed ? 'min-w-[1170px]' : 'min-w-[1020px]';
+  const tableMinW = isSidebarCollapsed ? 'min-w-[1310px]' : 'min-w-[1160px]';
 
   const [files, setFiles] = useState<{ name: string, size: string }[]>([]);
 
@@ -371,6 +404,7 @@ const PurchaseInvoiceEditor: React.FC<Props> = ({ data, onChange, onSave, onView
       id,
       productCode: '',
       description: '',
+      batchNo: '',
       unit: '',
       unitDetails: '',
       quantity: 1,
@@ -838,7 +872,7 @@ const PurchaseInvoiceEditor: React.FC<Props> = ({ data, onChange, onSave, onView
                   )}
                   {docSettings.fields['Issue Date'] && (
                     <div className="lg:col-span-2">
-                      <Input variant="compact" label="Issue Date" type="date" value={data.date}
+                      <Input variant="compact" label="Purchase Date" type="date" value={data.date}
                         onChange={(e) => onChange({ ...data, date: e.target.value })} />
                     </div>
                   )}
@@ -876,12 +910,12 @@ const PurchaseInvoiceEditor: React.FC<Props> = ({ data, onChange, onSave, onView
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-3">
                   {docSettings.fields['Customer Address'] && (
                     <div className="lg:col-span-5">
-                      <Input variant="compact" label="Partner Address" placeholder="Street, city, country..." value={data.customerAddress || ''} readOnly />
+                      <Input variant="compact" label="Address" placeholder="Street, city, country..." value={data.customerAddress || ''} readOnly />
                     </div>
                   )}
                   {docSettings.fields['Due Date'] && (
                     <div className="lg:col-span-2">
-                      <Input variant="compact" label="Due Date" type="date" value={data.dueDate}
+                      <Input variant="compact" label="Expiry Date" type="date" value={data.dueDate}
                         onChange={(e) => onChange({ ...data, dueDate: e.target.value })} />
                     </div>
                   )}
@@ -934,56 +968,61 @@ const PurchaseInvoiceEditor: React.FC<Props> = ({ data, onChange, onSave, onView
 
             {/* Right Column: Independent Client Profile Card */}
             <AnimatePresence mode="wait">
-              {selectedCustomer ? (
-                <motion.div
-                  key={selectedCustomer.id}
-                  initial={{ opacity: 0, x: 20, scale: 0.95 }}
-                  animate={{ opacity: 1, x: 0, scale: 1 }}
-                  exit={{ opacity: 0, x: 20, scale: 0.95 }}
-                  transition={{ duration: 0.25, ease: "easeOut" }}
-                  className="w-[240px] shrink-0 bg-white rounded-xl border overflow-hidden"
-                  style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}
-                >
-                  {/* Header */}
-                  <div className="px-3 py-2.5 flex items-center justify-between bg-brand-primary">
-                    <span className="text-[11px] font-black text-white tracking-wide flex items-center gap-1.5">
-                      <User className="w-3.5 h-3.5 text-white" /> Partner Profile
-                    </span>
-                    <div className={`px-2 py-0.5 rounded-full text-[8px] font-black tracking-wider ${selectedCustomer.status === 'active' ? 'invoice-badge-active' :
-                      selectedCustomer.status === 'overdue' ? 'invoice-badge-overdue' :
-                        'invoice-badge-inactive'
-                      }`}>{selectedCustomer.status}</div>
-                  </div>
-
-                  {/* Body */}
-                  <div className="p-4 space-y-3 bg-gradient-to-b from-[#EFF5FC]/60 to-white">
-                    {[
-                      { label: 'NTN', value: selectedCustomer.ntn },
-                      { label: 'STRN', value: selectedCustomer.strn },
-                      { label: 'Province', value: (selectedCustomer as any).province },
-                      { label: 'Registration', value: (selectedCustomer as any).registrationType },
-                    ].map(row => (
-                      <div key={row.label} className="flex items-center justify-between">
-                        <span className="text-[9px] font-bold text-slate-400 tracking-wider">{row.label}</span>
-                        <span className="text-[10px] font-semibold font-mono text-slate-700">{row.value}</span>
-                      </div>
-                    ))}
-
-                    <div className="h-[1px] bg-slate-200/60 my-1" />
-
-                    <div className="flex items-center justify-between">
-                      <span className="text-[9px] font-bold text-slate-400 tracking-wider">Credit Limit (Rs.)</span>
-                      <span className="text-[11px] font-semibold text-brand-primary">{selectedCustomer.creditLimit.toLocaleString()}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-[9px] font-bold text-slate-400 tracking-wider">Current Balance (Rs.)</span>
-                      <span className={`text-[11px] font-semibold ${selectedCustomer.balance > 0 ? 'text-red-500' : 'text-emerald-500'}`}>
-                        {selectedCustomer.balance > 0 ? `${selectedCustomer.balance.toLocaleString()}` : 'Clear'}
+              {selectedCustomer ? (() => {
+                const creditLimit = selectedCustomer.creditLimit !== undefined ? selectedCustomer.creditLimit : (selectedCustomer.credit_limit || 0);
+                const balance = selectedCustomer.balance !== undefined ? selectedCustomer.balance : (selectedCustomer.opening_balance || 0);
+                const status = selectedCustomer.status || (selectedCustomer.is_active ? 'active' : 'inactive');
+                return (
+                  <motion.div
+                    key={selectedCustomer.id}
+                    initial={{ opacity: 0, x: 20, scale: 0.95 }}
+                    animate={{ opacity: 1, x: 0, scale: 1 }}
+                    exit={{ opacity: 0, x: 20, scale: 0.95 }}
+                    transition={{ duration: 0.25, ease: "easeOut" }}
+                    className="w-[240px] shrink-0 bg-white rounded-xl border overflow-hidden"
+                    style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}
+                  >
+                    {/* Header */}
+                    <div className="px-3 py-2.5 flex items-center justify-between bg-brand-primary">
+                      <span className="text-[11px] font-black text-white tracking-wide flex items-center gap-1.5">
+                        <User className="w-3.5 h-3.5 text-white" /> Partner Profile
                       </span>
+                      <div className={`px-2 py-0.5 rounded-full text-[8px] font-black tracking-wider ${status === 'active' ? 'invoice-badge-active' :
+                        status === 'overdue' ? 'invoice-badge-overdue' :
+                          'invoice-badge-inactive'
+                        }`}>{status}</div>
                     </div>
-                  </div>
-                </motion.div>
-              ) : (
+
+                    {/* Body */}
+                    <div className="p-4 space-y-3 bg-gradient-to-b from-[#EFF5FC]/60 to-white">
+                      {[
+                        { label: 'NTN', value: selectedCustomer.ntn },
+                        { label: 'STRN', value: selectedCustomer.strn },
+                        { label: 'Province', value: (selectedCustomer as any).province },
+                        { label: 'Registration', value: (selectedCustomer as any).registrationType },
+                      ].map(row => (
+                        <div key={row.label} className="flex items-center justify-between">
+                          <span className="text-[9px] font-bold text-slate-400 tracking-wider">{row.label}</span>
+                          <span className="text-[10px] font-semibold font-mono text-slate-700">{row.value}</span>
+                        </div>
+                      ))}
+
+                      <div className="h-[1px] bg-slate-200/60 my-1" />
+
+                      <div className="flex items-center justify-between">
+                        <span className="text-[9px] font-bold text-slate-400 tracking-wider">Credit Limit (Rs.)</span>
+                        <span className="text-[11px] font-semibold text-brand-primary">{creditLimit.toLocaleString()}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-[9px] font-bold text-slate-400 tracking-wider">Current Balance (Rs.)</span>
+                        <span className={`text-[11px] font-semibold ${balance > 0 ? 'text-red-500' : 'text-emerald-500'}`}>
+                          {balance > 0 ? `${balance.toLocaleString()}` : 'Clear'}
+                        </span>
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })() : (
                 <motion.div
                   key="empty"
                   initial={{ opacity: 0 }}
@@ -1009,23 +1048,23 @@ const PurchaseInvoiceEditor: React.FC<Props> = ({ data, onChange, onSave, onView
               <div className="w-[31%]">
                 <ComboBox
                   variant="compact"
-                  placeholder="Search Product Code/Barcode..."
+                  placeholder="Search Product Code/Name..."
                   value=""
                   icon={Search}
-                  options={sampleProducts}
-                  minQueryLength={3}
-                  onChange={(id) => {
-                    const prod = sampleProducts.find(p => p.id === id);
+                  options={mergedProductOptions}
+                  onChange={(code) => {
+                    const prod = mergedProductOptions.find(p => p.id === code);
                     if (prod) {
                       const newId = Math.random().toString(36).substr(2, 9);
                       const newItem: InvoiceItem = {
                         id: newId,
                         productCode: prod.id,
-                        description: prod.name,
+                        description: prod.subtitle || prod.name,
+                        batchNo: '',
                         unit: 'pcs',
-                        unitDetails: prod.subtitle || '',
+                        unitDetails: '',
                         quantity: 1,
-                        price: parseFloat(prod.subtitle?.split('Rs. ')[1] || '0'),
+                        price: (prod as any).cost || 0,
                         discount: 0,
                         tax: 0,
                         furtherTax: 0,
@@ -1082,6 +1121,7 @@ const PurchaseInvoiceEditor: React.FC<Props> = ({ data, onChange, onSave, onView
                       <th className="px-3 py-2.5 text-left w-10 whitespace-nowrap border-b border-[#E2E8F0]">#</th>
                       {docSettings.columns['Product Code'] && <th className="px-3 py-2.5 text-left w-36 whitespace-nowrap border-b border-[#E2E8F0]">Product Code</th>}
                       {docSettings.columns['Description'] && <th className={`px-3 py-2.5 text-left border-b border-[#E2E8F0] ${descriptionWidth} whitespace-nowrap`}>Description</th>}
+                      {docSettings.columns['Batch No'] && <th className={`px-3 py-2.5 text-left ${batchWidth} border-b border-[#E2E8F0] whitespace-nowrap`}>Batch No</th>}
                       {docSettings.columns['Unit'] && <th className={`px-3 py-2.5 text-left ${unitWidth} border-b border-[#E2E8F0] whitespace-nowrap`}>Unit</th>}
                       {docSettings.columns['Details'] && <th className={`px-3 py-2.5 text-left ${detailsWidth} border-b border-[#E2E8F0] whitespace-nowrap`}>Details</th>}
                       {docSettings.columns['Qty'] && <th className={`px-3 py-2.5 text-left ${qtyWidth} border-b border-[#E2E8F0] whitespace-nowrap`}>Qty</th>}
@@ -1112,18 +1152,17 @@ const PurchaseInvoiceEditor: React.FC<Props> = ({ data, onChange, onSave, onView
                                 variant="compact"
                                 placeholder="Search Code..."
                                 value={item.productCode}
-                                options={sampleProducts.map(p => ({ id: p.id, name: p.id, subtitle: p.name }))}
-                                minQueryLength={3}
+                                options={mergedProductOptions}
                                 error={errors[`item_${item.id}`]}
                                 hideErrorText
-                               onChange={(id) => {
-                                  const prod = sampleProducts.find(p => p.id === id);
+                               onChange={(code) => {
+                                  const prod = mergedProductOptions.find(p => p.id === code);
                                   if (prod) {
-                                    const parsedPrice = parseFloat(prod.subtitle?.split('Rs. ')[1] || '0') || 450;
                                     updateItem(item.id, {
                                       productCode: prod.id,
-                                      description: prod.name,
-                                      price: parsedPrice
+                                      description: prod.subtitle || prod.name,
+                                      price: (prod as any).cost || 0,
+                                      batchNo: '',
                                     });
                                     if (errors[`item_${item.id}`]) {
                                       setErrors(prev => {
@@ -1147,6 +1186,36 @@ const PurchaseInvoiceEditor: React.FC<Props> = ({ data, onChange, onSave, onView
                                 className="!text-[12px] font-normal text-slate-700 placeholder:text-slate-400 placeholder:font-normal"
                                 value={item.description}
                               />
+                            </td>
+                          )}
+                          {docSettings.columns['Batch No'] && (
+                            <td className="px-2 py-3">
+                              {(() => {
+                                // Match by product_code directly OR by product_name=description as fallback
+                                const productBatches = Array.from(new Set(
+                                  allWarehouseStock
+                                    .filter((s: any) => {
+                                      if (!s.batch_no) return false;
+                                      if (item.productCode && s.product_code === item.productCode) return true;
+                                      if (item.description && s.product_name && 
+                                          s.product_name.toLowerCase() === item.description.toLowerCase()) return true;
+                                      return false;
+                                    })
+                                    .map((s: any) => s.batch_no as string)
+                                )) as string[];
+                                return (
+                                  <select
+                                    value={item.batchNo || ''}
+                                    onChange={(e) => updateItem(item.id, { batchNo: e.target.value })}
+                                    className="w-full h-7 px-2 rounded-lg border border-slate-200 bg-white text-[11px] font-normal text-slate-700 outline-none focus:border-blue-400 transition-all cursor-pointer"
+                                  >
+                                    <option value="">— Select Batch —</option>
+                                    {productBatches.map((b) => (
+                                      <option key={b} value={b}>{b}</option>
+                                    ))}
+                                  </select>
+                                );
+                              })()}
                             </td>
                           )}
                           {docSettings.columns['Unit'] && (
@@ -1626,8 +1695,8 @@ const PurchaseInvoiceEditor: React.FC<Props> = ({ data, onChange, onSave, onView
             </h2>
             <p className="printable-invoice-id">#{data.invoiceNumber}</p>
             <div className="printable-invoice-dates">
-              <div><strong>Issue Date:</strong> {data.date}</div>
-              <div><strong>Due Date:</strong> {data.dueDate}</div>
+              <div><strong>Purchase Date:</strong> {data.date}</div>
+              <div><strong>Expiry Date:</strong> {data.dueDate}</div>
               <div><strong>Status:</strong> Unposted</div>
             </div>
           </div>

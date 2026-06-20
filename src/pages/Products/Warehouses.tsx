@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import {
-  Warehouse, SlidersHorizontal, Search, Box, AlertCircle, ChevronRight, Binary
+  Warehouse, SlidersHorizontal, Search, Box, AlertCircle, ChevronRight
 } from 'lucide-react';
 import { ProductBatchModal } from './ProductBatchModal';
 import { useTheme } from '../../context/ThemeContext';
@@ -419,7 +419,7 @@ const WarehousesPage: React.FC = () => {
         value: selectedProductId 
           ? totalStockForSelectedProduct.toLocaleString(undefined, { minimumFractionDigits: 2 })
           : '—',
-        sub: activeProduct ? `${activeProduct.code} — ${activeProduct.name}` : 'Select a product to view stock',
+        sub: selectedProductId ? 'Total units across all warehouse locations' : 'Select a product to view stock',
         icon: Box,
         bg: 'rgba(59, 130, 246, 0.1)',
         color: brand.primary
@@ -502,15 +502,6 @@ const WarehousesPage: React.FC = () => {
             <Button
               variant="white"
               size="md"
-              icon={Binary}
-              onClick={() => setShowBatchModal(true)}
-              className="cursor-pointer"
-            >
-              Product Batch
-            </Button>
-            <Button
-              variant="white"
-              size="md"
               icon={SlidersHorizontal}
               onClick={() => setShowFilterDrawer(true)}
               className="relative cursor-pointer"
@@ -525,12 +516,46 @@ const WarehousesPage: React.FC = () => {
         }
       />
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 print-hidden w-full md:w-1/2">
+      {/* Stats Cards & Selected Product Details */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 print-hidden w-full">
+        {/* Selected Product Details Card (50% width) */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+          className="md:col-span-2"
+        >
+          <Card
+            className="p-4 transition-all group cursor-default"
+            style={{ borderColor: '#E2E8F0', boxShadow: 'none' }}
+          >
+            <div className="flex items-start justify-between">
+              <div className="min-w-0 flex-1">
+                <p className="text-[11px] font-bold text-black tracking-wide">
+                  Product Details
+                </p>
+                <p className="text-2xl font-black mt-1 tracking-tight truncate" style={{ color: brand.dark }}>
+                  {activeProduct ? activeProduct.name : '—'}
+                </p>
+                <p className="text-[10px] font-medium text-slate-400 mt-1">
+                  {activeProduct 
+                    ? `CODE: ${activeProduct.code}`
+                    : 'Select a product to view stock'}
+                </p>
+              </div>
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center transition-all group-hover:scale-110 flex-shrink-0"
+                style={{ background: 'rgba(59, 130, 246, 0.1)' }}>
+                <Box className="w-5 h-5 text-blue-500" />
+              </div>
+            </div>
+          </Card>
+        </motion.div>
+
+        {/* Other Stats Cards (25% width each) */}
         {stats.map((stat, i) => (
           <motion.div key={stat.label}
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.07 }}
+            transition={{ delay: (i + 1) * 0.07 }}
+            className="md:col-span-1"
           >
             <Card
               className="p-4 transition-all group cursor-default"
@@ -633,9 +658,14 @@ const WarehousesPage: React.FC = () => {
                     >
                       {/* Active Row Arrow Indicator */}
                       <td className="px-2 py-3 text-center w-10">
-                        {isRowSelected && (
-                          <ChevronRight className="w-3.5 h-3.5 mx-auto text-slate-800 fill-slate-800" />
-                        )}
+                        <ChevronRight 
+                          className="w-4 h-4 mx-auto transition-all duration-200"
+                          style={{ 
+                            color: isRowSelected ? brand.primary : 'transparent',
+                            opacity: isRowSelected ? 1 : 0,
+                            transform: isRowSelected ? 'scale(1)' : 'scale(0.5)'
+                          }} 
+                        />
                       </td>
                       {/* Warehouse ID */}
                       <td className="px-4 py-3 font-mono font-semibold text-[12px]">{row.warehouse_id}</td>
