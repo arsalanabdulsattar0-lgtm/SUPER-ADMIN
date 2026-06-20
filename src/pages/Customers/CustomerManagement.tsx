@@ -1747,7 +1747,7 @@ const CustomerManagement: React.FC<CustomerManagementProps> = ({ initialOpenCrea
                     onClick={handleSave}
                     className="bg-emerald-500 hover:bg-emerald-600 shadow-none text-white"
                   >
-                    {customers.some(c => c.id === editing.id) ? 'Save Changes' : 'Add Business Partner'}
+                    Save
                   </Button>
 
                   {activeTab !== 'accounting' && (

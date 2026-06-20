@@ -533,7 +533,7 @@ export const ProductBatchModal: React.FC<ProductBatchModalProps> = ({
                   disabled={!newProductName.trim() || !newProductCode.trim()}
                   style={{ backgroundColor: brand.primary }}
                 >
-                  Save Product
+                  Save
                 </Button>
               </div>
             </motion.div>

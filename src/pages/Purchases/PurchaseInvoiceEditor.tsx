@@ -307,29 +307,18 @@ const PurchaseInvoiceEditor: React.FC<Props> = ({ data, onChange, onSave, onView
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [activeDropdown]);
 
-
-  const handleDownloadExcelForFormat = (formatKey: 'retail' | 'wologo' | 'delivery' | 'tax') => {
-    const labelMap = {
-      retail: 'Retail',
-      wologo: 'WithoutLogo',
-      delivery: 'Delivery',
-      tax: 'TaxInvoice'
-    };
-    const formatName = labelMap[formatKey];
-    
+  const handleDownloadExcel = () => {
     // Generate CSV content
-    const headers = ['Product Code', 'Description', 'Unit', 'Details', 'Qty', 'Price', 'Discount', 'Tax', 'Further Tax', 'Total'];
+    const headers = ['Product Code', 'Description', 'Unit', 'Qty', 'Price', 'Discount', 'Tax', 'Total'];
     const rows = data.items.map(item => [
       item.productCode,
       item.description,
       item.unit,
-      item.unitDetails,
       item.quantity,
       item.price,
       item.discount,
       item.tax,
-      item.furtherTax,
-      (item.quantity * item.price) - item.discount + item.tax + item.furtherTax
+      (item.quantity * item.price) - item.discount + item.tax
     ]);
 
     const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
@@ -338,12 +327,14 @@ const PurchaseInvoiceEditor: React.FC<Props> = ({ data, onChange, onSave, onView
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.setAttribute("href", url);
-    link.setAttribute("download", `Invoice_${formatName}_${data.invoiceNumber || 'draft'}.csv`);
+    link.setAttribute("download", `Purchase_Invoice_${data.invoiceNumber || 'draft'}.csv`);
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
+
+
 
   useEffect(() => {
     if (!selectedTemplateForPdf) return;
@@ -606,16 +597,7 @@ const PurchaseInvoiceEditor: React.FC<Props> = ({ data, onChange, onSave, onView
            templates[0];
   };
 
-  const getFormatFromTemplateId = (templateId: string) => {
-    if (templateId.includes('-1')) return 'retail';
-    if (templateId.includes('-2')) return 'wologo';
-    if (templateId.includes('-3')) return 'delivery';
-    if (templateId.includes('-4')) return 'tax';
-    return 'retail';
-  };
-
   const activeT = getActiveDefaultTemplate();
-  const activeFormat = activeT ? getFormatFromTemplateId(activeT.template_id) : 'retail';
 
   const activePdfT = selectedTemplateForPdf 
     ? (templates.find(t => t.template_id === selectedTemplateForPdf) || templates[0]) 
@@ -717,106 +699,100 @@ const PurchaseInvoiceEditor: React.FC<Props> = ({ data, onChange, onSave, onView
 
             {/* Multi-Split Print & Export Buttons */}
             {(() => {
-              const splitButtonsConfig = [
-                { id: 'default', label: 'Print', templateId: activeT?.template_id || 'pi-1', formatKey: activeFormat, isAvailable: !!activeT },
-                { id: 'retail', label: 'Standard Print', templateId: 'pi-1', formatKey: 'retail', isAvailable: templates.find(t => t.template_id === 'pi-1')?.is_active }
-              ];
+              const templateId = activeT?.template_id || 'pi-1';
+              return (
+                <div className="relative flex items-center bg-white border border-slate-200 rounded-lg hover:border-slate-300 transition-colors">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!validateInvoiceForExport()) return;
 
-              return splitButtonsConfig
-                .filter(btn => btn.isAvailable)
-                .map(btn => (
-                  <div key={btn.id} className="relative flex items-center bg-white border border-slate-200 rounded-lg hover:border-slate-300 transition-colors">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (!validateInvoiceForExport()) return;
+                      // Update default template in settings/state
+                      const updated = templates.map(t => ({
+                        ...t,
+                        is_default: t.template_id === templateId
+                      }));
+                      setTemplates(updated);
+                      localStorage.setItem('print_templates', JSON.stringify(updated));
 
-                        // Update default template in settings/state
-                        const updated = templates.map(t => ({
-                          ...t,
-                          is_default: t.template_id === btn.templateId
-                        }));
-                        setTemplates(updated);
-                        localStorage.setItem('print_templates', JSON.stringify(updated));
+                      setTimeout(() => {
+                        if (onPrint) {
+                          onPrint(getMappedInvoice(), templateId);
+                        } else {
+                          window.print();
+                        }
+                      }, 50);
+                    }}
+                    className="flex items-center gap-1.5 px-3 py-2 text-[11px] font-bold text-slate-700 hover:bg-slate-50 transition-colors border-none bg-transparent rounded-l-lg cursor-pointer h-9"
+                  >
+                    <Printer className="w-3.5 h-3.5 text-slate-500" />
+                    Print
+                  </button>
+                  <div className="w-[1px] h-4 bg-slate-200" />
+                  <button
+                    type="button"
+                    onClick={() => setActiveDropdown(activeDropdown === 'print-dropdown' ? null : 'print-dropdown')}
+                    className="px-2 py-2 text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-colors border-none bg-transparent rounded-r-lg cursor-pointer flex items-center justify-center h-9 split-button-trigger"
+                  >
+                    <ChevronDown className="w-3 h-3" />
+                  </button>
 
-                        setTimeout(() => {
-                          if (onPrint) {
-                            onPrint(getMappedInvoice(), btn.templateId);
-                          } else {
-                            window.print();
-                          }
-                        }, 50);
-                      }}
-                      className="flex items-center gap-1.5 px-3 py-2 text-[11px] font-bold text-slate-700 hover:bg-slate-50 transition-colors border-none bg-transparent rounded-l-lg cursor-pointer h-9"
-                    >
-                      <Printer className="w-3.5 h-3.5 text-slate-500" />
-                      {btn.label}
-                    </button>
-                    <div className="w-[1px] h-4 bg-slate-200" />
-                    <button
-                      type="button"
-                      onClick={() => setActiveDropdown(activeDropdown === btn.id ? null : btn.id)}
-                      className="px-2 py-2 text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-colors border-none bg-transparent rounded-r-lg cursor-pointer flex items-center justify-center h-9 split-button-trigger"
-                    >
-                      <ChevronDown className="w-3 h-3" />
-                    </button>
+                  <AnimatePresence>
+                    {activeDropdown === 'print-dropdown' && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.95, y: -4 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95, y: -4 }}
+                        className="absolute right-0 top-10 z-30 bg-white rounded-lg border p-1 w-32 shadow-md split-button-dropdown"
+                        style={{ borderColor: '#E2E8F0' }}
+                      >
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setActiveDropdown(null);
+                            if (!validateInvoiceForExport()) return;
 
-                    <AnimatePresence>
-                      {activeDropdown === btn.id && (
-                        <motion.div
-                          initial={{ opacity: 0, scale: 0.95, y: -4 }}
-                          animate={{ opacity: 1, scale: 1, y: 0 }}
-                          exit={{ opacity: 0, scale: 0.95, y: -4 }}
-                          className="absolute right-0 top-10 z-30 bg-white rounded-lg border p-1 w-32 shadow-md split-button-dropdown"
-                          style={{ borderColor: '#E2E8F0' }}
+                            // Update default template
+                            const updated = templates.map(t => ({
+                              ...t,
+                              is_default: t.template_id === templateId
+                            }));
+                            setTemplates(updated);
+                            localStorage.setItem('print_templates', JSON.stringify(updated));
+
+                            setSelectedTemplateForPdf(templateId);
+                          }}
+                          className="w-full text-left px-2 py-1.5 text-[10px] font-bold hover:bg-slate-50 rounded transition-all flex items-center gap-2 text-slate-700 cursor-pointer border-none bg-transparent"
                         >
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setActiveDropdown(null);
-                              if (!validateInvoiceForExport()) return;
+                          <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                          PDF Document
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setActiveDropdown(null);
+                            if (!validateInvoiceForExport()) return;
 
-                              // Update default template
-                              const updated = templates.map(t => ({
-                                ...t,
-                                is_default: t.template_id === btn.templateId
-                              }));
-                              setTemplates(updated);
-                              localStorage.setItem('print_templates', JSON.stringify(updated));
+                            // Update default template
+                            const updated = templates.map(t => ({
+                              ...t,
+                              is_default: t.template_id === templateId
+                            }));
+                            setTemplates(updated);
+                            localStorage.setItem('print_templates', JSON.stringify(updated));
 
-                              setSelectedTemplateForPdf(btn.templateId);
-                            }}
-                            className="w-full text-left px-2 py-1.5 text-[10px] font-bold hover:bg-slate-50 rounded transition-all flex items-center gap-2 text-slate-700 cursor-pointer border-none bg-transparent"
-                          >
-                            <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
-                            PDF Document
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setActiveDropdown(null);
-                              if (!validateInvoiceForExport()) return;
-
-                              // Update default template
-                              const updated = templates.map(t => ({
-                                ...t,
-                                is_default: t.template_id === btn.templateId
-                              }));
-                              setTemplates(updated);
-                              localStorage.setItem('print_templates', JSON.stringify(updated));
-
-                              handleDownloadExcelForFormat(btn.formatKey as any);
-                            }}
-                            className="w-full text-left px-2 py-1.5 text-[10px] font-bold hover:bg-slate-50 rounded transition-all flex items-center gap-2 text-slate-700 cursor-pointer border-none bg-transparent"
-                          >
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                            Excel (CSV)
-                          </button>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                ));
+                            handleDownloadExcel();
+                          }}
+                          className="w-full text-left px-2 py-1.5 text-[10px] font-bold hover:bg-slate-50 rounded transition-all flex items-center gap-2 text-slate-700 cursor-pointer border-none bg-transparent"
+                        >
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                          Excel (CSV)
+                        </button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              );
             })()}
 
             <Button

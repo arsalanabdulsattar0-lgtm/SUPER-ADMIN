@@ -796,7 +796,7 @@ const InlineProductForm: React.FC<Props> = ({ isOpen, onClose, initialData }) =>
                   onClick={handleSave}
                   className="bg-emerald-500 hover:bg-emerald-600 shadow-none text-white"
                 >
-                  {initialData?.id ? 'Save Changes' : 'Add Product'}
+                  Save
                 </Button>
 
                 {activeTab !== 'pricing' && (
