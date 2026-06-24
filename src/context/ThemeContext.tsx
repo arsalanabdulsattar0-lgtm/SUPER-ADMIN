@@ -171,6 +171,8 @@ interface ThemeContextProps {
   theme: ThemeType;
   brand: BrandTokens;
   setTheme: (theme: ThemeType) => void;
+  showSalesModule: boolean;
+  setShowSalesModule: (show: boolean) => void;
 }
 
 const ThemeContext = createContext<ThemeContextProps | undefined>(undefined);
@@ -193,6 +195,24 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setThemeState(newTheme);
     try {
       localStorage.setItem('app_theme', newTheme);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const [showSalesModule, setShowSalesModuleState] = useState<boolean>(() => {
+    try {
+      const stored = localStorage.getItem('app_show_sales_module');
+      return stored !== null ? stored === 'true' : true;
+    } catch {
+      return true;
+    }
+  });
+
+  const setShowSalesModule = (show: boolean) => {
+    setShowSalesModuleState(show);
+    try {
+      localStorage.setItem('app_show_sales_module', show.toString());
     } catch (e) {
       console.error(e);
     }
@@ -224,7 +244,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, [brand]);
 
   return (
-    <ThemeContext.Provider value={{ theme, brand, setTheme }}>
+    <ThemeContext.Provider value={{ theme, brand, setTheme, showSalesModule, setShowSalesModule }}>
       {children}
     </ThemeContext.Provider>
   );
