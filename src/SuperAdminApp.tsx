@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from './context/ThemeContext';
 import { 
   ShieldCheck, LayoutDashboard, Package, 
-  Building2, LogOut, Printer, PlusCircle
+  Building2, LogOut, PlusCircle
 } from 'lucide-react';
 import SuperAdminDashboard from './pages/SuperAdminDashboard';
 import OverviewDashboard from './pages/OverviewDashboard';

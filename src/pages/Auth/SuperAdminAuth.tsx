@@ -1,16 +1,15 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ShieldCheck, Mail, Lock, User as UserIcon, ArrowRight } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { ShieldCheck, Mail, Lock, ArrowRight } from 'lucide-react';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
-import { useTheme } from '../../context/ThemeContext';
+
 
 interface Props {
   onLogin: () => void;
 }
 
 export const SuperAdminAuth: React.FC<Props> = ({ onLogin }) => {
-  const { brand } = useTheme();
 
   // Form states
   const [email, setEmail] = useState('');

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { usePermissions, type Package, type CompanyPermission, type ModuleId, type FunctionId } from '../context/PermissionContext';
+import { usePermissions, type ModuleId, type FunctionId } from '../context/PermissionContext';
 import { seedCompanies } from '../utils/settingsData';
 import { Button } from '../components/ui/Button';
 import { Select } from '../components/ui/FormControls';

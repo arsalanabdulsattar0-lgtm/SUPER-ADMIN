@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { AreaChart, Area, BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { useTheme } from '../context/ThemeContext';
-import { Building2, Package, TrendingUp, Activity, Users, Box, ShoppingCart, CheckCircle2, ChevronDown, DollarSign } from 'lucide-react';
+import { Building2, Package, TrendingUp, Activity, Box, CheckCircle2, ChevronDown, DollarSign } from 'lucide-react';
 
 const statsData = [
   { name: 'Jan', companies: 400 },
