@@ -2,7 +2,7 @@ import React from 'react';
 import Card from './Card';
 
 export interface SectionCardProps {
-  title: string;
+  title: React.ReactNode;
   icon?: React.ReactNode;
   brand: {
     primary: string;
@@ -28,7 +28,7 @@ export const SectionCard: React.FC<SectionCardProps> = ({
   bodyClassName = '',
 }) => {
   return (
-    <Card className={`rounded-2xl overflow-hidden p-0 flex flex-col h-full border border-[#E2E8F0] shadow-sm ${className}`}>
+    <Card className={`rounded-2xl overflow-hidden p-0 flex flex-col border border-[#E2E8F0] shadow-sm ${className}`}>
       {/* Card header bar (FIXED) */}
       <div
         className="px-4 py-2.5 flex items-center justify-between text-white shrink-0"
@@ -44,9 +44,9 @@ export const SectionCard: React.FC<SectionCardProps> = ({
 
       {/* Card Body */}
       <div
-        className={`p-6 ${
-          scrollable ? 'flex-1 overflow-y-auto custom-scrollbar' : ''
-        } ${bodyClassName}`}
+        className={`${
+          bodyClassName ? bodyClassName : 'p-6'
+        } ${scrollable ? 'flex-1 overflow-y-auto custom-scrollbar' : ''}`}
       >
         {children}
       </div>

@@ -3,13 +3,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from './context/ThemeContext';
 import { 
   ShieldCheck, LayoutDashboard, Package, 
-  Building2, LogOut, PlusCircle
+  Building2, LogOut
 } from 'lucide-react';
 import SuperAdminDashboard from './pages/SuperAdminDashboard';
 import OverviewDashboard from './pages/OverviewDashboard';
 import SuperAdminAuth from './pages/Auth/SuperAdminAuth';
 
-type SuperAdminView = 'dashboard' | 'companies' | 'packages' | 'add-company';
+type SuperAdminView = 'dashboard' | 'companies' | 'packages' | 'company-module';
 
 const SuperAdminApp = () => {
   const { brand } = useTheme();
@@ -19,8 +19,8 @@ const SuperAdminApp = () => {
 
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'add-company', label: 'Add Company', icon: PlusCircle },
-    { id: 'companies', label: 'Manage Companies', icon: Building2 },
+    { id: 'company-module', label: 'Company List', icon: Building2 },
+    { id: 'companies', label: 'Company Permission', icon: Building2 },
     { id: 'packages', label: 'Manage Packages', icon: Package },
   ];
 
@@ -97,7 +97,7 @@ const SuperAdminApp = () => {
            </div>
         </header>
         
-        <main className="flex-grow relative overflow-y-auto bg-gray-50/50 p-6">
+        <main className="flex-grow relative overflow-y-auto bg-slate-50 p-6">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeView}

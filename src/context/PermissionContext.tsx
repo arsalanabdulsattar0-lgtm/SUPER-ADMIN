@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { seedCompanies } from '../utils/settingsData';
 
-export type ModuleId = 'dashboard' | 'customers' | 'products' | 'purchases' | 'sales' | 'settings' | 'help';
+export type ModuleId = 'dashboard' | 'customers' | 'products' | 'purchases' | 'sales' | 'settings' | 'help' | 'ai_bar';
 
 export type FunctionId = 
   | 'create_sale' | 'edit_sale' | 'delete_sale' | 'post_sale'
@@ -16,9 +16,20 @@ export type FunctionId =
   | 'setting_profile' | 'setting_billing' | 'setting_appearance' | 'setting_tax' | 'setting_salesperson' 
   | 'setting_company' | 'setting_users' | 'setting_codes' | 'setting_products' | 'setting_warehouse' | 'setting_department';
 
+export interface PackageFeature {
+  label: string;
+  value?: string;
+  active: boolean;
+}
+
 export interface Package {
   id: string;
   name: string;
+  priceMonthly?: number;
+  priceYearly?: number;
+  tierColor?: 'gray' | 'blue' | 'orange';
+  isPopular?: boolean;
+  features?: PackageFeature[];
   allowedModules: ModuleId[];
   allowedFunctions: FunctionId[];
 }
@@ -49,14 +60,39 @@ interface PermissionContextType {
 const defaultPackages: Package[] = [
   {
     id: 'pkg-basic',
-    name: 'Basic Plan',
-    allowedModules: ['dashboard', 'customers', 'sales', 'settings', 'help'],
+    name: 'Basic Tier',
+    priceMonthly: 2000,
+    priceYearly: 24000,
+    tierColor: 'gray',
+    features: [
+      { label: 'Max Products:', value: '50', active: true },
+      { label: 'Try-On:', value: 'Not Included', active: false },
+      { label: 'Scans:', value: '20 / mo', active: true },
+      { label: 'Size Recommendations:', value: '20 / mo', active: true },
+      { label: 'Shade Recommendations:', value: 'Not Included', active: false },
+      { label: 'Featured Badge Access', active: false },
+      { label: 'Priority 24/7 Support', active: false },
+    ],
+    allowedModules: ['dashboard', 'customers', 'sales', 'settings', 'help', 'ai_bar'],
     allowedFunctions: ['create_sale', 'edit_sale', 'post_sale', 'create_customer', 'default_dashboard']
   },
   {
     id: 'pkg-standard',
-    name: 'Standard Plan',
-    allowedModules: ['dashboard', 'customers', 'sales', 'purchases', 'products', 'settings', 'help'],
+    name: 'Pro Tier',
+    priceMonthly: 5000,
+    priceYearly: 60000,
+    tierColor: 'blue',
+    isPopular: true,
+    features: [
+      { label: 'Max Products:', value: '200', active: true },
+      { label: 'Try-On:', value: '50 / mo', active: true },
+      { label: 'Scans:', value: '100 / mo', active: true },
+      { label: 'Size Recommendations:', value: '100 / mo', active: true },
+      { label: 'Shade Recommendations:', value: '100 / mo', active: true },
+      { label: 'Featured Badge Access', active: true },
+      { label: 'Priority 24/7 Support', active: false },
+    ],
+    allowedModules: ['dashboard', 'customers', 'sales', 'purchases', 'products', 'settings', 'help', 'ai_bar'],
     allowedFunctions: [
       'create_sale', 'edit_sale', 'post_sale', 'create_customer', 'edit_customer',
       'create_purchase', 'edit_purchase', 'post_purchase', 'create_product',
@@ -65,8 +101,20 @@ const defaultPackages: Package[] = [
   },
   {
     id: 'pkg-enterprise',
-    name: 'Enterprise Plan',
-    allowedModules: ['dashboard', 'customers', 'products', 'purchases', 'sales', 'settings', 'help'],
+    name: 'Enterprise Tier',
+    priceMonthly: 10000,
+    priceYearly: 120000,
+    tierColor: 'orange',
+    features: [
+      { label: 'Max Products:', value: 'Unlimited', active: true },
+      { label: 'Try-On:', value: 'Unlimited', active: true },
+      { label: 'Scans:', value: 'Unlimited', active: true },
+      { label: 'Size Recommendations:', value: 'Unlimited', active: true },
+      { label: 'Shade Recommendations:', value: 'Unlimited', active: true },
+      { label: 'Featured Badge Access', active: true },
+      { label: 'Priority 24/7 Support', active: true },
+    ],
+    allowedModules: ['dashboard', 'customers', 'products', 'purchases', 'sales', 'settings', 'help', 'ai_bar'],
     allowedFunctions: [
       'create_sale', 'edit_sale', 'delete_sale', 'post_sale',
       'create_purchase', 'edit_purchase', 'delete_purchase', 'post_purchase',

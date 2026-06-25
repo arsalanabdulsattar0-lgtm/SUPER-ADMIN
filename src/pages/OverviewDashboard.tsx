@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { AreaChart, Area, BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { useTheme } from '../context/ThemeContext';
-import { Building2, Package, TrendingUp, Activity, Box, CheckCircle2, ChevronDown, DollarSign } from 'lucide-react';
+import { Building2, Package, TrendingUp, Activity, Box, CheckCircle2, ChevronDown, Banknote } from 'lucide-react';
 
 const statsData = [
   { name: 'Jan', companies: 400 },
@@ -94,13 +94,13 @@ export default function OverviewDashboard() {
         {/* Monthly Revenue */}
         <div className="col-span-12 lg:col-span-4 bg-white rounded-xl p-4 border border-slate-200 relative overflow-hidden group">
           <div className="flex justify-between items-center mb-1">
-            <div className="flex items-center gap-1.5 text-slate-500 font-medium text-sm">
-              <DollarSign className="w-5 h-5 text-emerald-500" />
-              <span>Monthly Revenue</span>
+              <div className="flex items-center gap-1.5 text-slate-500 font-medium text-sm">
+                <Banknote className="w-5 h-5 text-emerald-500" />
+                <span>Monthly Revenue</span>
             </div>
           </div>
           <div className="mt-0.5">
-            <h3 className="text-2xl font-bold text-slate-800 tracking-tight">$45,200</h3>
+            <h3 className="text-2xl font-bold text-slate-800 tracking-tight">PKR 45,200</h3>
             <div className="flex items-center gap-1.5 mt-1 text-[11px]">
               <span className="flex items-center text-emerald-600 font-medium bg-emerald-50 px-1 py-0.5 rounded">
                 <TrendingUp className="w-3 h-3 mr-0.5" /> +15.3%
